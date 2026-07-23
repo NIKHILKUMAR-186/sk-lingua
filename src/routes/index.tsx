@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
   const { data: featured = [] } = useQuery({
     queryKey: ["featured-mentors"],
     queryFn: async () => {
@@ -36,6 +38,10 @@ function Landing() {
       return mentors.map((m) => ({ ...m, profile: byId.get(m.user_id) ?? null }));
     },
   });
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -176,7 +182,7 @@ function Landing() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:px-6">
-          <div>© {new Date().getFullYear()} Lingua. Learn from real humans.</div>
+          <div>© {currentYear ?? ""} Lingua. Learn from real humans.</div>
           <div className="flex gap-6"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
         </div>
       </footer>
