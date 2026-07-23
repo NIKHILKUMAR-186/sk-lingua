@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -148,12 +147,31 @@ function AuthPage() {
   async function handleGoogle() {
     setLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-      if (result.error) throw result.error;
-      if (result.redirected) return;
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      console.group("Google OAuth");
+      console.log("OAuth started", { provider: "google", redirectTo });
+      console.groupEnd();
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+        },
+      });
+
+      console.log("Google OAuth response", { data, error });
+      if (error) throw error;
+      if (data?.url) {
+        console.log("OAuth redirected to provider", { redirectTo, url: data.url });
+        window.location.assign(data.url);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
+      console.log("OAuth user fetched after provider return", { user });
       if (user) await goToDashboardFor(user.id);
     } catch (err) {
+      console.error("Google sign-in failed", err);
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");
     } finally { setLoading(false); }
   }
