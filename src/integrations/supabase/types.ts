@@ -61,46 +61,70 @@ export type Database = {
           availability: Json
           bio: string | null
           certifications: string[]
+          cover_url: string | null
           created_at: string
+          education: string | null
           headline: string | null
           hourly_rate: number
           is_active: boolean
           languages_taught: string[]
+          linkedin_url: string | null
           rating_avg: number
+          teaching_style: string | null
+          timezone: string | null
           total_reviews: number
           updated_at: string
           user_id: string
+          website_url: string | null
+          youtube_url: string | null
           years_experience: number
+          availability_preview: string | null
         }
         Insert: {
           availability?: Json
           bio?: string | null
           certifications?: string[]
+          cover_url?: string | null
           created_at?: string
+          education?: string | null
           headline?: string | null
           hourly_rate?: number
           is_active?: boolean
           languages_taught?: string[]
+          linkedin_url?: string | null
           rating_avg?: number
+          teaching_style?: string | null
+          timezone?: string | null
           total_reviews?: number
           updated_at?: string
           user_id: string
+          website_url?: string | null
+          youtube_url?: string | null
           years_experience?: number
+          availability_preview?: string | null
         }
         Update: {
           availability?: Json
           bio?: string | null
           certifications?: string[]
+          cover_url?: string | null
           created_at?: string
+          education?: string | null
           headline?: string | null
           hourly_rate?: number
           is_active?: boolean
           languages_taught?: string[]
+          linkedin_url?: string | null
           rating_avg?: number
+          teaching_style?: string | null
+          timezone?: string | null
           total_reviews?: number
           updated_at?: string
           user_id?: string
+          website_url?: string | null
+          youtube_url?: string | null
           years_experience?: number
+          availability_preview?: string | null
         }
         Relationships: []
       }
@@ -138,74 +162,137 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          cover_url: string | null
           country: string | null
           created_at: string
           email: string | null
           full_name: string | null
+          github_url: string | null
           id: string
+          interests: string | null
+          learning_goal: string | null
+          linkedin_url: string | null
           native_language: string | null
           onboarded: boolean
+          target_language: string | null
+          current_level: string | null
+          timezone: string | null
           updated_at: string
+          website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          cover_url?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
+          github_url?: string | null
           id: string
+          interests?: string | null
+          learning_goal?: string | null
+          linkedin_url?: string | null
           native_language?: string | null
           onboarded?: boolean
+          target_language?: string | null
+          current_level?: string | null
+          timezone?: string | null
           updated_at?: string
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          cover_url?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
+          github_url?: string | null
           id?: string
+          interests?: string | null
+          learning_goal?: string | null
+          linkedin_url?: string | null
           native_language?: string | null
           onboarded?: boolean
+          target_language?: string | null
+          current_level?: string | null
+          timezone?: string | null
           updated_at?: string
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
       resources: {
         Row: {
           created_at: string
+          created_by: string | null
           description: string | null
+          file_name: string | null
+          file_size: number | null
+          file_type: string | null
           id: string
           is_public: boolean
           language: string | null
           mentor_id: string
+          resource_type: string
+          session_id: string | null
           shared_with: string | null
+          storage_path: string | null
+          storage_url: string | null
+          student_id: string | null
+          thumbnail_url: string | null
           title: string
           url: string
+          visibility: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           is_public?: boolean
           language?: string | null
           mentor_id: string
+          resource_type?: string
+          session_id?: string | null
           shared_with?: string | null
+          storage_path?: string | null
+          storage_url?: string | null
+          student_id?: string | null
+          thumbnail_url?: string | null
           title: string
           url: string
+          visibility?: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           is_public?: boolean
           language?: string | null
           mentor_id?: string
+          resource_type?: string
+          session_id?: string | null
           shared_with?: string | null
+          storage_path?: string | null
+          storage_url?: string | null
+          student_id?: string | null
+          thumbnail_url?: string | null
           title?: string
           url?: string
+          visibility?: string
         }
         Relationships: []
       }
