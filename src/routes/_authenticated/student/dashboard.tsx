@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Flame, Trophy, Video, Sparkles, ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
-import { StudentAnalyticsDashboard } from "@/components/student-analytics-dashboard";
+import React, { Suspense } from "react";
+const StudentAnalyticsDashboard = React.lazy(() => import("@/components/student-analytics-dashboard"));
 
 export const Route = createFileRoute("/_authenticated/student/dashboard")({
   component: StudentDashboard,
@@ -92,7 +93,9 @@ function StudentDashboard() {
   return (
     <AppShell variant="student">
       <div className="mx-auto max-w-6xl space-y-6">
-        <StudentAnalyticsDashboard />
+        <Suspense fallback={<div className="mb-4">Loading analytics…</div>}>
+          <StudentAnalyticsDashboard />
+        </Suspense>
         <div>
           <h1 className="text-3xl font-display">
             Welcome back

@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Video, Star, DollarSign, ArrowRight, Users, FileText, Clock3 } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
-import { MentorAnalyticsDashboard } from "@/components/mentor-analytics-dashboard";
+import React, { Suspense } from "react";
+const MentorAnalyticsDashboard = React.lazy(() => import("@/components/mentor-analytics-dashboard"));
 
 export const Route = createFileRoute("/_authenticated/mentor/dashboard")({
   component: MentorDashboard,
@@ -68,7 +69,9 @@ function MentorDashboard() {
   return (
     <AppShell variant="mentor">
       <div className="mx-auto max-w-6xl space-y-6">
-        <MentorAnalyticsDashboard />
+        <Suspense fallback={<div className="mb-4">Loading analytics…</div>}>
+          <MentorAnalyticsDashboard />
+        </Suspense>
         <div><h1 className="text-3xl font-display">Hi{auth?.profile?.full_name ? `, ${auth.profile.full_name.split(" ")[0]}` : ""}!</h1><p className="text-muted-foreground">Here's what's happening.</p></div>
         <div className="grid gap-4 md:grid-cols-4">
           <Stat icon={Calendar} label="Today's sessions" value={todaySessions.length} />

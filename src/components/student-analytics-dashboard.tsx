@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-export function StudentAnalyticsDashboard() {
+export default function StudentAnalyticsDashboard() {
   const { data: auth } = useAuth();
   const userId = auth?.user?.id;
   const { data, isLoading } = useStudentAnalytics(userId);

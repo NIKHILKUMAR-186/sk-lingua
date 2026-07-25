@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import ErrorBoundary from "@/components/error-boundary";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -108,8 +109,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster richColors position="top-right" />
+      <ErrorBoundary>
+        <Outlet />
+        <Toaster richColors position="top-right" />
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }
