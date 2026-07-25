@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const MAX_FILE_SIZE = 12 * 1024 * 1024;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = [
   "application/pdf",
   "application/msword",
@@ -24,7 +24,7 @@ function isAllowedFileType(type: string) {
 
 export async function uploadStorageFile(file: File, folder: string) {
   if (file.size > MAX_FILE_SIZE) {
-    throw new Error("File is too large. Maximum size is 12 MB.");
+    throw new Error("File is too large. Maximum size is 20 MB.");
   }
 
   if (!isAllowedFileType(file.type)) {

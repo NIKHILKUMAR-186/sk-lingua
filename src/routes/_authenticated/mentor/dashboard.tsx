@@ -41,6 +41,7 @@ function MentorDashboard() {
     return scheduled.getDate() === today.getDate() && scheduled.getMonth() === today.getMonth() && scheduled.getFullYear() === today.getFullYear();
   });
   const studentsTaught = new Set(completed.map((s) => s.student_id).filter(Boolean)).size;
+  const homeworkShared = resources.filter((resource) => resource.session_id).length;
   const earnings = completed.length * Number(mp?.hourly_rate ?? 0) * 0.9;
   const profileCompletion = getProfileCompletionPercent({
     full_name: auth?.profile?.full_name,
@@ -83,9 +84,10 @@ function MentorDashboard() {
           </Card>
           <Card>
             <CardHeader><CardTitle>Quick stats</CardTitle></CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2">
+            <CardContent className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-lg border p-3"><div className="text-xs text-muted-foreground">Students taught</div><div className="text-xl font-semibold">{studentsTaught}</div></div>
               <div className="rounded-lg border p-3"><div className="text-xs text-muted-foreground">Upcoming sessions</div><div className="text-xl font-semibold">{upcoming.length}</div></div>
+              <div className="rounded-lg border p-3"><div className="text-xs text-muted-foreground">Homework shared</div><div className="text-xl font-semibold">{homeworkShared}</div></div>
             </CardContent>
           </Card>
         </div>

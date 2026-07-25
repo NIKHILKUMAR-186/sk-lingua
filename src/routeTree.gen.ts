@@ -28,7 +28,9 @@ import { Route as AuthenticatedStudentExploreRouteImport } from './routes/_authe
 import { Route as AuthenticatedStudentResourcesRouteImport } from './routes/_authenticated/student/resources'
 import { Route as AuthenticatedStudentSessionsRouteImport } from './routes/_authenticated/student/sessions'
 import { Route as AuthenticatedStudentStreakRouteImport } from './routes/_authenticated/student/streak'
+import { Route as AuthenticatedMentorSessionIdRouteImport } from './routes/_authenticated/mentor/session.$id'
 import { Route as AuthenticatedStudentMentorIdRouteImport } from './routes/_authenticated/student/mentor.$id'
+import { Route as AuthenticatedStudentSessionIdRouteImport } from './routes/_authenticated/student/session.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -135,10 +137,22 @@ const AuthenticatedStudentStreakRoute =
     path: '/student/streak',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMentorSessionIdRoute =
+  AuthenticatedMentorSessionIdRouteImport.update({
+    id: '/mentor/session/$id',
+    path: '/mentor/session/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentMentorIdRoute =
   AuthenticatedStudentMentorIdRouteImport.update({
     id: '/student/mentor/$id',
     path: '/student/mentor/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentSessionIdRoute =
+  AuthenticatedStudentSessionIdRouteImport.update({
+    id: '/student/session/$id',
+    path: '/student/session/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -161,7 +175,9 @@ export interface FileRoutesByFullPath {
   '/student/resources': typeof AuthenticatedStudentResourcesRoute
   '/student/sessions': typeof AuthenticatedStudentSessionsRoute
   '/student/streak': typeof AuthenticatedStudentStreakRoute
+  '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
+  '/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,7 +198,9 @@ export interface FileRoutesByTo {
   '/student/resources': typeof AuthenticatedStudentResourcesRoute
   '/student/sessions': typeof AuthenticatedStudentSessionsRoute
   '/student/streak': typeof AuthenticatedStudentStreakRoute
+  '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
+  '/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -205,7 +223,9 @@ export interface FileRoutesById {
   '/_authenticated/student/resources': typeof AuthenticatedStudentResourcesRoute
   '/_authenticated/student/sessions': typeof AuthenticatedStudentSessionsRoute
   '/_authenticated/student/streak': typeof AuthenticatedStudentStreakRoute
+  '/_authenticated/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/_authenticated/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
+  '/_authenticated/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -228,7 +248,9 @@ export interface FileRouteTypes {
     | '/student/resources'
     | '/student/sessions'
     | '/student/streak'
+    | '/mentor/session/$id'
     | '/student/mentor/$id'
+    | '/student/session/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -249,7 +271,9 @@ export interface FileRouteTypes {
     | '/student/resources'
     | '/student/sessions'
     | '/student/streak'
+    | '/mentor/session/$id'
     | '/student/mentor/$id'
+    | '/student/session/$id'
   id:
     | '__root__'
     | '/'
@@ -271,7 +295,9 @@ export interface FileRouteTypes {
     | '/_authenticated/student/resources'
     | '/_authenticated/student/sessions'
     | '/_authenticated/student/streak'
+    | '/_authenticated/mentor/session/$id'
     | '/_authenticated/student/mentor/$id'
+    | '/_authenticated/student/session/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -417,11 +443,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentStreakRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mentor/session/$id': {
+      id: '/_authenticated/mentor/session/$id'
+      path: '/mentor/session/$id'
+      fullPath: '/mentor/session/$id'
+      preLoaderRoute: typeof AuthenticatedMentorSessionIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student/mentor/$id': {
       id: '/_authenticated/student/mentor/$id'
       path: '/student/mentor/$id'
       fullPath: '/student/mentor/$id'
       preLoaderRoute: typeof AuthenticatedStudentMentorIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/student/session/$id': {
+      id: '/_authenticated/student/session/$id'
+      path: '/student/session/$id'
+      fullPath: '/student/session/$id'
+      preLoaderRoute: typeof AuthenticatedStudentSessionIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -441,7 +481,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStudentResourcesRoute: typeof AuthenticatedStudentResourcesRoute
   AuthenticatedStudentSessionsRoute: typeof AuthenticatedStudentSessionsRoute
   AuthenticatedStudentStreakRoute: typeof AuthenticatedStudentStreakRoute
+  AuthenticatedMentorSessionIdRoute: typeof AuthenticatedMentorSessionIdRoute
   AuthenticatedStudentMentorIdRoute: typeof AuthenticatedStudentMentorIdRoute
+  AuthenticatedStudentSessionIdRoute: typeof AuthenticatedStudentSessionIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -458,7 +500,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStudentResourcesRoute: AuthenticatedStudentResourcesRoute,
   AuthenticatedStudentSessionsRoute: AuthenticatedStudentSessionsRoute,
   AuthenticatedStudentStreakRoute: AuthenticatedStudentStreakRoute,
+  AuthenticatedMentorSessionIdRoute: AuthenticatedMentorSessionIdRoute,
   AuthenticatedStudentMentorIdRoute: AuthenticatedStudentMentorIdRoute,
+  AuthenticatedStudentSessionIdRoute: AuthenticatedStudentSessionIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

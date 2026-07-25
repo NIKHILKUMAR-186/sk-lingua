@@ -6,7 +6,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
   SidebarProvider, SidebarTrigger, SidebarInset,
 } from "@/components/ui/sidebar";
-import { Bell, Calendar, LayoutDashboard, Settings, LogOut, Users, BookOpen, Flame, Search, Video, User, Languages } from "lucide-react";
+import { Bell, Calendar, LayoutDashboard, Settings, LogOut, BookOpen, Flame, Search, Video, User, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -106,13 +106,6 @@ export function AppShell({ children, variant }: { children: React.ReactNode; var
                       <Link to="/settings"><Settings /><span>Settings</span></Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                  {auth?.role === "student" && (
-                    <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <Link to="/mentor/dashboard"><Users /><span>Become a mentor</span></Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
