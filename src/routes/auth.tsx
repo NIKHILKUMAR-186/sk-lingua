@@ -191,17 +191,17 @@ function AuthPage() {
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.3fr_1fr]">
         <section className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-12 text-white shadow-2xl shadow-slate-950/20">
           <div className="max-w-xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-white/80">
-              <Languages className="h-4 w-4" /> Premium onboarding
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-m uppercase tracking-[0.24em] text-white/80">
+             <img src="/logo.png" alt="LINGUA" className="h-6 w-6" /> LINGUA
             </div>
             <h1 className="text-5xl font-display tracking-tight text-white">Learn, teach, and grow in one elegant language platform.</h1>
             <p className="mt-6 max-w-md text-lg leading-8 text-slate-300">
-              Create your Lingua account, choose your role, and start the premium onboarding flow designed for both learners and mentors.
+              Create your Lingua account, choose your role, and start the learning flow designed for both learners and mentors.
             </p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Fast start</p>
-                <p className="mt-3 text-base text-slate-100">Complete onboarding and start using your dashboard in minutes.</p>
+                <p className="mt-3 text-base text-slate-100">Complete the setup and start using LINGUA in minutes.</p>
               </div>
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Smart role setup</p>
