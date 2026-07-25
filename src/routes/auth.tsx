@@ -171,12 +171,13 @@ function AuthPage() {
       const redirectTo = `${window.location.origin}/auth/callback`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo },
+        options: { redirectTo, skipBrowserRedirect: true },
       });
       if (error) throw error;
-      if (data?.url) {
-        window.location.assign(data.url);
+      if (!data?.url) {
+        throw new Error("Google sign-in did not return a redirect URL.");
       }
+      window.location.assign(data.url);
     } catch (error) {
       console.error("Google sign-in failed", error);
       toast.error(error instanceof Error ? error.message : "Google sign-in failed");

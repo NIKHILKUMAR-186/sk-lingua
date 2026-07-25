@@ -15,6 +15,17 @@ function OAuthCallbackPage() {
   useEffect(() => {
     let cancelled = false;
 
+    async function waitForSession(maxWaitMs = 4000) {
+      const start = Date.now();
+      while (!cancelled && Date.now() - start < maxWaitMs) {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (session) return session;
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+      return null;
+    }
+
     async function completeOAuthFlow() {
       try {
         const params = new URLSearchParams(window.location.search);
@@ -35,8 +46,7 @@ function OAuthCallbackPage() {
         }
 
         setStatus("Waiting for authentication state...");
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        const session = await waitForSession();
         if (!session) throw new Error("No session restored after OAuth callback.");
 
         const { data: { user }, error: userError } = await supabase.auth.getUser();

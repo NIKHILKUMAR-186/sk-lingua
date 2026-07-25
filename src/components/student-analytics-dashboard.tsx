@@ -13,7 +13,7 @@ export default function StudentAnalyticsDashboard() {
 
   return (
     <AppShell variant="student">
-      <div className="mx-auto max-w-5xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Learning Analytics</h1>
           <p className="text-sm text-muted-foreground">Track your learning progress and achievements.</p>

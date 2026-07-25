@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Flame, Trophy, Video, Sparkles, ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
 import React, { Suspense } from "react";
-const StudentAnalyticsDashboard = React.lazy(() => import("@/components/student-analytics-dashboard"));
+const StudentAnalyticsDashboard = React.lazy(
+  () => import("@/components/student-analytics-dashboard"),
+);
 
 export const Route = createFileRoute("/_authenticated/student/dashboard")({
   component: StudentDashboard,
@@ -93,17 +95,19 @@ function StudentDashboard() {
   return (
     <AppShell variant="student">
       <div className="mx-auto max-w-6xl space-y-6">
-        <Suspense fallback={<div className="mb-4">Loading analytics…</div>}>
+        {/* <Suspense fallback={<div className="mb-4">Loading analytics…</div>} >
           <StudentAnalyticsDashboard />
-        </Suspense>
+        </Suspense> */}
         <div>
           <h1 className="text-3xl font-display">
-            Welcome back
-            {auth?.profile?.full_name ? `, ${auth.profile.full_name.split(" ")[0]}` : ""}.
+            Welcome{" "}
+            <span className="text-primary">
+              {auth?.profile?.full_name ? `, ${auth.profile.full_name.split(" ")[0]}` : ""}.
+            </span>
           </h1>
           <p className="text-muted-foreground">Keep the momentum going.</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-5">
           <StatCard
             icon={Flame}
             label="Current streak"
@@ -128,47 +132,14 @@ function StudentDashboard() {
             value={`${streak?.badges?.length ?? 0}`}
             accent="mentor"
           />
+          <StatCard
+            icon={Sparkles}
+            label="Profile completion"
+            value={`${profileCompletion}%`}
+            accent="mentor"
+          />
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile completion</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-3xl font-display">{profileCompletion}%</div>
-              <p className="text-sm text-muted-foreground">
-                A complete profile helps mentors tailor your learning plan.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Continue learning</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 rounded-lg border p-3 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-primary" />
-                <span>
-                  {homeworkShared > 0
-                    ? `${homeworkShared} shared homework item${homeworkShared > 1 ? "s" : ""} ready to review.`
-                    : "No homework shared yet for your sessions."}
-                </span>
-              </div>
-              <div className="rounded-lg border p-3 text-sm text-muted-foreground">
-                {nextSession
-                  ? `Next focus: ${new Date(nextSession.scheduled_time).toLocaleString()} • ${nextSession.duration_mins} min`
-                  : "Book your next lesson to keep the momentum going."}
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/student/resources">
-                  View my resources <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Upcoming sessions</CardTitle>
@@ -211,39 +182,37 @@ function StudentDashboard() {
             </CardContent>
           </Card>
 
-          <Card >
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Recent resources</CardTitle>
-              <Button className="lg:col-span-2" variant="ghost" size="sm" asChild>
+              <CardTitle>Continue learning</CardTitle>
+              <Button variant="outline" size="sm" asChild>
                 <Link to="/student/resources">
-                  See all <ArrowRight className="ml-1 h-3 w-3" />
+                  View my resources <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </Button>
             </CardHeader>
             <CardContent className="space-y-3">
-              {recentResources.length === 0 ? (
-                <div className="text-sm text-muted-foreground">No shared resources yet.</div>
-              ) : (
-                recentResources.slice(0, 4).map((resource) => (
-                  <div
-                    key={resource.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium">{resource.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {resource.visibility === "session" ? "Session shared" : "Public"}
-                      </div>
-                    </div>
-                    <BookOpen className="h-4 w-4 text-primary" />
-                  </div>
-                ))
-              )}
+              <div className="flex items-center gap-2 rounded-lg border p-3 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span>
+                  {homeworkShared > 0
+                    ? `${homeworkShared} shared homework item${homeworkShared > 1 ? "s" : ""} ready to review.`
+                    : "No homework shared yet for your sessions."}
+                </span>
+              </div>
+              <div className="rounded-lg  p-3 text-sm text-muted-foreground">
+                {nextSession
+                  ? `Next focus: ${new Date(nextSession.scheduled_time).toLocaleString()} • ${nextSession.duration_mins} min`
+                  : "Book your next lesson to keep the momentum going."}
+              </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
+          {/* </div> */}
+
+          {/* <div className="grid gap-6 lg:grid-cols-3"> */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Recommended mentor</CardTitle>
@@ -254,7 +223,7 @@ function StudentDashboard() {
                   key={m.user_id}
                   to="/student/mentor/$id"
                   params={{ id: m.user_id }}
-                  className="flex items-center justify-between rounded-lg p-2 hover:bg-muted"
+                  className="flex items-center justify-between rounded-lg p-2 border  hover:bg-muted"
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium">{m.headline ?? "Mentor"}</div>
@@ -266,6 +235,39 @@ function StudentDashboard() {
                 </Link>
               ))}
             </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Recent resources</CardTitle>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/student/resources">
+                  See all <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <Link to="/student/resources" className="block">
+              <CardContent className="space-y-3">
+                {recentResources.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No shared resources yet.</div>
+                ) : (
+                  recentResources.slice(0, 4).map((resource) => (
+                    <div
+                      key={resource.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-medium">{resource.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {resource.visibility === "session" ? "Session shared" : "Public"}
+                        </div>
+                      </div>
+                      <BookOpen className="h-4 w-4 text-primary" />
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Link>
           </Card>
         </div>
       </div>
