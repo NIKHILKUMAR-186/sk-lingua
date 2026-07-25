@@ -15,14 +15,33 @@ function OAuthCallbackPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function waitForSession(maxWaitMs = 4000) {
+    async function waitForAuthenticatedUser(maxWaitMs = 4000) {
       const start = Date.now();
+      let lastError: Error | null = null;
+
       while (!cancelled && Date.now() - start < maxWaitMs) {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (session) return session;
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          lastError = sessionError as Error;
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          continue;
+        }
+
+        if (session?.access_token) {
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError) {
+            lastError = userError as Error;
+            await new Promise((resolve) => setTimeout(resolve, 150));
+            continue;
+          }
+
+          if (user) return user;
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 150));
       }
+
+      if (lastError) throw lastError;
       return null;
     }
 
@@ -46,11 +65,7 @@ function OAuthCallbackPage() {
         }
 
         setStatus("Waiting for authentication state...");
-        const session = await waitForSession();
-        if (!session) throw new Error("No session restored after OAuth callback.");
-
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
+        const user = await waitForAuthenticatedUser();
         if (!user) throw new Error("No authenticated user returned after OAuth callback.");
 
         const [{ data: roles, error: rolesError }, { data: profile, error: profileError }] = await Promise.all([

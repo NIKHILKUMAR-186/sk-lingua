@@ -125,7 +125,7 @@ function Settings() {
     }
 
     toast.success("Profile updated");
-    qc.invalidateQueries(["auth-session"]);
+    qc.invalidateQueries({ queryKey: ["auth-session"] });
   }
 
   if (auth?.role === "student") {
