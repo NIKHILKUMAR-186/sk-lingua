@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -16,9 +17,6 @@ function OAuthCallbackPage() {
 
     async function completeOAuthFlow() {
       try {
-        console.group("OAuth callback");
-        console.log("Returned from Google", { href: window.location.href });
-
         const params = new URLSearchParams(window.location.search);
         const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
         const code = params.get("code");
@@ -26,31 +24,22 @@ function OAuthCallbackPage() {
         const refreshToken = hash.get("refresh_token");
 
         if (code) {
-          console.log("OAuth code detected; exchanging for session");
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          console.log("exchangeCodeForSession result", { data, error });
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
         } else if (accessToken && refreshToken) {
-          console.log("OAuth tokens detected; restoring session");
-          const { data, error } = await supabase.auth.setSession({
+          const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
-          console.log("setSession result", { data, error });
           if (error) throw error;
         }
 
         setStatus("Waiting for authentication state...");
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
-        console.log("Session restored", { session, error: sessionError });
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
         if (!session) throw new Error("No session restored after OAuth callback.");
 
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        console.log("User fetched", { user, error: userError });
         if (userError) throw userError;
         if (!user) throw new Error("No authenticated user returned after OAuth callback.");
 
@@ -59,22 +48,20 @@ function OAuthCallbackPage() {
           supabase.from("profiles").select("onboarded").eq("id", user.id).maybeSingle(),
         ]);
 
-        console.log("Role/profile lookup", { roles, rolesError, profile, profileError });
         if (rolesError || profileError) {
           console.error("OAuth redirect lookup failed", { rolesError, profileError });
         }
 
-        const hasRole = (roles?.length ?? 0) > 0;
+        const fetchedRoles = (roles ?? []).map((roleRow) => roleRow.role as AppRole);
+        const hasRole = fetchedRoles.length > 0;
         const onboarded = Boolean(profile?.onboarded);
-        const role = roles?.[0]?.role;
+        const activeRole = fetchedRoles.includes("mentor") ? "mentor" : "student";
 
-        let redirectTo = "/onboarding";
-        if (hasRole && onboarded) {
-          redirectTo = role === "mentor" ? "/mentor/dashboard" : "/student/dashboard";
-        }
-
-        console.log("Redirect destination", { redirectTo, hasRole, onboarded, role });
-        console.groupEnd();
+        const redirectTo = hasRole && onboarded
+          ? activeRole === "mentor"
+            ? "/mentor/dashboard"
+            : "/student/dashboard"
+          : "/onboarding";
 
         if (!cancelled) {
           await navigate({ to: redirectTo as "/onboarding" | "/mentor/dashboard" | "/student/dashboard" });

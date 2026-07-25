@@ -27,6 +27,8 @@ export interface AuthSession {
     onboarded: boolean;
   } | null;
   role: AppRole | null;
+  roles: AppRole[];
+  activeRole: AppRole | null;
 }
 
 export function useAuth() {
@@ -34,16 +36,21 @@ export function useAuth() {
     queryKey: ["auth-session"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { user: null, profile: null, role: null };
+      if (!user) return { user: null, profile: null, role: null, roles: [], activeRole: null };
       const [{ data: profile }, { data: roles }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", user.id),
       ]);
       const roleOrder: AppRole[] = ["admin", "mentor", "student"];
-      const role =
-        (roles?.map((r) => r.role as AppRole).sort((a, b) => roleOrder.indexOf(a) - roleOrder.indexOf(b))[0]) ??
-        null;
-      return { user, profile: profile as AuthSession["profile"], role };
+      const uniqueRoles = Array.from(new Set((roles ?? []).map((r) => r.role as AppRole)));
+      const role = uniqueRoles.sort((a, b) => roleOrder.indexOf(a) - roleOrder.indexOf(b))[0] ?? null;
+      return {
+        user,
+        profile: profile as AuthSession["profile"],
+        role,
+        roles: uniqueRoles,
+        activeRole: uniqueRoles[0] ?? null,
+      };
     },
     staleTime: 30_000,
   });
