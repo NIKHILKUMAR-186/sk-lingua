@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { LANGUAGES } from "@/lib/languages";
 import { Star, Video, ArrowLeft, Clock, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { DAY_KEYS } from "@/lib/booking";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/student/mentor/$id")({
@@ -38,17 +39,63 @@ function MentorProfile() {
 
   const [selectedGig, setSelectedGig] = useState<string | null>(null);
   const [when, setWhen] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [slotOptions, setSlotOptions] = useState<Array<{ value: string; label: string; disabled: boolean }>>([]);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
   const [booking, setBooking] = useState(false);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [{ data: avail = [] }, { data: sessions = [] }] = await Promise.all([
+          supabase.from("availability_slots").select("*").eq("mentor_id", id),
+          supabase.from("sessions").select("*").eq("mentor_id", id),
+        ]);
+
+        const dateObj = new Date(selectedDate);
+        const dayKey = DAY_KEYS[(dateObj.getDay() + 6) % 7];
+        const candidates = (avail ?? []).filter((a: any) => a.day === dayKey);
+        const opts = (candidates ?? []).flatMap((slot: any) => {
+          if (slot.is_blocked) return [];
+          const [sh, sm] = (slot.start_time ?? "00:00").split(":").map(Number);
+          const [eh, em] = (slot.end_time ?? "00:00").split(":").map(Number);
+          const start = new Date(selectedDate);
+          start.setHours(sh, sm, 0, 0);
+          const end = new Date(selectedDate);
+          end.setHours(eh, em, 0, 0);
+          const duration = (selectedGig ? (mentor?.gigs.find((g) => g.id === selectedGig)?.duration_mins ?? 30) : 30);
+          if (end.getTime() - start.getTime() < duration * 60_000) return [];
+          const startIso = start.toISOString();
+          const conflict = (sessions ?? []).some((s: any) => {
+            if (["rejected", "cancelled"].includes(s.status)) return false;
+            const es = new Date(s.scheduled_time).getTime();
+            const ee = es + s.duration_mins * 60_000;
+            const ps = new Date(startIso).getTime();
+            const pe = ps + duration * 60_000;
+            return ps < ee && pe > es;
+          });
+          return [{ value: startIso, label: `${slot.start_time} – ${slot.end_time}`, disabled: conflict }];
+        });
+        if (!cancelled) setSlotOptions(opts);
+      } catch (e) {
+        // ignore for now
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedDate, selectedGig, id, mentor]);
 
   async function book() {
     if (!auth?.user || !selectedGig || !when) return;
     setBooking(true);
     const gig = mentor?.gigs.find((g) => g.id === selectedGig);
     try {
+      const scheduled = selectedSlot ?? new Date(when).toISOString();
       const { error } = await supabase.from("sessions").insert({
         student_id: auth.user.id, mentor_id: id, gig_id: selectedGig,
-        scheduled_time: new Date(when).toISOString(), duration_mins: gig?.duration_mins ?? 30,
+        scheduled_time: scheduled, duration_mins: gig?.duration_mins ?? 30,
         student_message: msg,
       });
       if (error) throw error;
@@ -111,9 +158,21 @@ function MentorProfile() {
           <Card>
             <CardHeader><CardTitle>Book a session</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div><label className="text-sm font-medium">Date & time</label><Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} /></div>
+              <div>
+                <label className="text-sm font-medium">Date</label>
+                <Input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Available slots</label>
+                <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={selectedSlot ?? ""} onChange={(e) => setSelectedSlot(e.target.value)}>
+                  <option value="">Choose a slot</option>
+                  {slotOptions.map((o) => (
+                    <option key={o.value} value={o.value} disabled={o.disabled}>{o.label}{o.disabled ? ' (unavailable)' : ''}</option>
+                  ))}
+                </select>
+              </div>
               <div><label className="text-sm font-medium">Message (optional)</label><Textarea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Tell your mentor what you'd like to focus on…" /></div>
-              <Button className="w-full" disabled={!selectedGig || !when || booking} onClick={book}>
+              <Button className="w-full" disabled={!selectedGig || !selectedSlot || booking} onClick={book}>
                 {booking ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Video className="mr-2 h-4 w-4" />Request session</>}
               </Button>
             </CardContent>

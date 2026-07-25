@@ -7,6 +7,7 @@ import { ProfileEditor, type ProfileEditorValues } from "@/components/profile-ed
 import { uploadStorageFile } from "@/lib/storage";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { MentorAvailability } from "@/components/mentor-availability";
 
 const initialValues: ProfileEditorValues = {
   full_name: "",
@@ -170,6 +171,11 @@ function MentorProfileEdit() {
           uploadingAvatar={uploadingAvatar}
           uploadingCover={uploadingCover}
         />
+        {auth?.user?.id === uid && (
+          <div className="mt-6">
+            <MentorAvailability />
+          </div>
+        )}
       </div>
     </AppShell>
   );
