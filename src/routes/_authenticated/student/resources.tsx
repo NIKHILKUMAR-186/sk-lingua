@@ -27,7 +27,7 @@ function Resources() {
     queryFn: async () => (await supabase.from("resources").select("*").order("created_at", { ascending: false }).limit(60)).data ?? [],
   });
 
-  const sessionResources = resources.filter((resource) => resource.visibility === "session");
+  const sessionResources = resources.filter((resource) => resource.visibility === "session" && resource.student_id === auth?.user?.id);
   const publicResources = resources.filter((resource) => resource.visibility === "public");
 
   return (

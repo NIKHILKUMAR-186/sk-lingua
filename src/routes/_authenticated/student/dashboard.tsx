@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Flame, Trophy, Video, Sparkles, ArrowRight } from "lucide-react";
+import { Flame, Trophy, Video, Sparkles, ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
+import { getProfileCompletionPercent } from "@/lib/profile";
 
 export const Route = createFileRoute("/_authenticated/student/dashboard")({
   component: StudentDashboard,
@@ -30,6 +31,28 @@ function StudentDashboard() {
     queryKey: ["recommended-mentors"],
     queryFn: async () => (await supabase.from("mentor_profiles").select("user_id, headline, hourly_rate, rating_avg").order("rating_avg", { ascending: false }).limit(4)).data ?? [],
   });
+  const { data: resources = [] } = useQuery({
+    queryKey: ["student-dashboard-resources", userId], enabled: !!userId,
+    queryFn: async () => (await supabase.from("resources").select("*").order("created_at", { ascending: false }).limit(6)).data ?? [],
+  });
+
+  const recentResources = resources.filter((resource) => resource.visibility === "public" || (resource.visibility === "session" && resource.student_id === userId));
+  const homeworkShared = resources.filter((resource) => resource.visibility === "session" && resource.student_id === userId).length;
+  const profileCompletion = getProfileCompletionPercent({
+    full_name: auth?.profile?.full_name,
+    bio: auth?.profile?.bio,
+    country: auth?.profile?.country,
+    timezone: auth?.profile?.timezone,
+    native_language: auth?.profile?.native_language,
+    learning_goal: auth?.profile?.learning_goal,
+    target_language: auth?.profile?.target_language,
+    current_level: auth?.profile?.current_level,
+    interests: auth?.profile?.interests,
+    avatar_url: auth?.profile?.avatar_url,
+    cover_url: auth?.profile?.cover_url,
+    linkedin_url: auth?.profile?.linkedin_url,
+    github_url: auth?.profile?.github_url,
+  }, "student");
 
   return (
     <AppShell variant="student">
@@ -41,8 +64,29 @@ function StudentDashboard() {
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard icon={Flame} label="Current streak" value={`${streak?.current_streak ?? 0} days`} accent="flame" />
           <StatCard icon={Trophy} label="Total points" value={`${streak?.total_points ?? 0}`} accent="warning" />
-          <StatCard icon={Video} label="Upcoming" value={`${upcoming.length}`} accent="primary" />
+          <StatCard icon={Video} label="Next session" value={`${upcoming.length}`} accent="primary" />
           <StatCard icon={Sparkles} label="Badges" value={`${streak?.badges?.length ?? 0}`} accent="mentor" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader><CardTitle>Profile completion</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-3xl font-display">{profileCompletion}%</div>
+              <p className="text-sm text-muted-foreground">A complete profile helps mentors tailor your learning plan.</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Continue learning</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2 rounded-lg border p-3 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span>{homeworkShared > 0 ? `${homeworkShared} shared homework item${homeworkShared > 1 ? "s" : ""} ready to review.` : "No homework shared yet for your sessions."}</span>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/student/resources">View my resources <ArrowRight className="ml-1 h-3 w-3" /></Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -73,7 +117,24 @@ function StudentDashboard() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Recommended for you</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Recent resources</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {recentResources.length === 0 ? <div className="text-sm text-muted-foreground">No shared resources yet.</div> : recentResources.slice(0,4).map((resource) => (
+                <div key={resource.id} className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">{resource.title}</div>
+                    <div className="text-xs text-muted-foreground">{resource.visibility === "session" ? "Session shared" : "Public"}</div>
+                  </div>
+                  <BookOpen className="h-4 w-4 text-primary" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader><CardTitle>Recommended mentor</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {recommended.map((m) => (
                 <Link key={m.user_id} to="/student/mentor/$id" params={{ id: m.user_id }} className="flex items-center justify-between rounded-lg p-2 hover:bg-muted">

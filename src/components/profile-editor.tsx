@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { LANGUAGES } from "@/lib/languages";
-import { ImagePlus, UploadCloud } from "lucide-react";
+import { ImagePlus, UploadCloud, Loader2 } from "lucide-react";
 import type { ChangeEvent } from "react";
 
 export type ProfileEditorValues = {
@@ -41,6 +41,8 @@ export function ProfileEditor({
   onSave,
   onAvatarUpload,
   onCoverUpload,
+  uploadingAvatar,
+  uploadingCover,
 }: {
   mode: "mentor" | "student";
   values: ProfileEditorValues;
@@ -49,6 +51,8 @@ export function ProfileEditor({
   onSave: () => void;
   onAvatarUpload?: (file: File) => Promise<void>;
   onCoverUpload?: (file: File) => Promise<void>;
+  uploadingAvatar?: boolean;
+  uploadingCover?: boolean;
 }) {
   const update = (field: keyof ProfileEditorValues, value: string | string[]) => onChange(field, value);
 
@@ -96,6 +100,7 @@ export function ProfileEditor({
               <span>Upload profile photo</span>
               <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadField(e, onAvatarUpload)} />
             </label>
+            {uploadingAvatar ? <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Uploading profile photo…</p> : null}
           </div>
           <div className="space-y-2">
             <Label>Cover photo</Label>
@@ -104,6 +109,7 @@ export function ProfileEditor({
               <span>Upload cover photo</span>
               <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadField(e, onCoverUpload)} />
             </label>
+            {uploadingCover ? <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Uploading cover photo…</p> : null}
           </div>
         </div>
 
@@ -230,7 +236,7 @@ export function ProfileEditor({
           </>
         )}
 
-        <Button onClick={onSave} disabled={saving}>{saving ? "Saving..." : "Save profile"}</Button>
+        <Button onClick={onSave} disabled={saving}>{saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</> : "Save profile"}</Button>
       </CardContent>
     </Card>
   );

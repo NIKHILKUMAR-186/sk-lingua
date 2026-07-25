@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, ExternalLink, File, Loader2, Trash2 } from "lucide-react";
+import { BookOpen, ExternalLink, File, ImageIcon, Loader2, Trash2, Video, Volume2, Archive, FileText } from "lucide-react";
 
 export interface ResourceUploadProps {
   title: string;
@@ -47,6 +47,9 @@ export function ResourceUpload({
   onClear,
   sessions,
 }: ResourceUploadProps) {
+  const PreviewIcon = fileName ? getFileIcon(fileName) : BookOpen;
+  const sizeLabel = fileSize ? `${Math.max(1, Math.round(fileSize / 1024))} KB` : "";
+
   return (
     <Card>
       <CardContent className="space-y-4 p-4">
@@ -89,17 +92,21 @@ export function ResourceUpload({
         <div className="space-y-2">
           <Label>Upload file</Label>
           <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-            <BookOpen className="h-4 w-4" />
+            <PreviewIcon className="h-4 w-4" />
             <span>{fileName || "Choose PDF, DOCX, image, video, audio, ZIP, or other file"}</span>
             <input type="file" className="hidden" onChange={(e) => onChangeFile(e.target.files?.[0] ?? null)} />
           </label>
+          <p className="text-xs text-muted-foreground">Maximum 12 MB • PDF, DOC, DOCX, PPT, PPTX, images, ZIP, audio, video, and links are supported.</p>
           {fileName ? (
             <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2"><File className="h-4 w-4" />{fileName}</div>
                 <Button size="sm" variant="ghost" onClick={onClear}><Trash2 className="h-4 w-4" /></Button>
               </div>
-              <div className="mt-2 text-right">{fileSize ? `${Math.max(1, Math.round(fileSize / 1024))} KB` : ""}</div>
+              <div className="mt-2 flex items-center justify-between text-right">
+                <span>{sizeLabel}</span>
+                <span>Ready to upload</span>
+              </div>
             </div>
           ) : null}
         </div>
@@ -123,4 +130,14 @@ export function ResourceUpload({
       </CardContent>
     </Card>
   );
+}
+
+function getFileIcon(fileName: string) {
+  const normalized = fileName.toLowerCase();
+  if (normalized.match(/\.(png|jpg|jpeg|gif|webp)$/)) return ImageIcon;
+  if (normalized.match(/\.(mp4|mov|webm)$/)) return Video;
+  if (normalized.match(/\.(mp3|wav|m4a)$/)) return Volume2;
+  if (normalized.match(/\.(zip|rar|7z)$/)) return Archive;
+  if (normalized.match(/\.(pdf|doc|docx|ppt|pptx|txt)$/)) return FileText;
+  return File;
 }

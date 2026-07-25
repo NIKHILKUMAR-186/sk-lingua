@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProfileEditor, type ProfileEditorValues } from "@/components/profile-editor";
 import { uploadStorageFile } from "@/lib/storage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { LANGUAGES } from "@/lib/languages";
 import { useState, useEffect } from "react";
@@ -46,6 +47,8 @@ function Settings() {
   const qc = useQueryClient();
   const [values, setValues] = useState<ProfileEditorValues>(initialStudentValues);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [emailNotif, setEmailNotif] = useState(true);
 
   useEffect(() => {
@@ -76,12 +79,18 @@ function Settings() {
 
   async function uploadFile(file: File, field: "avatar_url" | "cover_url") {
     if (!auth?.user?.id) return;
+    if (field === "avatar_url") setUploadingAvatar(true);
+    else setUploadingCover(true);
+
     try {
       const upload = await uploadStorageFile(file, `student/${auth.user.id}`);
       setValues((current) => ({ ...current, [field]: upload.publicUrl }));
       toast.success(`${field === "avatar_url" ? "Profile photo" : "Cover photo"} uploaded`);
     } catch (error) {
       toast.error((error as Error).message ?? "Upload failed");
+    } finally {
+      if (field === "avatar_url") setUploadingAvatar(false);
+      else setUploadingCover(false);
     }
   }
 
@@ -135,6 +144,8 @@ function Settings() {
             onSave={saveProfile}
             onAvatarUpload={(file) => uploadFile(file, "avatar_url")}
             onCoverUpload={(file) => uploadFile(file, "cover_url")}
+            uploadingAvatar={uploadingAvatar}
+            uploadingCover={uploadingCover}
           />
         </div>
       </AppShell>

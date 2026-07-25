@@ -48,6 +48,8 @@ function MentorProfileEdit() {
   });
   const [values, setValues] = useState<ProfileEditorValues>(initialValues);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     if (!uid) return;
@@ -80,12 +82,18 @@ function MentorProfileEdit() {
 
   async function uploadFile(file: File, field: "avatar_url" | "cover_url") {
     if (!uid) return;
+    if (field === "avatar_url") setUploadingAvatar(true);
+    else setUploadingCover(true);
+
     try {
       const upload = await uploadStorageFile(file, `mentor/${uid}`);
       setValues((current) => ({ ...current, [field]: upload.publicUrl }));
       toast.success(`${field === "avatar_url" ? "Profile photo" : "Cover photo"} uploaded`);
     } catch (error) {
       toast.error((error as Error).message ?? "Upload failed");
+    } finally {
+      if (field === "avatar_url") setUploadingAvatar(false);
+      else setUploadingCover(false);
     }
   }
 
@@ -159,6 +167,8 @@ function MentorProfileEdit() {
           onSave={saveProfile}
           onAvatarUpload={(file) => uploadFile(file, "avatar_url")}
           onCoverUpload={(file) => uploadFile(file, "cover_url")}
+          uploadingAvatar={uploadingAvatar}
+          uploadingCover={uploadingCover}
         />
       </div>
     </AppShell>

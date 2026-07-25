@@ -66,5 +66,27 @@ CREATE POLICY "Mentors manage own resources" ON public.resources
   USING (auth.uid() = mentor_id OR auth.uid() = created_by)
   WITH CHECK (auth.uid() = mentor_id OR auth.uid() = created_by);
 
+DROP POLICY IF EXISTS "Authenticated can upload resources" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can view resources" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can update resources" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated can delete resources" ON storage.objects;
+
+CREATE POLICY "Authenticated can upload resources" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'resources' AND auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated can view resources" ON storage.objects
+  FOR SELECT TO authenticated
+  USING (bucket_id = 'resources');
+
+CREATE POLICY "Authenticated can update resources" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'resources' AND auth.uid() IS NOT NULL)
+  WITH CHECK (bucket_id = 'resources' AND auth.uid() IS NOT NULL);
+
+CREATE POLICY "Authenticated can delete resources" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (bucket_id = 'resources' AND auth.uid() IS NOT NULL);
+
 CREATE INDEX IF NOT EXISTS idx_resources_visibility_session
   ON public.resources(visibility, session_id, student_id);
