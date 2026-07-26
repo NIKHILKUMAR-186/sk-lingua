@@ -112,6 +112,17 @@ function AuthPage() {
     }
   }
 
+  async function waitForSession(maxWaitMs = 8000): Promise<boolean> {
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (session?.access_token) return true;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    return false;
+  }
+
   async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!fullName.trim() || !email || !password) {
@@ -139,6 +150,25 @@ function AuthPage() {
       if (error) throw error;
       if (!data.user) throw new Error("Signup completed without returning a user.");
 
+      // ── BUG FIX: Wait for the authenticated session to exist before writing roles ──
+      // After signUp, the JWT session may not be established client-side yet.
+      // Inserting into user_roles before the session exists triggers RLS rejection
+      // because the anon key is used instead of the user's JWT.
+      if (!data.session) {
+        toast.success("Check your inbox to confirm your account.");
+        return;
+      }
+
+      const hasSession = await waitForSession();
+      if (!hasSession) {
+        // If no session after waiting, this is an email-confirmation flow.
+        // Redirect to onboarding — the callback handler will pick it up.
+        toast.success("Check your inbox to confirm your account.");
+        navigate({ to: "/onboarding" });
+        return;
+      }
+
+      // Now the JWT session exists — insert roles with authenticated credentials
       const roleRows: { user_id: string; role: "student" | "mentor" }[] =
         role === "both"
           ? [
@@ -149,11 +179,6 @@ function AuthPage() {
 
       const { error: roleError } = await supabase.from("user_roles").upsert(roleRows, { onConflict: "user_id,role" });
       if (roleError) throw roleError;
-
-      if (!data.session) {
-        toast.success("Check your inbox to confirm your account.");
-        return;
-      }
 
       toast.success("Account created!");
       navigate({ to: "/onboarding" });
