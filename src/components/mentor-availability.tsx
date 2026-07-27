@@ -18,17 +18,35 @@ export function MentorAvailability() {
 
   const grouped: Record<string, any[]> = {};
   (slots ?? []).forEach((s) => {
-    grouped[s.day] = grouped[s.day] ?? [];
-    grouped[s.day].push(s);
+    grouped[s.day_of_week] = grouped[s.day_of_week] ?? [];
+    grouped[s.day_of_week].push(s);
   });
 
   async function handleAdd() {
-    if (!mentorId) return;
+    if (!mentorId) {
+      console.warn("⚠️  mentorId is not set");
+      return;
+    }
+    console.log("🔵 handleAdd clicked");
+    console.log("Current User ID:", auth?.user?.id);
+    console.log("mentorId state:", mentorId);
+    console.log("Auth object:", { user_id: auth?.user?.id, email: auth?.user?.email });
+    
     try {
-      await addSlot({ mentor_id: mentorId, day: DAY_KEYS[dayIndex], start_time: newStart, end_time: newEnd, label: newLabel || null });
+      await addSlot({ 
+        mentor_id: mentorId, 
+        day_of_week: DAY_KEYS[dayIndex], 
+        start_time: newStart, 
+        end_time: newEnd, 
+        is_available: true, 
+        label: newLabel || null 
+      });
       setNewLabel("");
       toast.success("Slot added");
-    } catch (e) { toast.error(String(e instanceof Error ? e.message : e)); }
+    } catch (e) { 
+      console.error("❌ handleAdd error:", e);
+      toast.error(String(e instanceof Error ? e.message : e)); 
+    }
   }
 
   return (

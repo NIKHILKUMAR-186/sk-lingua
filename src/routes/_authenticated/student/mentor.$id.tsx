@@ -50,14 +50,27 @@ function MentorProfile() {
     let cancelled = false;
     (async () => {
       try {
-        const [{ data: avail = [] }, { data: sessions = [] }] = await Promise.all([
+        console.log("🔍 Fetching availability slots...");
+        console.log("Mentor ID from URL:", id);
+        console.log("Auth User ID:", auth?.user?.id);
+        console.log("Selected Date:", selectedDate);
+        
+        const [{ data: avail = [], error: availError }, { data: sessions = [] }] = await Promise.all([
           supabase.from("availability_slots").select("*").eq("mentor_id", id),
           supabase.from("sessions").select("*").eq("mentor_id", id),
         ]);
+        
+        console.log("📦 Raw availability_slots query result:", avail);
+        console.log("Availability query error:", availError);
+        console.log("Sessions query result:", sessions);
 
         const dateObj = new Date(selectedDate);
         const dayKey = DAY_KEYS[(dateObj.getDay() + 6) % 7];
-        const candidates = (avail ?? []).filter((a: any) => a.day === dayKey);
+        console.log("Converted day key:", dayKey);
+        
+        const candidates = (avail ?? []).filter((a: any) => a.day_of_week === dayKey && a.is_available !== false);
+        console.log("Filtered candidates for", dayKey, ":", candidates);
+        
         const opts = (candidates ?? []).flatMap((slot: any) => {
           if (slot.is_blocked) return [];
           const [sh, sm] = (slot.start_time ?? "00:00").split(":").map(Number);
@@ -79,8 +92,10 @@ function MentorProfile() {
           });
           return [{ value: startIso, label: `${slot.start_time} – ${slot.end_time}`, disabled: conflict }];
         });
+        console.log("✅ Final slot options:", opts);
         if (!cancelled) setSlotOptions(opts);
       } catch (e) {
+        console.error("❌ Error fetching availability:", e);
         // ignore for now
       }
     })();

@@ -45,33 +45,33 @@ export type Database = {
         Row: {
           id: string
           mentor_id: string
-          day: string
+          day_of_week: string
           start_time: string
           end_time: string
           label: string | null
-          is_blocked: boolean
+          is_available: boolean
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           mentor_id: string
-          day: string
+          day_of_week: string
           start_time: string
           end_time: string
           label?: string | null
-          is_blocked?: boolean
+          is_available?: boolean
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           mentor_id?: string
-          day?: string
+          day_of_week?: string
           start_time?: string
           end_time?: string
           label?: string | null
-          is_blocked?: boolean
+          is_available?: boolean
           created_at?: string
           updated_at?: string
         }
