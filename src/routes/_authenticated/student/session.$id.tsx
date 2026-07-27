@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { useSessionWorkspace } from "@/hooks/use-session-workspace";
 import { SessionWorkspace } from "@/components/session-workspace";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/student/session/$id")({
   component: StudentSessionDetail,
@@ -11,7 +12,14 @@ export const Route = createFileRoute("/_authenticated/student/session/$id")({
 function StudentSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
-  const { data, isLoading, error, submitHomework } = useSessionWorkspace(id, auth?.user?.id);
+  const { data, isLoading, error, submitHomework, submitReview, fetchExistingReview, createNote } = useSessionWorkspace(id, auth?.user?.id);
+  const [existingReview, setExistingReview] = useState<{ id: string; rating: number; comment: string | null } | null>(null);
+
+  useEffect(() => {
+    if (data?.session?.status === "completed") {
+      fetchExistingReview().then(setExistingReview);
+    }
+  }, [data?.session?.status, fetchExistingReview]);
 
   return (
     <AppShell variant="student">
@@ -33,6 +41,9 @@ function StudentSessionDetail() {
             timeline={data.timeline}
             resources={data.resources}
             onSubmitHomework={submitHomework}
+            onCreateNote={createNote}
+            onSubmitReview={submitReview}
+            existingReview={existingReview}
             currentUserId={auth?.user?.id}
           />
         ) : null}
