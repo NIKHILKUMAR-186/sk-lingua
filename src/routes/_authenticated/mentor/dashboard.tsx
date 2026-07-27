@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Video, Star, DollarSign, ArrowRight, Users, FileText, Clock3 } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
 import React, { Suspense } from "react";
-const MentorAnalyticsDashboard = React.lazy(() => import("@/components/mentor-analytics-dashboard"));
+const MentorAnalyticsDashboard = React.lazy(() => import("@/components/mentor-analytics-dashboard").then((mod) => ({ default: mod.MentorAnalyticsDashboard })));
 
 export const Route = createFileRoute("/_authenticated/mentor/dashboard")({
   component: MentorDashboard,
