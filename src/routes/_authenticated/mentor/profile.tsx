@@ -8,13 +8,17 @@ import { uploadStorageFile } from "@/lib/storage";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MentorAvailability } from "@/components/mentor-availability";
+import { GigManager } from "@/components/gig-manager";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
 
 const initialValues: ProfileEditorValues = {
   full_name: "",
   headline: "",
   bio: "",
-  country: "",
-  timezone: "",
+  about: "",
+  state: "",
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   native_language: "en",
   languages_taught: [],
   years_experience: "0",
@@ -51,6 +55,7 @@ function MentorProfileEdit() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     if (!uid) return;
@@ -58,7 +63,8 @@ function MentorProfileEdit() {
       ...initialValues,
       full_name: auth?.profile?.full_name ?? "",
       bio: auth?.profile?.bio ?? "",
-      country: auth?.profile?.country ?? "",
+      about: mp?.about ?? "",
+      state: auth?.profile?.state ?? "",
       native_language: auth?.profile?.native_language ?? "en",
       avatar_url: auth?.profile?.avatar_url ?? "",
       cover_url: auth?.profile?.cover_url ?? "",
@@ -107,7 +113,7 @@ function MentorProfileEdit() {
       full_name: values.full_name || null,
       avatar_url: values.avatar_url || null,
       cover_url: values.cover_url || null,
-      country: values.country || null,
+      state: values.state || null,
       native_language: values.native_language || null,
       bio: values.bio || null,
       timezone: values.timezone || null,
@@ -120,6 +126,7 @@ function MentorProfileEdit() {
       user_id: uid,
       headline: values.headline || null,
       bio: values.bio || null,
+      about: values.about || null,
       languages_taught: values.languages_taught,
       certifications: values.certifications.split("\n").filter(Boolean),
       hourly_rate: Number(values.hourly_rate) || 0,
@@ -149,34 +156,49 @@ function MentorProfileEdit() {
     }
 
     toast.success("Mentor profile saved");
-    qc.invalidateQueries(["auth-session"]);
-    qc.invalidateQueries(["mentor-profile", uid]);
+    qc.invalidateQueries({ queryKey: ["auth-session"] });
+    qc.invalidateQueries({ queryKey: ["mentor-profile", uid] });
   }
 
   return (
     <AppShell variant="mentor">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-display">Mentor profile</h1>
-          <p className="text-muted-foreground">Update your professional profile, teaching preferences, and contact links.</p>
-        </div>
-        <ProfileEditor
-          mode="mentor"
-          values={values}
-          saving={saving}
-          onChange={updateField}
-          onSave={saveProfile}
-          onAvatarUpload={(file) => uploadFile(file, "avatar_url")}
-          onCoverUpload={(file) => uploadFile(file, "cover_url")}
-          uploadingAvatar={uploadingAvatar}
-          uploadingCover={uploadingCover}
-        />
-        {auth?.user?.id === uid && (
-          <div className="mt-6">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <h1 className="text-3xl font-display">Mentor profile & gigs</h1>
+          <p className="text-muted-foreground">Manage your professional profile, teaching services, and availability.</p>
+        </motion.div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="gigs">Gigs & services</TabsTrigger>
+            <TabsTrigger value="availability">Availability</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile">
+            <ProfileEditor
+              mode="mentor"
+              values={values}
+              saving={saving}
+              onChange={updateField}
+              onSave={saveProfile}
+              onAvatarUpload={(file) => uploadFile(file, "avatar_url")}
+              onCoverUpload={(file) => uploadFile(file, "cover_url")}
+              uploadingAvatar={uploadingAvatar}
+              uploadingCover={uploadingCover}
+            />
+          </TabsContent>
+
+          <TabsContent value="gigs">
+            {uid && <GigManager mentorId={uid} />}
+          </TabsContent>
+
+          <TabsContent value="availability">
             <MentorAvailability />
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
     </AppShell>
   );
 }
+
