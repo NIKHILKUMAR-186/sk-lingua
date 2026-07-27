@@ -11,6 +11,7 @@ export type ProfileEditorValues = {
   full_name: string;
   headline: string;
   bio: string;
+  about: string;
   state: string;
   timezone: string;
   native_language: string;

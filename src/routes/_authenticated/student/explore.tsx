@@ -1,46 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Star, Shield, Video, Clock, Users } from "lucide-react";
+import { useSearch } from "@/hooks/use-search";
+import { SearchFiltersPanel } from "@/components/search-filters";
 import { LANGUAGES } from "@/lib/languages";
-import { useState, useMemo } from "react";
-import { Star, Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/student/explore")({
   component: Explore,
 });
 
 function Explore() {
-  const [q, setQ] = useState("");
-  const [lang, setLang] = useState<string>("");
-
-  const { data: mentors = [] } = useQuery({
-    queryKey: ["explore-mentors"],
-    queryFn: async () => {
-      const { data: m } = await supabase.from("mentor_profiles")
-        .select("user_id, headline, bio, hourly_rate, rating_avg, total_reviews, languages_taught")
-        .eq("is_active", true).order("rating_avg", { ascending: false }).limit(60);
-      if (!m?.length) return [];
-      const ids = m.map((x) => x.user_id);
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url, state").in("id", ids);
-      const byId = new Map((profs ?? []).map((p) => [p.id, p]));
-      return m.map((x) => ({ ...x, profile: byId.get(x.user_id) }));
-    },
-  });
-
-  const filtered = useMemo(() => {
-    return mentors.filter((m) => {
-      if (lang && !m.languages_taught?.includes(lang)) return false;
-      if (q) {
-        const s = `${m.profile?.full_name ?? ""} ${m.headline ?? ""} ${m.bio ?? ""}`.toLowerCase();
-        if (!s.includes(q.toLowerCase())) return false;
-      }
-      return true;
-    });
-  }, [mentors, q, lang]);
+  const { mentors, filters, isLoading, setFilters, resetFilters } = useSearch();
 
   return (
     <AppShell variant="student">
@@ -49,47 +23,126 @@ function Explore() {
           <h1 className="text-3xl font-display">Find your mentor</h1>
           <p className="text-muted-foreground">Real people, ready to teach.</p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search mentors, styles, languages…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" /></div>
-          <select className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={lang} onChange={(e) => setLang(e.target.value)}>
-            <option value="">Any language</option>
-            {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.emoji} {l.name}</option>)}
-          </select>
-        </div>
 
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-12 text-center text-muted-foreground">No mentors match your filters.</div>
-        ) : (
+        <SearchFiltersPanel
+          filters={filters}
+          onFilterChange={setFilters}
+          onReset={resetFilters}
+          resultsCount={mentors.length}
+        />
+
+        {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((m) => (
-              <Link key={m.user_id} to="/student/mentor/$id" params={{ id: m.user_id }}>
-                <Card className="h-full transition hover:shadow-soft">
-                  <CardContent className="p-5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-5">
+                  <div className="animate-pulse space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 overflow-hidden rounded-full bg-muted">
-                        {m.profile?.avatar_url ? <img src={m.profile.avatar_url} className="h-full w-full object-cover" alt="" /> : null}
+                      <div className="h-12 w-12 rounded-full bg-muted" />
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 w-3/4 rounded bg-muted" />
+                        <div className="h-3 w-1/2 rounded bg-muted" />
                       </div>
-                      <div><div className="font-semibold">{m.profile?.full_name ?? "Mentor"}</div><div className="text-xs text-muted-foreground">{m.profile?.state}</div></div>
                     </div>
-                    <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{m.headline}</p>
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {m.languages_taught?.slice(0, 3).map((c) => {
-                        const l = LANGUAGES.find((x) => x.code === c);
-                        return <Badge key={c} variant="secondary" className="text-xs">{l?.emoji} {l?.name ?? c}</Badge>;
-                      })}
-                    </div>
-                    <div className="mt-4 flex items-center justify-between border-t pt-3">
-                      <div className="flex items-center gap-1 text-sm"><Star className="h-3.5 w-3.5 fill-warning text-warning" />{Number(m.rating_avg).toFixed(1)} <span className="text-xs text-muted-foreground">({m.total_reviews})</span></div>
-                      <div className="text-sm font-semibold">${Number(m.hourly_rate).toFixed(0)}<span className="text-xs text-muted-foreground">/hr</span></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                    <div className="h-3 w-full rounded bg-muted" />
+                    <div className="h-3 w-2/3 rounded bg-muted" />
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
+        ) : mentors.length === 0 ? (
+          <div className="rounded-2xl border border-dashed p-16 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+              <Users className="h-8 w-8 text-muted-foreground/60" />
+            </div>
+            <h3 className="text-lg font-semibold">No mentors match your filters</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Try adjusting your search criteria or clearing filters.</p>
+          </div>
+        ) : (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.05 } },
+            }}
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {mentors.map((m: any, index: number) => (
+              <motion.div
+                key={m.user_id}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+              >
+                <Link to="/student/mentor/$id" params={{ id: m.user_id }}>
+                  <Card className="h-full transition-all duration-200 hover:shadow-soft hover:border-primary/30 group">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={m.profile?.avatar_url || undefined} alt={m.profile?.full_name || ""} />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {m.profile?.full_name?.charAt(0) || "M"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold truncate">{m.profile?.full_name ?? "Mentor"}</span>
+                            {m.is_verified && (
+                              <Shield className="h-3.5 w-3.5 shrink-0 text-primary" />
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate">{m.profile?.state}</div>
+                        </div>
+                      </div>
+
+                      <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
+                        {m.headline || m.bio}
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {m.languages_taught?.slice(0, 3).map((code: string) => {
+                          const l = LANGUAGES.find((x) => x.code === code);
+                          return (
+                            <Badge key={code} variant="secondary" className="text-xs">
+                              {l?.emoji} {l?.name ?? code}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between border-t pt-3">
+                        <div className="flex items-center gap-1 text-sm">
+                          <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                          {Number(m.rating_avg).toFixed(1)}
+                          <span className="text-xs text-muted-foreground">
+                            ({m.total_reviews})
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {m.demo_lesson_url && <Video className="h-3.5 w-3.5" />}
+                          {m.years_experience > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {m.years_experience}y
+                            </span>
+                          )}
+                          <span className="text-sm font-semibold text-foreground">
+                            ${Number(m.hourly_rate).toFixed(0)}
+                            <span className="text-xs text-muted-foreground">/hr</span>
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
         )}
       </div>
     </AppShell>
   );
 }
+

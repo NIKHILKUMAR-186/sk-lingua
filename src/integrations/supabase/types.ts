@@ -90,6 +90,17 @@ export type Database = {
           tags: string[]
           title: string
           updated_at: string
+          cover_image: string | null
+          category: string | null
+          level: string | null
+          whats_included: Json
+          learning_outcomes: Json
+          prerequisites: string | null
+          homework_included: boolean
+          recording_included: boolean
+          certificate_included: boolean
+          featured: boolean
+          is_archived: boolean
         }
         Insert: {
           created_at?: string
@@ -103,6 +114,17 @@ export type Database = {
           tags?: string[]
           title: string
           updated_at?: string
+          cover_image?: string | null
+          category?: string | null
+          level?: string | null
+          whats_included?: Json
+          learning_outcomes?: Json
+          prerequisites?: string | null
+          homework_included?: boolean
+          recording_included?: boolean
+          certificate_included?: boolean
+          featured?: boolean
+          is_archived?: boolean
         }
         Update: {
           created_at?: string
@@ -116,6 +138,17 @@ export type Database = {
           tags?: string[]
           title?: string
           updated_at?: string
+          cover_image?: string | null
+          category?: string | null
+          level?: string | null
+          whats_included?: Json
+          learning_outcomes?: Json
+          prerequisites?: string | null
+          homework_included?: boolean
+          recording_included?: boolean
+          certificate_included?: boolean
+          featured?: boolean
+          is_archived?: boolean
         }
         Relationships: []
       }
@@ -142,6 +175,22 @@ export type Database = {
           youtube_url: string | null
           years_experience: number
           availability_preview: string | null
+          about: string | null
+          experience: Json
+          education_json: Json
+          portfolio_images: Json
+          intro_video_url: string | null
+          demo_lesson_url: string | null
+          is_verified: boolean
+          verification_badges: Json
+          total_students: number
+          total_sessions: number
+          response_rate: number
+          completion_rate: number
+          joined_date: string
+          specializations: Json
+          achievements: Json
+          gallery_images: Json
         }
         Insert: {
           availability?: Json
@@ -165,6 +214,22 @@ export type Database = {
           youtube_url?: string | null
           years_experience?: number
           availability_preview?: string | null
+          about?: string | null
+          experience?: Json
+          education_json?: Json
+          portfolio_images?: Json
+          intro_video_url?: string | null
+          demo_lesson_url?: string | null
+          is_verified?: boolean
+          verification_badges?: Json
+          total_students?: number
+          total_sessions?: number
+          response_rate?: number
+          completion_rate?: number
+          joined_date?: string
+          specializations?: Json
+          achievements?: Json
+          gallery_images?: Json
         }
         Update: {
           availability?: Json
@@ -188,6 +253,22 @@ export type Database = {
           youtube_url?: string | null
           years_experience?: number
           availability_preview?: string | null
+          about?: string | null
+          experience?: Json
+          education_json?: Json
+          portfolio_images?: Json
+          intro_video_url?: string | null
+          demo_lesson_url?: string | null
+          is_verified?: boolean
+          verification_badges?: Json
+          total_students?: number
+          total_sessions?: number
+          response_rate?: number
+          completion_rate?: number
+          joined_date?: string
+          specializations?: Json
+          achievements?: Json
+          gallery_images?: Json
         }
         Relationships: []
       }
@@ -200,6 +281,10 @@ export type Database = {
           read: boolean
           title: string
           user_id: string
+          category: string | null
+          kind: string | null
+          related_id: string | null
+          metadata: Json | null
         }
         Insert: {
           body?: string | null
@@ -209,6 +294,10 @@ export type Database = {
           read?: boolean
           title: string
           user_id: string
+          category?: string | null
+          kind?: string | null
+          related_id?: string | null
+          metadata?: Json | null
         }
         Update: {
           body?: string | null
@@ -218,6 +307,10 @@ export type Database = {
           read?: boolean
           title?: string
           user_id?: string
+          category?: string | null
+          kind?: string | null
+          related_id?: string | null
+          metadata?: Json | null
         }
         Relationships: []
       }
@@ -312,6 +405,8 @@ export type Database = {
           title: string
           url: string
           visibility: string
+          category: string | null
+          is_bookmarked: boolean
         }
         Insert: {
           created_at?: string
@@ -334,6 +429,8 @@ export type Database = {
           title: string
           url: string
           visibility?: string
+          category?: string | null
+          is_bookmarked?: boolean
         }
         Update: {
           created_at?: string
@@ -356,6 +453,8 @@ export type Database = {
           title?: string
           url?: string
           visibility?: string
+          category?: string | null
+          is_bookmarked?: boolean
         }
         Relationships: []
       }
@@ -368,6 +467,11 @@ export type Database = {
           rating: number
           session_id: string | null
           student_id: string
+          clarity_rating: number | null
+          engagement_rating: number | null
+          expertise_rating: number | null
+          punctuality_rating: number | null
+          is_verified: boolean
         }
         Insert: {
           comment?: string | null
@@ -377,6 +481,11 @@ export type Database = {
           rating: number
           session_id?: string | null
           student_id: string
+          clarity_rating?: number | null
+          engagement_rating?: number | null
+          expertise_rating?: number | null
+          punctuality_rating?: number | null
+          is_verified?: boolean
         }
         Update: {
           comment?: string | null
@@ -386,6 +495,11 @@ export type Database = {
           rating?: number
           session_id?: string | null
           student_id?: string
+          clarity_rating?: number | null
+          engagement_rating?: number | null
+          expertise_rating?: number | null
+          punctuality_rating?: number | null
+          is_verified?: boolean
         }
         Relationships: [
           {
@@ -664,3 +778,58 @@ export const Constants = {
     },
   },
 } as const
+
+// Helper types for the new columns
+export type GigWithEnhancements = Tables<"gigs"> & {
+  cover_image: string | null;
+  category: string | null;
+  level: string | null;
+  whats_included: string[];
+  learning_outcomes: string[];
+  prerequisites: string | null;
+  homework_included: boolean;
+  recording_included: boolean;
+  certificate_included: boolean;
+  featured: boolean;
+  is_archived: boolean;
+};
+
+export type MentorProfileWithEnhancements = Tables<"mentor_profiles"> & {
+  about: string | null;
+  experience: Array<{ title: string; organization: string; startYear: number; endYear?: number; description?: string }>;
+  education_json: Array<{ degree: string; institution: string; year: number }>;
+  portfolio_images: string[];
+  intro_video_url: string | null;
+  demo_lesson_url: string | null;
+  is_verified: boolean;
+  verification_badges: string[];
+  total_students: number;
+  total_sessions: number;
+  response_rate: number;
+  completion_rate: number;
+  joined_date: string;
+  specializations: string[];
+  achievements: string[];
+  gallery_images: string[];
+};
+
+export type ReviewWithEnhancements = Tables<"reviews"> & {
+  clarity_rating: number | null;
+  engagement_rating: number | null;
+  expertise_rating: number | null;
+  punctuality_rating: number | null;
+  is_verified: boolean;
+};
+
+export type ResourceWithEnhancements = Tables<"resources"> & {
+  category: string | null;
+  is_bookmarked: boolean;
+};
+
+export type NotificationWithEnhancements = Tables<"notifications"> & {
+  category: string | null;
+  kind: string | null;
+  related_id: string | null;
+  metadata: Record<string, unknown> | null;
+};
+

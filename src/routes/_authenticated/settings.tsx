@@ -16,6 +16,7 @@ const initialStudentValues: ProfileEditorValues = {
   full_name: "",
   headline: "",
   bio: "",
+  about: "",
   state: "",
   timezone: "",
   native_language: "en",
