@@ -69,5 +69,31 @@ export function useSessionWorkspace(sessionId: string | undefined, userId: strin
     await qc.invalidateQueries({ queryKey: ["session-workspace", sessionId, userId] });
   }
 
-  return { ...query, createHomework, submitHomework, reviewHomework, createNote };
+  async function submitReview(payload: { mentor_id: string; rating: number; comment?: string }) {
+    if (!sessionId || !userId) return;
+    const { error } = await supabase.from("reviews").insert({
+      session_id: sessionId,
+      student_id: userId,
+      mentor_id: payload.mentor_id,
+      rating: payload.rating,
+      comment: payload.comment ?? null,
+    });
+    if (error) throw error;
+    await addTimeline(sessionId, "review_submitted", `Rating: ${payload.rating}/5`, payload.comment ?? "No comment", userId);
+    await qc.invalidateQueries({ queryKey: ["session-workspace", sessionId, userId] });
+  }
+
+  // Check if user has already reviewed this session
+  async function fetchExistingReview() {
+    if (!sessionId || !userId) return null;
+    const { data } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("session_id", sessionId)
+      .eq("student_id", userId)
+      .maybeSingle();
+    return data;
+  }
+
+  return { ...query, createHomework, submitHomework, reviewHomework, createNote, submitReview, fetchExistingReview };
 }

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, MessageSquareMore, BookOpen, Clock3, CheckCircle2, ExternalLink, CalendarDays, UserRound, Languages } from "lucide-react";
+import { Upload, FileText, MessageSquareMore, BookOpen, Clock3, CheckCircle2, ExternalLink, CalendarDays, UserRound, Languages, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { uploadSessionFile } from "@/lib/session-workspace";
@@ -24,6 +24,8 @@ interface SessionWorkspaceProps {
   onCreateNote?: (payload: Record<string, any>) => Promise<void>;
   onSubmitHomework?: (payload: Record<string, any>) => Promise<void>;
   onReviewHomework?: (payload: Record<string, any>) => Promise<void>;
+  onSubmitReview?: (payload: { mentor_id: string; rating: number; comment?: string }) => Promise<void>;
+  existingReview?: { id: string; rating: number; comment: string | null } | null;
   currentUserId?: string;
 }
 
@@ -40,6 +42,8 @@ export function SessionWorkspace({
   onCreateNote,
   onSubmitHomework,
   onReviewHomework,
+  onSubmitReview,
+  existingReview,
   currentUserId,
 }: SessionWorkspaceProps) {
   const [title, setTitle] = useState("");
@@ -57,6 +61,10 @@ export function SessionWorkspace({
   const [noteTitle, setNoteTitle] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [noteType, setNoteType] = useState<"mentor_private" | "shared" | "student_private">("shared");
+  // Review state
+  const [ratingValue, setRatingValue] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const filteredNotes = useMemo(() => notes.filter((note) => {
     if (role === "mentor") return note.note_type !== "student_private";
@@ -129,6 +137,21 @@ export function SessionWorkspace({
     setNoteBody("");
     setNoteType(role === "mentor" ? "mentor_private" : "student_private");
     toast.success("Note saved");
+  }
+
+  async function handleReviewSubmit() {
+    if (!onSubmitReview || !session?.mentor_id || ratingValue === 0) return;
+    setSubmittingReview(true);
+    try {
+      await onSubmitReview({ mentor_id: session.mentor_id, rating: ratingValue, comment: reviewComment });
+      setRatingValue(0);
+      setReviewComment("");
+      toast.success("Review submitted successfully!");
+    } catch (error) {
+      toast.error((error as Error).message ?? "Unable to submit review");
+    } finally {
+      setSubmittingReview(false);
+    }
   }
 
   return (
@@ -316,6 +339,71 @@ export function SessionWorkspace({
           ))}
         </CardContent>
       </Card>
+
+      {/* Rating & Review Card - Student only, when session is completed */}
+      {role === "student" && session?.status === "completed" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Rate this session</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {existingReview ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1 text-lg">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${i < existingReview.rating ? "fill-warning text-warning" : "text-muted-foreground"}`}
+                    />
+                  ))}
+                </div>
+                {existingReview.comment && <p className="text-sm text-muted-foreground">"{existingReview.comment}"</p>}
+                <p className="text-xs text-muted-foreground">You already reviewed this session. Thank you!</p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="text-sm font-medium">Your rating</label>
+                  <div className="mt-2 flex items-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const star = i + 1;
+                      return (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRatingValue(star)}
+                          className="transition hover:scale-110"
+                        >
+                          <Star
+                            className={`h-7 w-7 ${
+                              star <= ratingValue
+                                ? "fill-warning text-warning"
+                                : "text-muted-foreground"
+                            }`}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {ratingValue === 0 && <p className="mt-1 text-xs text-muted-foreground">Tap a star to rate</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Comment (optional)</label>
+                  <Textarea
+                    className="mt-1"
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder="Share your experience with this mentor..."
+                  />
+                </div>
+                <Button onClick={handleReviewSubmit} disabled={ratingValue === 0 || submittingReview}>
+                  {submittingReview ? "Submitting..." : "Submit review"}
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

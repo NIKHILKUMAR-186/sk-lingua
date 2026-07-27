@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/mentor/session/$id")({
 function MentorSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
-  const { data, isLoading, error, createHomework, reviewHomework } = useSessionWorkspace(id, auth?.user?.id);
+  const { data, isLoading, error, createHomework, reviewHomework, createNote } = useSessionWorkspace(id, auth?.user?.id);
 
   return (
     <AppShell variant="mentor">
@@ -33,6 +33,7 @@ function MentorSessionDetail() {
             timeline={data.timeline}
             resources={data.resources}
             onCreateHomework={createHomework}
+            onCreateNote={createNote}
             onReviewHomework={reviewHomework}
             currentUserId={auth?.user?.id}
           />
