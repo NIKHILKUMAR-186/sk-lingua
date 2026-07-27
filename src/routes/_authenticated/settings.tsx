@@ -16,7 +16,7 @@ const initialStudentValues: ProfileEditorValues = {
   full_name: "",
   headline: "",
   bio: "",
-  country: "",
+  state: "",
   timezone: "",
   native_language: "en",
   languages_taught: [],
@@ -57,7 +57,7 @@ function Settings() {
       ...initialStudentValues,
       full_name: auth.profile.full_name ?? "",
       bio: auth.profile.bio ?? "",
-      country: auth.profile.country ?? "",
+      state: auth.profile.state ?? "",
       native_language: auth.profile.native_language ?? "en",
       avatar_url: auth.profile.avatar_url ?? "",
       cover_url: auth.profile.cover_url ?? "",
@@ -103,7 +103,7 @@ function Settings() {
       avatar_url: values.avatar_url || null,
       cover_url: values.cover_url || null,
       bio: values.bio || null,
-      country: values.country || null,
+      state: values.state || null,
       native_language: values.native_language || null,
       timezone: values.timezone || null,
       linkedin_url: values.linkedin_url || null,
@@ -163,7 +163,7 @@ function Settings() {
           <CardContent className="space-y-4">
             <div><Label>Full name</Label><input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.profile?.full_name ?? ""} disabled /></div>
             <div><Label>Email</Label><input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.user?.email ?? ""} disabled /></div>
-            <div><Label>Country</Label><input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.profile?.country ?? ""} disabled /></div>
+            <div><Label>State</Label><input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.profile?.state ?? ""} disabled /></div>
             <div><Label>Native language</Label><select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={auth?.profile?.native_language ?? "en"} disabled>
               {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.emoji} {l.name}</option>)}
             </select></div>

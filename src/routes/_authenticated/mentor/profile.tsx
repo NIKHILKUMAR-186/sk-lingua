@@ -13,8 +13,8 @@ const initialValues: ProfileEditorValues = {
   full_name: "",
   headline: "",
   bio: "",
-  country: "",
-  timezone: "",
+  state: "",
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   native_language: "en",
   languages_taught: [],
   years_experience: "0",
@@ -58,7 +58,7 @@ function MentorProfileEdit() {
       ...initialValues,
       full_name: auth?.profile?.full_name ?? "",
       bio: auth?.profile?.bio ?? "",
-      country: auth?.profile?.country ?? "",
+      state: auth?.profile?.state ?? "",
       native_language: auth?.profile?.native_language ?? "en",
       avatar_url: auth?.profile?.avatar_url ?? "",
       cover_url: auth?.profile?.cover_url ?? "",
@@ -107,7 +107,7 @@ function MentorProfileEdit() {
       full_name: values.full_name || null,
       avatar_url: values.avatar_url || null,
       cover_url: values.cover_url || null,
-      country: values.country || null,
+      state: values.state || null,
       native_language: values.native_language || null,
       bio: values.bio || null,
       timezone: values.timezone || null,
@@ -149,8 +149,8 @@ function MentorProfileEdit() {
     }
 
     toast.success("Mentor profile saved");
-    qc.invalidateQueries(["auth-session"]);
-    qc.invalidateQueries(["mentor-profile", uid]);
+    qc.invalidateQueries({ queryKey: ["auth-session"] });
+    qc.invalidateQueries({ queryKey: ["mentor-profile", uid] });
   }
 
   return (

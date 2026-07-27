@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_history: {
+        Row: {
+          id: string
+          booking_id: string
+          actor_id: string
+          action: string
+          details: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          booking_id: string
+          actor_id: string
+          action: string
+          details?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          booking_id?: string
+          actor_id?: string
+          action?: string
+          details?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      availability_slots: {
+        Row: {
+          id: string
+          mentor_id: string
+          day: string
+          start_time: string
+          end_time: string
+          label: string | null
+          is_blocked: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          mentor_id: string
+          day: string
+          start_time: string
+          end_time: string
+          label?: string | null
+          is_blocked?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          mentor_id?: string
+          day?: string
+          start_time?: string
+          end_time?: string
+          label?: string | null
+          is_blocked?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gigs: {
         Row: {
           created_at: string
@@ -163,7 +226,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           cover_url: string | null
-          country: string | null
+          state: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -185,7 +248,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           cover_url?: string | null
-          country?: string | null
+          state?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -207,7 +270,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           cover_url?: string | null
-          country?: string | null
+          state?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null

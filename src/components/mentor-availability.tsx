@@ -28,7 +28,7 @@ export function MentorAvailability() {
       await addSlot({ mentor_id: mentorId, day: DAY_KEYS[dayIndex], start_time: newStart, end_time: newEnd, label: newLabel || null });
       setNewLabel("");
       toast.success("Slot added");
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Unable to add slot"); }
+    } catch (e) { toast.error(String(e instanceof Error ? e.message : e)); }
   }
 
   return (

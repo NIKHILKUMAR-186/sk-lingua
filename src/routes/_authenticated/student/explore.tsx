@@ -25,7 +25,7 @@ function Explore() {
         .eq("is_active", true).order("rating_avg", { ascending: false }).limit(60);
       if (!m?.length) return [];
       const ids = m.map((x) => x.user_id);
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url, country").in("id", ids);
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url, state").in("id", ids);
       const byId = new Map((profs ?? []).map((p) => [p.id, p]));
       return m.map((x) => ({ ...x, profile: byId.get(x.user_id) }));
     },
@@ -70,7 +70,7 @@ function Explore() {
                       <div className="h-12 w-12 overflow-hidden rounded-full bg-muted">
                         {m.profile?.avatar_url ? <img src={m.profile.avatar_url} className="h-full w-full object-cover" alt="" /> : null}
                       </div>
-                      <div><div className="font-semibold">{m.profile?.full_name ?? "Mentor"}</div><div className="text-xs text-muted-foreground">{m.profile?.country}</div></div>
+                      <div><div className="font-semibold">{m.profile?.full_name ?? "Mentor"}</div><div className="text-xs text-muted-foreground">{m.profile?.state}</div></div>
                     </div>
                     <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{m.headline}</p>
                     <div className="mt-3 flex flex-wrap gap-1">

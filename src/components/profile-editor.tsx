@@ -11,7 +11,7 @@ export type ProfileEditorValues = {
   full_name: string;
   headline: string;
   bio: string;
-  country: string;
+  state: string;
   timezone: string;
   native_language: string;
   languages_taught: string[];
@@ -119,8 +119,8 @@ export function ProfileEditor({
             <Input value={values.full_name} onChange={(e) => update("full_name", e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Country</Label>
-            <Input value={values.country} onChange={(e) => update("country", e.target.value)} />
+            <Label>State</Label>
+            <Input value={values.state} onChange={(e) => update("state", e.target.value)} />
           </div>
         </div>
 

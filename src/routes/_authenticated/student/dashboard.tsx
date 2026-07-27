@@ -77,7 +77,7 @@ function StudentDashboard() {
     {
       full_name: auth?.profile?.full_name,
       bio: auth?.profile?.bio,
-      country: auth?.profile?.country,
+      state: auth?.profile?.state,
       timezone: auth?.profile?.timezone,
       native_language: auth?.profile?.native_language,
       learning_goal: auth?.profile?.learning_goal,

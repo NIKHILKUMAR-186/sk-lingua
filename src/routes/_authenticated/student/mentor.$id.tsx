@@ -124,7 +124,7 @@ function MentorProfile() {
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                 <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-warning text-warning" />{Number(mentor.mp.rating_avg).toFixed(1)} ({mentor.mp.total_reviews})</span>
                 <span className="text-muted-foreground">•</span>
-                <span>{mentor.profile?.country}</span>
+                <span>{mentor.profile?.state}</span>
                 <span className="text-muted-foreground">•</span>
                 <span className="font-semibold">${Number(mentor.mp.hourly_rate).toFixed(0)}/hr</span>
               </div>

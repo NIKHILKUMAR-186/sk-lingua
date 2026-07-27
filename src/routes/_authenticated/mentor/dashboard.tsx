@@ -1,3 +1,4 @@
+
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useAuth } from "@/hooks/use-auth";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Video, Star, DollarSign, ArrowRight, Users, FileText, Clock3 } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
 import React, { Suspense } from "react";
-const MentorAnalyticsDashboard = React.lazy(() => import("@/components/mentor-analytics-dashboard"));
+const MentorAnalyticsDashboard = React.lazy(() => import("@/components/mentor-analytics-dashboard").then(m => ({ default: m.MentorAnalyticsDashboard })));
 
 export const Route = createFileRoute("/_authenticated/mentor/dashboard")({
   component: MentorDashboard,
@@ -45,18 +46,23 @@ function MentorDashboard() {
   const studentsTaught = new Set(completed.map((s) => s.student_id).filter(Boolean)).size;
   const homeworkShared = resources.filter((resource) => resource.session_id).length;
   const earnings = completed.length * Number(mp?.hourly_rate ?? 0) * 0.9;
+  const normalizedCertifications = Array.isArray(mp?.certifications)
+    ? mp.certifications.join("\n")
+    : typeof mp?.certifications === "string"
+      ? mp.certifications
+      : undefined;
   const profileCompletion = getProfileCompletionPercent({
     full_name: auth?.profile?.full_name,
     headline: mp?.headline,
     bio: auth?.profile?.bio ?? mp?.bio,
-    country: auth?.profile?.country,
+    state: auth?.profile?.state,
     timezone: auth?.profile?.timezone ?? mp?.timezone,
     native_language: auth?.profile?.native_language,
     languages_taught: mp?.languages_taught,
     years_experience: mp?.years_experience,
     hourly_rate: mp?.hourly_rate,
     teaching_style: mp?.teaching_style,
-    certifications: mp?.certifications?.join("\n"),
+    certifications: normalizedCertifications,
     education: mp?.education,
     linkedin_url: auth?.profile?.linkedin_url ?? mp?.linkedin_url,
     website_url: auth?.profile?.website_url ?? mp?.website_url,
