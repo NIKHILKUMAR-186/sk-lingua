@@ -33,7 +33,7 @@ function Landing() {
         .limit(6);
       if (!mentors?.length) return [];
       const ids = mentors.map((m) => m.user_id);
-      const { data: profiles } = await supabase.from("profiles").select("id, full_name, avatar_url, country").in("id", ids);
+      const { data: profiles } = await supabase.from("profiles").select("id, full_name, avatar_url, state").in("id", ids);
       const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
       return mentors.map((m) => ({ ...m, profile: byId.get(m.user_id) ?? null }));
     },
@@ -144,7 +144,7 @@ function Landing() {
                       </div>
                       <div>
                         <div className="font-semibold">{p?.full_name ?? "Mentor"}</div>
-                        <div className="text-xs text-muted-foreground">{p?.country ?? "—"}</div>
+                        <div className="text-xs text-muted-foreground">{p?.state ?? "—"}</div>
                       </div>
                     </div>
                     <p className="mt-4 line-clamp-2 text-sm text-muted-foreground">{m.headline}</p>

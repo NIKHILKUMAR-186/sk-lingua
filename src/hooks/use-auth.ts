@@ -12,7 +12,7 @@ export interface AuthSession {
     email: string | null;
     avatar_url: string | null;
     cover_url: string | null;
-    country: string | null;
+    state: string | null;
     native_language: string | null;
     bio: string | null;
     timezone: string | null;

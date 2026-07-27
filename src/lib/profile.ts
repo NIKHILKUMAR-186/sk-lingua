@@ -4,7 +4,7 @@ export type ProfileCompletionValues = {
   full_name?: string | null;
   headline?: string | null;
   bio?: string | null;
-  country?: string | null;
+  state?: string | null;
   timezone?: string | null;
   native_language?: string | null;
   languages_taught?: string[] | null;
@@ -30,7 +30,7 @@ const mentorFields: Array<keyof ProfileCompletionValues> = [
   "full_name",
   "headline",
   "bio",
-  "country",
+  "state",
   "timezone",
   "native_language",
   "languages_taught",
@@ -50,7 +50,7 @@ const mentorFields: Array<keyof ProfileCompletionValues> = [
 const studentFields: Array<keyof ProfileCompletionValues> = [
   "full_name",
   "bio",
-  "country",
+  "state",
   "timezone",
   "native_language",
   "learning_goal",
