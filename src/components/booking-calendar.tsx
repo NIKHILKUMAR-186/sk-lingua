@@ -126,9 +126,13 @@ export function BookingCalendar({
       {selectedDate && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
               Available times for {format(new Date(selectedDate), "EEEE, MMM d")}
             </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Showing mentor's defined availability slots
+            </p>
           </CardHeader>
           <CardContent>
             {!hasSlots ? (

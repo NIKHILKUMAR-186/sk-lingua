@@ -6,7 +6,7 @@ export function useAvailability(mentorId?: string) {
   const { data = [], isLoading } = useQuery({
     queryKey: ["availability_slots", mentorId],
     enabled: !!mentorId,
-    queryFn: async () => (await supabase.from("availability_slots").select("*").eq("mentor_id", mentorId)).data ?? [],
+    queryFn: async () => (await supabase.from("availability_slots").select("*").eq("mentor_id", mentorId!)).data ?? [],
   });
 
   async function addSlot(payload: { mentor_id: string; day_of_week: string; start_time: string; end_time: string; label?: string | null; is_available?: boolean }) {
