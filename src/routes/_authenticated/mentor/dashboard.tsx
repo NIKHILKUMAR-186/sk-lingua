@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Calendar, Video, Star, DollarSign, ArrowRight, Users, FileText, Clock3, TrendingUp, Award, PackageOpen } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
+import React, { Suspense } from "react";
+const MentorAnalyticsDashboard = React.lazy(() => import("@/components/mentor-analytics-dashboard").then((mod) => ({ default: mod.MentorAnalyticsDashboard })));
 import { EmptyState } from "@/components/empty-state";
 import { StatCardSkeleton, ListSkeleton, CardSkeleton } from "@/components/skeleton-loader";
 
