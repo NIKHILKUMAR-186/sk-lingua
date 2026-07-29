@@ -73,6 +73,12 @@ export function SessionWorkspace({
 
   async function handleHomeworkCreate() {
     if (!onCreateHomework) return;
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+    if (!trimmedTitle) {
+      toast.error("Please provide a homework title.");
+      return;
+    }
     setUploading(true);
     setUploadProgress(10);
     try {
@@ -82,7 +88,15 @@ export function SessionWorkspace({
         attachments.push(result);
       }
       setUploadProgress(60);
-      await onCreateHomework({ title, description, deadline, difficulty, estimated_time_mins: Number(estimatedTime), attachments, session_id: sessionId });
+      await onCreateHomework({
+        title: trimmedTitle,
+        description: trimmedDescription,
+        deadline: deadline || null,
+        difficulty,
+        estimated_time_mins: Number(estimatedTime) || null,
+        attachments,
+        session_id: sessionId,
+      });
       setTitle("");
       setDescription("");
       setDeadline("");
@@ -208,8 +222,8 @@ export function SessionWorkspace({
           <CardContent className="space-y-4">
             {role === "mentor" ? (
               <div className="space-y-3">
-                <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Homework title" />
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the assignment" />
+                <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Homework title" required minLength={1} />
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the assignment" required />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
                   <Input value={estimatedTime} onChange={(e) => setEstimatedTime(e.target.value)} placeholder="Estimated minutes" />
@@ -221,7 +235,7 @@ export function SessionWorkspace({
                   <input type="file" multiple className="hidden" onChange={(e) => setAttachmentFiles(Array.from(e.target.files ?? []))} />
                 </label>
                 {uploading ? <Progress value={uploadProgress} /> : null}
-                <Button onClick={handleHomeworkCreate} disabled={uploading}>Create homework</Button>
+                <Button onClick={handleHomeworkCreate} disabled={uploading || title.trim().length === 0}>Create homework</Button>
               </div>
             ) : (
               <div className="space-y-3">

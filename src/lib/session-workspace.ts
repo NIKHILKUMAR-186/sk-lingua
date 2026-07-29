@@ -90,6 +90,11 @@ export async function fetchSessionWorkspace(sessionId: string, userId: string) {
 
 export async function createSessionTimelineEntry(sessionId: string, eventType: string, title: string, detail: string | null, createdBy: string | null, metadata: Record<string, unknown> | null = null) {
   const { data, error } = await supabase.from("session_timeline").insert({ session_id: sessionId, event_type: eventType, title, detail, created_by: createdBy, metadata }).select().single();
-  if (error) throw error;
+    if (error) {
+      const details = typeof error === 'object' ? JSON.stringify(error) : String(error);
+      const msg = `session_timeline insert failed: ${details}`;
+      console.error(msg, { sessionId, eventType, title, createdBy, metadata });
+      throw new Error(msg);
+    }
   return data as SessionTimelineEvent;
 }
