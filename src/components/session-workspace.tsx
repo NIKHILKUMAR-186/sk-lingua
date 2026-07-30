@@ -9,7 +9,7 @@ import { Upload, FileText, MessageSquareMore, BookOpen, Clock3, CheckCircle2, Ex
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { uploadSessionFile } from "@/lib/session-workspace";
-import type { SessionHomework, SessionHomeworkSubmission, SessionNote, SessionTimelineEvent } from "@/types/session-workspace";
+import type { SessionAttachment, SessionHomework, SessionHomeworkSubmission, SessionNote, SessionTimelineEvent } from "@/types/session-workspace";
 
 interface SessionWorkspaceProps {
   sessionId: string;
@@ -53,7 +53,8 @@ export function SessionWorkspace({
   const [estimatedTime, setEstimatedTime] = useState("30");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [homeworkAttachments, setHomeworkAttachments] = useState<File[]>([]);
+  const [submissionAttachments, setSubmissionAttachments] = useState<File[]>([]);
   const [submissionText, setSubmissionText] = useState("");
   const [feedback, setFeedback] = useState("");
   const [score, setScore] = useState("5");
@@ -72,7 +73,11 @@ export function SessionWorkspace({
   }), [notes, role]);
 
   async function handleHomeworkCreate() {
-    if (!onCreateHomework) return;
+    if (!onCreateHomework) {
+      console.error("onCreateHomework is undefined");
+      toast.error("Internal error: createHomework not ready");
+      return;
+    }
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
     if (!trimmedTitle) {
@@ -83,9 +88,15 @@ export function SessionWorkspace({
     setUploadProgress(10);
     try {
       const attachments = [] as Array<Record<string, unknown>>;
-      for (const file of attachmentFiles) {
-        const result = await uploadSessionFile(file, `homework/${sessionId}`);
-        attachments.push(result);
+      for (const file of homeworkAttachments) {
+        try {
+          const result = await uploadSessionFile(file, `homework/${sessionId}`);
+          attachments.push(result as unknown as Record<string, unknown>);
+        } catch (uploadErr: any) {
+          console.error("FILE UPLOAD FAILED:", uploadErr?.message || uploadErr);
+          toast.error("Upload error: " + (uploadErr?.message || "unknown error"));
+          throw new Error("File upload failed: " + (uploadErr?.message || "unknown error"));
+        }
       }
       setUploadProgress(60);
       await onCreateHomework({
@@ -102,9 +113,10 @@ export function SessionWorkspace({
       setDeadline("");
       setDifficulty("Medium");
       setEstimatedTime("30");
-      setAttachmentFiles([]);
+      setHomeworkAttachments([]);
       toast.success("Homework created");
     } catch (error) {
+      console.error("handleHomeworkCreate caught error:", error);
       toast.error((error as Error).message ?? "Unable to create homework");
     } finally {
       setUploading(false);
@@ -118,14 +130,14 @@ export function SessionWorkspace({
     setUploadProgress(10);
     try {
       const attachments = [] as Array<Record<string, unknown>>;
-      for (const file of attachmentFiles) {
+      for (const file of submissionAttachments) {
         const result = await uploadSessionFile(file, `submissions/${sessionId}`);
-        attachments.push(result);
+        attachments.push(result as unknown as Record<string, unknown>);
       }
       setUploadProgress(60);
       await onSubmitHomework({ homework_id: homework[0]?.id, submission_text: submissionText, attachments, status: "Submitted" });
       setSubmissionText("");
-      setAttachmentFiles([]);
+      setSubmissionAttachments([]);
       toast.success("Homework submitted");
     } catch (error) {
       toast.error((error as Error).message ?? "Unable to submit homework");
@@ -231,8 +243,8 @@ export function SessionWorkspace({
                 <Input value={difficulty} onChange={(e) => setDifficulty(e.target.value)} placeholder="Difficulty" />
                 <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
                   <Upload className="h-4 w-4" />
-                  <span>{attachmentFiles.length ? `${attachmentFiles.length} file(s) selected` : "Attach files"}</span>
-                  <input type="file" multiple className="hidden" onChange={(e) => setAttachmentFiles(Array.from(e.target.files ?? []))} />
+                  <span>{homeworkAttachments.length ? `${homeworkAttachments.length} file(s) selected` : "Attach files"}</span>
+                  <input type="file" multiple className="hidden" onChange={(e) => setHomeworkAttachments(Array.from(e.target.files ?? []))} />
                 </label>
                 {uploading ? <Progress value={uploadProgress} /> : null}
                 <Button onClick={handleHomeworkCreate} disabled={uploading || title.trim().length === 0}>Create homework</Button>
@@ -264,8 +276,8 @@ export function SessionWorkspace({
                 <Textarea value={submissionText} onChange={(e) => setSubmissionText(e.target.value)} placeholder="Write your submission or notes" />
                 <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
                   <Upload className="h-4 w-4" />
-                  <span>{attachmentFiles.length ? `${attachmentFiles.length} file(s) selected` : "Upload PDF, DOCX, image, ZIP"}</span>
-                  <input type="file" multiple className="hidden" onChange={(e) => setAttachmentFiles(Array.from(e.target.files ?? []))} />
+                  <span>{submissionAttachments.length ? `${submissionAttachments.length} file(s) selected` : "Upload PDF, DOCX, image, ZIP"}</span>
+                  <input type="file" multiple className="hidden" onChange={(e) => setSubmissionAttachments(Array.from(e.target.files ?? []))} />
                 </label>
                 {uploading ? <Progress value={uploadProgress} /> : null}
                 <Button onClick={handleSubmission} disabled={uploading}>Submit homework</Button>
