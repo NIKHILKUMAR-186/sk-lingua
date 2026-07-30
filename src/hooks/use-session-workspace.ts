@@ -32,16 +32,42 @@ export function useSessionWorkspace(sessionId: string | undefined, userId: strin
   }
 
   async function createHomework(payload: Record<string, any>) {
-    if (!sessionId || !userId) return;
-    const { error } = await supabase.from("homeworks").insert({ ...payload, mentor_id: userId });
-    if (error) throw error;
-    await addTimeline(sessionId, "homework_created", "Homework assigned", payload.title, userId);
+    if (!sessionId || !userId) {
+      console.error("sessionId or userId missing");
+      return;
+    }
+
+    const sessionLookupId = payload.session_id ?? sessionId;
+    const { data: sessionRecord } = await supabase
+      .from("sessions")
+      .select("mentor_id")
+      .eq("id", sessionLookupId)
+      .maybeSingle();
+
+    const insertPayload = {
+      ...payload,
+      mentor_id: userId,
+      session_id: sessionLookupId,
+      title: typeof payload.title === 'string' ? payload.title.trim() : payload.title,
+      description: typeof payload.description === 'string' ? payload.description.trim() : payload.description,
+      estimated_time_mins: payload.estimated_time_mins != null ? Number(payload.estimated_time_mins) : null,
+      deadline: payload.deadline || null,
+    };
+
+    const { data, error } = await supabase.from("homeworks" as any).insert(insertPayload as any).select().single();
+    if (error) {
+      const details = typeof error === 'object' ? JSON.stringify(error) : String(error);
+      const msg = `homeworks insert failed: ${details}`;
+      console.error(msg);
+      throw new Error(msg);
+    }
+    await addTimeline(sessionId, "homework_created", "Homework assigned", insertPayload.title, userId);
     await qc.invalidateQueries({ queryKey: ["session-workspace", sessionId, userId] });
   }
 
   async function submitHomework(payload: Record<string, any>) {
     if (!sessionId || !userId) return;
-    const { error } = await supabase.from("homework_submissions").insert({ ...payload, student_id: userId, submitted_at: new Date().toISOString() });
+    const { error } = await supabase.from("homework_submissions" as any).insert({ ...payload, student_id: userId, submitted_at: new Date().toISOString() });
     if (error) throw error;
     await addTimeline(sessionId, "homework_submitted", "Homework submitted", payload.submission_text ?? "Submission uploaded", userId);
     await qc.invalidateQueries({ queryKey: ["session-workspace", sessionId, userId] });
@@ -49,7 +75,7 @@ export function useSessionWorkspace(sessionId: string | undefined, userId: strin
 
   async function reviewHomework(payload: Record<string, any>) {
     if (!sessionId || !userId) return;
-    const { error } = await supabase.from("homework_submissions").update({
+    const { error } = await supabase.from("homework_submissions" as any).update({
       mentor_feedback: payload.mentor_feedback,
       mentor_score: payload.mentor_score,
       corrections: payload.corrections,
@@ -63,7 +89,7 @@ export function useSessionWorkspace(sessionId: string | undefined, userId: strin
 
   async function createNote(payload: Record<string, any>) {
     if (!sessionId || !userId) return;
-    const { error } = await supabase.from("session_notes").insert({ session_id: sessionId, created_by: userId, ...payload });
+    const { error } = await supabase.from("session_notes" as any).insert({ session_id: sessionId, created_by: userId, ...payload });
     if (error) throw error;
     await addTimeline(sessionId, "note_added", "Note shared", payload.title ?? "A note was added", userId);
     await qc.invalidateQueries({ queryKey: ["session-workspace", sessionId, userId] });

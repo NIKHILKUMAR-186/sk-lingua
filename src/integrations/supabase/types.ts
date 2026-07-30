@@ -615,6 +615,168 @@ export type Database = {
         }
         Relationships: []
       }
+      homeworks: {
+        Row: {
+          id: string
+          session_id: string
+          mentor_id: string
+          title: string
+          description: string | null
+          deadline: string | null
+          difficulty: string | null
+          estimated_time_mins: number | null
+          attachments: Json
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          mentor_id: string
+          title: string
+          description?: string | null
+          deadline?: string | null
+          difficulty?: string | null
+          estimated_time_mins?: number | null
+          attachments?: Json
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          mentor_id?: string
+          title?: string
+          description?: string | null
+          deadline?: string | null
+          difficulty?: string | null
+          estimated_time_mins?: number | null
+          attachments?: Json
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homework_submissions: {
+        Row: {
+          id: string
+          homework_id: string
+          student_id: string
+          submission_text: string | null
+          attachments: Json
+          status: string
+          submitted_at: string | null
+          mentor_feedback: string | null
+          mentor_score: number | null
+          corrections: string | null
+          mentor_feedback_attachments: Json
+          reviewed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          homework_id: string
+          student_id: string
+          submission_text?: string | null
+          attachments?: Json
+          status?: string
+          submitted_at?: string | null
+          mentor_feedback?: string | null
+          mentor_score?: number | null
+          corrections?: string | null
+          mentor_feedback_attachments?: Json
+          reviewed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          homework_id?: string
+          student_id?: string
+          submission_text?: string | null
+          attachments?: Json
+          status?: string
+          submitted_at?: string | null
+          mentor_feedback?: string | null
+          mentor_score?: number | null
+          corrections?: string | null
+          mentor_feedback_attachments?: Json
+          reviewed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      session_notes: {
+        Row: {
+          id: string
+          session_id: string
+          note_type: string
+          title: string | null
+          body: string | null
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          note_type: string
+          title?: string | null
+          body?: string | null
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          note_type?: string
+          title?: string | null
+          body?: string | null
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      session_timeline: {
+        Row: {
+          id: string
+          session_id: string
+          event_type: string
+          title: string
+          detail: string | null
+          created_by: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          event_type: string
+          title: string
+          detail?: string | null
+          created_by?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          event_type?: string
+          title?: string
+          detail?: string | null
+          created_by?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -640,6 +802,13 @@ export type Database = {
         | "rejected"
         | "completed"
         | "cancelled"
+      homework_status:
+        | "Assigned"
+        | "In Progress"
+        | "Submitted"
+        | "Reviewed"
+        | "Completed"
+        | "Late"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -19,6 +19,7 @@ export interface SessionHomework {
   deadline: string | null;
   difficulty: string | null;
   estimated_time_mins: number | null;
+  status: string;
   attachments: SessionAttachment[];
   created_at: string;
   updated_at: string;
