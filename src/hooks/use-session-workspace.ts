@@ -95,17 +95,37 @@ export function useSessionWorkspace(sessionId: string | undefined, userId: strin
     await qc.invalidateQueries({ queryKey: ["session-workspace", sessionId, userId] });
   }
 
-  async function submitReview(payload: { mentor_id: string; rating: number; comment?: string }) {
+  async function submitReview(payload: {
+    mentor_id: string;
+    session_id: string;
+    student_id: string;
+    rating: number;
+    teaching_quality_rating: number;
+    communication_rating: number;
+    knowledge_rating: number;
+    punctuality_rating: number;
+    friendliness_rating: number;
+    recommend: boolean;
+    review_text: string;
+    attachment_url: string | null;
+  }) {
     if (!sessionId || !userId) return;
     const { error } = await supabase.from("reviews").insert({
       session_id: sessionId,
       student_id: userId,
       mentor_id: payload.mentor_id,
       rating: payload.rating,
-      comment: payload.comment ?? null,
+      teaching_quality_rating: payload.teaching_quality_rating,
+      communication_rating: payload.communication_rating,
+      knowledge_rating: payload.knowledge_rating,
+      punctuality_rating: payload.punctuality_rating,
+      friendliness_rating: payload.friendliness_rating,
+      recommend: payload.recommend,
+      review_text: payload.review_text,
+      attachment_url: payload.attachment_url,
     });
     if (error) throw error;
-    await addTimeline(sessionId, "review_submitted", `Rating: ${payload.rating}/5`, payload.comment ?? "No comment", userId);
+    await addTimeline(sessionId, "review_submitted", `Rating: ${payload.rating}/5`, payload.review_text ?? "No comment", userId);
     await qc.invalidateQueries({ queryKey: ["session-workspace", sessionId, userId] });
   }
 

@@ -10,9 +10,8 @@ import { toast } from "sonner";
 import { MentorPublicProfile } from "@/components/mentor-public-profile";
 import { BookingCalendar } from "@/components/booking-calendar";
 import { BookingSummary } from "@/components/booking-summary";
-import { ReviewStatsCard, StarRating } from "@/components/review-stats";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useReviews, type ReviewStats } from "@/hooks/use-reviews";
+import { MentorRatingSummary } from "@/components/review/MentorRatingSummary";
+import { useReviews, useMentorRatingSummary } from "@/hooks/use-reviews";
 import { useAvailableSlots, useBookingRequest, calculateAvailableDates, type BookingSummary as BookingSummaryType } from "@/hooks/use-booking";
 import { DashboardSkeleton } from "@/components/skeleton-loader";
 import { format } from "date-fns";
@@ -41,8 +40,8 @@ function MentorProfile() {
     },
   });
 
-  // Reviews
-  const { stats } = useReviews(id);
+  // Reviews with new MentorRatingSummary
+  const { reviews: summaryReviews, stats: summaryStats, isLoading: summaryLoading } = useMentorRatingSummary(id);
 
   // Booking state
   const [selectedGig, setSelectedGig] = useState<string | null>(null);
@@ -168,31 +167,12 @@ function MentorProfile() {
               selectedGigId={selectedGig}
             />
 
-            {/* Reviews */}
-            {mentor.reviews.length > 0 && (
-              <ReviewStatsCard stats={stats} />
-            )}
-
-            {mentor.reviews.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent reviews</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {mentor.reviews.slice(0, 5).map((r) => (
-                    <div key={r.id} className="rounded-lg border p-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <StarRating value={r.rating} />
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(r.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {r.comment && <p className="mt-1 text-sm text-muted-foreground">{r.comment}</p>}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+            {/* Reviews - Using new MentorRatingSummary */}
+            <MentorRatingSummary
+              stats={summaryStats}
+              reviews={summaryReviews}
+              isLoading={summaryLoading}
+            />
           </div>
 
           {/* Right column: Booking flow */}

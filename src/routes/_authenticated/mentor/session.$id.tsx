@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { useSessionWorkspace } from "@/hooks/use-session-workspace";
 import { SessionWorkspace } from "@/components/session-workspace";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/mentor/session/$id")({
   component: MentorSessionDetail,
@@ -11,7 +12,14 @@ export const Route = createFileRoute("/_authenticated/mentor/session/$id")({
 function MentorSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
-  const { data, isLoading, error, createHomework, reviewHomework, createNote } = useSessionWorkspace(id, auth?.user?.id);
+  const { data, isLoading, error, createHomework, reviewHomework, createNote, fetchExistingReview } = useSessionWorkspace(id, auth?.user?.id);
+  const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
+
+  useEffect(() => {
+    if (data?.session?.status === "completed") {
+      fetchExistingReview().then(setExistingReview);
+    }
+  }, [data?.session?.status, fetchExistingReview]);
 
   return (
     <AppShell variant="mentor">
@@ -35,6 +43,7 @@ function MentorSessionDetail() {
             onCreateHomework={createHomework}
             onCreateNote={createNote}
             onReviewHomework={reviewHomework}
+            existingReview={existingReview}
             currentUserId={auth?.user?.id}
           />
         ) : null}

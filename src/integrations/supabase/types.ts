@@ -460,46 +460,58 @@ export type Database = {
       }
       reviews: {
         Row: {
-          comment: string | null
-          created_at: string
           id: string
-          mentor_id: string
-          rating: number
           session_id: string | null
+          mentor_id: string
           student_id: string
-          clarity_rating: number | null
-          engagement_rating: number | null
-          expertise_rating: number | null
+          rating: number
+          teaching_quality_rating: number | null
+          communication_rating: number | null
+          knowledge_rating: number | null
           punctuality_rating: number | null
+          friendliness_rating: number | null
+          recommend: boolean | null
+          review_text: string | null
+          comment: string | null
+          attachment_url: string | null
           is_verified: boolean
+          created_at: string
         }
         Insert: {
-          comment?: string | null
-          created_at?: string
           id?: string
-          mentor_id: string
-          rating: number
           session_id?: string | null
+          mentor_id: string
           student_id: string
-          clarity_rating?: number | null
-          engagement_rating?: number | null
-          expertise_rating?: number | null
+          rating: number
+          teaching_quality_rating?: number | null
+          communication_rating?: number | null
+          knowledge_rating?: number | null
           punctuality_rating?: number | null
+          friendliness_rating?: number | null
+          recommend?: boolean | null
+          review_text?: string | null
+          comment?: string | null
+          attachment_url?: string | null
           is_verified?: boolean
+          created_at?: string
         }
         Update: {
-          comment?: string | null
-          created_at?: string
           id?: string
-          mentor_id?: string
-          rating?: number
           session_id?: string | null
+          mentor_id?: string
           student_id?: string
-          clarity_rating?: number | null
-          engagement_rating?: number | null
-          expertise_rating?: number | null
+          rating?: number
+          teaching_quality_rating?: number | null
+          communication_rating?: number | null
+          knowledge_rating?: number | null
           punctuality_rating?: number | null
+          friendliness_rating?: number | null
+          recommend?: boolean | null
+          review_text?: string | null
+          comment?: string | null
+          attachment_url?: string | null
           is_verified?: boolean
+          created_at?: string
         }
         Relationships: [
           {
