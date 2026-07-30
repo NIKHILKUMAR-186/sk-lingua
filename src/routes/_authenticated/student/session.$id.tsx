@@ -13,7 +13,7 @@ function StudentSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
   const { data, isLoading, error, submitHomework, submitReview, fetchExistingReview, createNote } = useSessionWorkspace(id, auth?.user?.id);
-  const [existingReview, setExistingReview] = useState<{ id: string; rating: number; comment: string | null } | null>(null);
+  const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
     if (data?.session?.status === "completed") {
