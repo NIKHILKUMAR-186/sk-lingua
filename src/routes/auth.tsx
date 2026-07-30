@@ -16,7 +16,7 @@ const searchSchema = z.object({
 });
 
 type AuthMode = "login" | "signup";
-type SignupRole = "student" | "mentor" | "both";
+type SignupRole = "student" | "mentor";
 
 const roleOptions: Record<SignupRole, { title: string; description: string; icon: typeof GraduationCap }> = {
   student: {
@@ -28,11 +28,6 @@ const roleOptions: Record<SignupRole, { title: string; description: string; icon
     title: "Teach",
     description: "Create sessions, earn from lessons, and mentor learners worldwide.",
     icon: Users,
-  },
-  both: {
-    title: "Both",
-    description: "Learn and teach with one account for maximum flexibility.",
-    icon: Languages,
   },
 };
 
@@ -167,14 +162,10 @@ function AuthPage() {
         return;
       }
 
-      // Now the JWT session exists — insert roles with authenticated credentials
-      const roleRows: { user_id: string; role: "student" | "mentor" }[] =
-        role === "both"
-          ? [
-              { user_id: data.user.id, role: "student" },
-              { user_id: data.user.id, role: "mentor" },
-            ]
-          : [{ user_id: data.user.id, role: role as "student" | "mentor" }];
+      // Now the JWT session exists — insert role with authenticated credentials
+      const roleRows: { user_id: string; role: "student" | "mentor" }[] = [
+        { user_id: data.user.id, role: role as "student" | "mentor" },
+      ];
 
       const { error: roleError } = await supabase.from("user_roles").upsert(roleRows, { onConflict: "user_id,role" });
       if (roleError) throw roleError;
@@ -250,14 +241,14 @@ function AuthPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button variant="secondary" className="w-full" onClick={handleGoogle} disabled={loading}>
+              {/* <Button variant="secondary" className="w-full" onClick={handleGoogle} disabled={loading}>
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
                 Continue with Google
-              </Button>
-              <div className="relative">
+              </Button> */}
+              {/* <div className="relative">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
                 <span className="relative flex justify-center text-xs uppercase text-muted-foreground"><span className="bg-card px-2">or</span></span>
-              </div>
+              </div> */}
               <Tabs value={formMode} onValueChange={(value) => setFormMode(value as AuthMode)}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Log in</TabsTrigger>

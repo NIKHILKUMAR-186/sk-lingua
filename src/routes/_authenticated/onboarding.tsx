@@ -22,7 +22,7 @@ import {
 const STORAGE_KEY = "lingua-onboarding-draft";
 const TOTAL_STEPS = 5;
 
-type OnboardingRole = "student" | "mentor" | "both";
+type OnboardingRole = "student" | "mentor";
 
 type DraftState = {
   role: OnboardingRole;
@@ -51,11 +51,6 @@ const roleCards: Record<
     title: "Mentor",
     description: "Share your expertise, create sessions, and grow your income.",
     icon: Users,
-  },
-  both: {
-    title: "Both",
-    description: "Teach and learn with one account for maximum flexibility.",
-    icon: Languages,
   },
 };
 
@@ -86,8 +81,8 @@ function Onboarding() {
   const [hydrated, setHydrated] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const isStudent = draft.role === "student" || draft.role === "both";
-  const isMentor = draft.role === "mentor" || draft.role === "both";
+  const isStudent = draft.role === "student";
+  const isMentor = draft.role === "mentor";
 
   useEffect(() => {
     if (!auth?.user) return;
@@ -148,13 +143,9 @@ function Onboarding() {
 
     setSaving(true);
     try {
-      const roleRows: { user_id: string; role: "student" | "mentor" }[] =
-        draft.role === "both"
-          ? [
-              { user_id: auth.user.id, role: "student" },
-              { user_id: auth.user.id, role: "mentor" },
-            ]
-          : [{ user_id: auth.user.id, role: draft.role as "student" | "mentor" }];
+      const roleRows: { user_id: string; role: "student" | "mentor" }[] = [
+        { user_id: auth.user.id, role: draft.role as "student" | "mentor" },
+      ];
 
       const { error: roleError } = await supabase
         .from("user_roles")
@@ -195,12 +186,7 @@ function Onboarding() {
       window.localStorage.removeItem(STORAGE_KEY);
       toast.success("Your account is ready.");
       navigate({
-        to:
-          draft.role === "mentor"
-            ? "/mentor/dashboard"
-            : draft.role === "student"
-              ? "/student/dashboard"
-              : "/mentor/dashboard",
+        to: draft.role === "mentor" ? "/mentor/dashboard" : "/student/dashboard",
       });
     } catch (error) {
       console.error("Onboarding save failed", error);
@@ -289,7 +275,7 @@ function Onboarding() {
 
               {step === 2 && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-4 md:grid-cols-2">
                     {Object.entries(roleCards).map(([value, card]) => {
                       const isActive = draft.role === value;
                       const Icon = card.icon;
@@ -342,7 +328,7 @@ function Onboarding() {
                       id="state"
                       value={draft.state}
                       onChange={(e) => updateDraft({ state: e.target.value })}
-                      placeholder="Spain"
+                      placeholder="Enter your state or region "
                     />
                   </div>
                   <div>
