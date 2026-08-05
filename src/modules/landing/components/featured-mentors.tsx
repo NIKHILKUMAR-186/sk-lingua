@@ -82,7 +82,7 @@ export function FeaturedMentors() {
           <div className="rounded-3xl border border-dashed border-border p-16 text-center">
             <p className="text-muted-foreground">
               No mentors yet —{" "}
-              <Link to="/auth" search={{ mode: "signup", role: "mentor" } as never} className="font-semibold text-primary underline underline-offset-4">
+              <Link to="/become-a-mentor" className="font-semibold text-primary underline underline-offset-4">
                 become the first!
               </Link>
             </p>

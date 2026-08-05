@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,28 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Languages, GraduationCap, Users, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { getActiveRole, getDashboardRoute, getOnboardingRoute, shouldRedirectToOnboarding, type AppRole } from "@/lib/auth";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).default("login").catch("login"),
 });
 
 type AuthMode = "login" | "signup";
-type SignupRole = "student" | "mentor";
-
-const roleOptions: Record<SignupRole, { title: string; description: string; icon: typeof GraduationCap }> = {
-  student: {
-    title: "Learn",
-    description: "Find mentors, practice conversations, and build daily streaks.",
-    icon: GraduationCap,
-  },
-  mentor: {
-    title: "Teach",
-    description: "Create sessions, earn from lessons, and mentor learners worldwide.",
-    icon: Users,
-  },
-};
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
@@ -50,15 +37,9 @@ function AuthPage() {
   const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [formMode, setFormMode] = useState<AuthMode>(mode);
-  const [role, setRole] = useState<SignupRole>("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-
-  const roleCards = useMemo(
-    () => Object.entries(roleOptions) as [SignupRole, typeof roleOptions[SignupRole]][],
-    [],
-  );
 
   async function goToDashboardFor(userId: string) {
     await qc.invalidateQueries();
@@ -71,17 +52,16 @@ function AuthPage() {
       console.error("Redirect lookup failed", { rolesError, profileError });
     }
 
-    const fetchedRoles = (roles ?? []).map((r) => r.role as "student" | "mentor");
-    const hasRole = fetchedRoles.length > 0;
+    const fetchedRoles = (roles ?? []).map((r) => r.role as AppRole);
     const onboarded = Boolean(profile?.onboarded);
 
-    if (!hasRole || !onboarded) {
-      navigate({ to: "/onboarding" });
+    if (shouldRedirectToOnboarding(fetchedRoles, onboarded)) {
+      navigate({ to: getOnboardingRoute() });
       return;
     }
 
-    const activeRole = fetchedRoles.includes("mentor") ? "mentor" : "student";
-    navigate({ to: activeRole === "mentor" ? "/mentor/dashboard" : "/student/dashboard" });
+    const activeRole = getActiveRole(fetchedRoles);
+    navigate({ to: getDashboardRoute(activeRole) });
   }
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -137,7 +117,7 @@ function AuthPage() {
         password,
         options: {
           emailRedirectTo,
-          data: { full_name: fullName, intended_role: role },
+          data: { full_name: fullName, intended_role: "student" },
         },
       });
 
@@ -164,7 +144,7 @@ function AuthPage() {
 
       // Now the JWT session exists — insert role with authenticated credentials
       const roleRows: { user_id: string; role: "student" | "mentor" }[] = [
-        { user_id: data.user.id, role: role as "student" | "mentor" },
+        { user_id: data.user.id, role: "student" },
       ];
 
       const { error: roleError } = await supabase.from("user_roles").upsert(roleRows, { onConflict: "user_id,role" });
@@ -213,7 +193,7 @@ function AuthPage() {
                 {/* <div className="flex h-11 w-18 items-center justify-center rounded-2xl bg-gradient text-white"><img src="/logo.png" alt="LINGUA" className="h-15 w-20" /></div> */}
             <h1 className="text-5xl font-display tracking-tight text-white">Learn, teach, and grow in one elegant language platform.</h1>
             <p className="mt-6 max-w-md text-lg leading-8 text-slate-300">
-              Create your Lingua account, choose your role, and start the learning flow designed for both learners and mentors.
+              Create your Lingua student account and start your path to fluency with verified mentors.
             </p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
@@ -221,8 +201,8 @@ function AuthPage() {
                 <p className="mt-3 text-base text-slate-100">Complete the setup and start using LINGUA in minutes.</p>
               </div>
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm uppercase tracking-[0.2em] text-slate-900">Smart role setup</p>
-                <p className="mt-3 text-base text-slate-100">Pick student, mentor, or both with one elegant experience.</p>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-900">Smart onboarding</p>
+                <p className="mt-3 text-base text-slate-100">Start as a student and let our team manage mentor applications separately.</p>
               </div>
             </div>
           </div>
@@ -270,26 +250,8 @@ function AuthPage() {
                   </form>
                 </TabsContent>
                 <TabsContent value="signup" className="space-y-4">
-                  <div className="grid gap-3">
-                    {roleCards.map(([key, metadata]) => {
-                      const isActive = role === key;
-                      const Icon = metadata.icon;
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setRole(key)}
-                          className={`rounded-3xl border p-4 text-left transition ${isActive ? "border-primary bg-primary/5" : "border-border bg-background"}`}>
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white"><Icon className="h-5 w-5" /></div>
-                            <div>
-                              <p className="text-sm font-semibold">{metadata.title}</p>
-                              <p className="text-sm text-muted-foreground">{metadata.description}</p>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
+                  <div className="rounded-3xl border border-border bg-background p-6 text-sm text-muted-foreground">
+                    Create a Student account and start learning with verified mentors. Mentor accounts are now managed through a dedicated application process.
                   </div>
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div>

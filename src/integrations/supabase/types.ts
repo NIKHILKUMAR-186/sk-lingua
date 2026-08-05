@@ -314,6 +314,111 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_applications: {
+        Row: {
+          id: string
+          user_id: string | null
+          full_name: string
+          email: string
+          phone_number: string | null
+          native_language: string
+          education: string | null
+          degree: string | null
+          college: string | null
+          graduation_year: number | null
+          current_company: string | null
+          current_role: string | null
+          teaching_languages: string[]
+          subjects: string[]
+          availability: string[]
+          linkedin_url: string | null
+          github_url: string | null
+          portfolio_url: string | null
+          resume_path: string | null
+          resume_url: string | null
+          resume_file_name: string | null
+          resume_file_type: string | null
+          why_apply: string | null
+          why_good_mentor: string | null
+          teaching_methodology: string | null
+          experience: string | null
+          teaching_style: string | null
+          sample_lessons: string | null
+          status: string
+          admin_notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          full_name: string
+          email: string
+          phone_number?: string | null
+          native_language: string
+          education?: string | null
+          degree?: string | null
+          college?: string | null
+          graduation_year?: number | null
+          current_company?: string | null
+          current_role?: string | null
+          teaching_languages?: string[]
+          subjects?: string[]
+          availability?: string[]
+          linkedin_url?: string | null
+          github_url?: string | null
+          portfolio_url?: string | null
+          resume_path?: string | null
+          resume_url?: string | null
+          resume_file_name?: string | null
+          resume_file_type?: string | null
+          why_apply?: string | null
+          why_good_mentor?: string | null
+          teaching_methodology?: string | null
+          experience?: string | null
+          teaching_style?: string | null
+          sample_lessons?: string | null
+          status?: string
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          full_name?: string
+          email?: string
+          phone_number?: string | null
+          native_language?: string
+          education?: string | null
+          degree?: string | null
+          college?: string | null
+          graduation_year?: number | null
+          current_company?: string | null
+          current_role?: string | null
+          teaching_languages?: string[]
+          subjects?: string[]
+          availability?: string[]
+          linkedin_url?: string | null
+          github_url?: string | null
+          portfolio_url?: string | null
+          resume_path?: string | null
+          resume_url?: string | null
+          resume_file_name?: string | null
+          resume_file_type?: string | null
+          why_apply?: string | null
+          why_good_mentor?: string | null
+          teaching_methodology?: string | null
+          experience?: string | null
+          teaching_style?: string | null
+          sample_lessons?: string | null
+          status?: string
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

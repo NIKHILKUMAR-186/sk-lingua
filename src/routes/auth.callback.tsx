@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { AppRole } from "@/hooks/use-auth";
+import { getActiveRole, getDashboardRoute, getOnboardingRoute, shouldRedirectToOnboarding, type AppRole } from "@/lib/auth";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -78,15 +78,11 @@ function OAuthCallbackPage() {
         }
 
         const fetchedRoles = (roles ?? []).map((roleRow) => roleRow.role as AppRole);
-        const hasRole = fetchedRoles.length > 0;
         const onboarded = Boolean(profile?.onboarded);
-        const activeRole = fetchedRoles.includes("mentor") ? "mentor" : "student";
 
-        const redirectTo = hasRole && onboarded
-          ? activeRole === "mentor"
-            ? "/mentor/dashboard"
-            : "/student/dashboard"
-          : "/onboarding";
+        const redirectTo = shouldRedirectToOnboarding(fetchedRoles, onboarded)
+          ? getOnboardingRoute()
+          : getDashboardRoute(getActiveRole(fetchedRoles));
 
         if (!cancelled) {
           await navigate({ to: redirectTo as "/onboarding" | "/mentor/dashboard" | "/student/dashboard" });

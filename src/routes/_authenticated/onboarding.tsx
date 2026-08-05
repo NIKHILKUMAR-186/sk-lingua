@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { getDashboardRoute, type AppRole } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -87,7 +88,7 @@ function Onboarding() {
   useEffect(() => {
     if (!auth?.user) return;
     if (auth.profile?.onboarded) {
-      navigate({ to: auth.role === "mentor" ? "/mentor/dashboard" : "/student/dashboard" });
+      navigate({ to: getDashboardRoute(auth.role) });
       return;
     }
 
@@ -186,7 +187,7 @@ function Onboarding() {
       window.localStorage.removeItem(STORAGE_KEY);
       toast.success("Your account is ready.");
       navigate({
-        to: draft.role === "mentor" ? "/mentor/dashboard" : "/student/dashboard",
+        to: getDashboardRoute(draft.role as AppRole),
       });
     } catch (error) {
       console.error("Onboarding save failed", error);

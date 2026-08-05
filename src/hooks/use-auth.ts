@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-
-export type AppRole = "student" | "mentor" | "admin";
+import { getActiveRole, type AppRole } from "@/lib/auth";
 
 export interface AuthSession {
   user: User | null;
@@ -41,15 +40,14 @@ export function useAuth() {
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", user.id),
       ]);
-      const roleOrder: AppRole[] = ["admin", "mentor", "student"];
       const uniqueRoles = Array.from(new Set((roles ?? []).map((r) => r.role as AppRole)));
-      const role = uniqueRoles.sort((a, b) => roleOrder.indexOf(a) - roleOrder.indexOf(b))[0] ?? null;
+      const role = getActiveRole(uniqueRoles);
       return {
         user,
         profile: profile as AuthSession["profile"],
         role,
         roles: uniqueRoles,
-        activeRole: uniqueRoles[0] ?? null,
+        activeRole: role,
       };
     },
     staleTime: 30_000,
