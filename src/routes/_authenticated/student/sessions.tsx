@@ -83,7 +83,7 @@ function StudentSessions() {
     try {
       const { error } = await supabase.from("reviews").insert({
         session_id: ratingModal.sessionId,
-        student_id: auth?.user?.id,
+        student_id: auth!.user!.id,
         mentor_id: ratingModal.mentorId,
         rating: ratingValue,
         comment: reviewComment || null,
