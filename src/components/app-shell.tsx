@@ -25,6 +25,9 @@ import {
   CircleHelp,
   MessageSquare,
   LogOut,
+  Crown,
+  Clock,
+  History,
 } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -38,7 +41,11 @@ const STUDENT_ITEMS = [
   { title: "Discover Mentors", to: "/student/explore", icon: Compass },
   { title: "Sessions", to: "/student/sessions", icon: CalendarDays },
   { title: "Resources", to: "/student/resources", icon: BookOpenText },
-  { title: " Analytics & Streaks", to: "/student/streak", icon: Flame },
+  { title: "Analytics & Streaks", to: "/student/streak", icon: Flame },
+  { title: "Demo Session", to: "/student/demo-session", icon: Clock },
+  { title: "Pricing Plans", to: "/student/pricing", icon: Crown },
+  { title: "My Subscriptions", to: "/student/subscriptions", icon: Crown },
+  { title: "History", to: "/student/history", icon: History },
 ] as const;
 
 const MENTOR_ITEMS = [

@@ -6,10 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Flame, Trophy, Video, Sparkles, Star, ArrowRight, BookOpen, CheckCircle2, CalendarDays, Target, Clock } from "lucide-react";
+import { Flame, Trophy, Video, Sparkles, Star, ArrowRight, BookOpen, CheckCircle2, CalendarDays, Target, Clock, Zap, Crown } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
 import { EmptyState } from "@/components/empty-state";
 import { StatCardSkeleton, CardSkeleton, ListSkeleton } from "@/components/skeleton-loader";
+import { useStudentSubscription, useRemainingSlots } from "@/hooks/use-subscriptions";
+import { Progress } from "@/components/ui/progress";
 
 function StatCard({
   icon: Icon,
@@ -50,6 +52,10 @@ export const Route = createFileRoute("/_authenticated/student/dashboard")({
 function StudentDashboard() {
   const { data: auth } = useAuth();
   const userId = auth?.user?.id;
+
+  // Subscription hooks
+  const { data: subscription, isLoading: subLoading } = useStudentSubscription(userId ?? null);
+  const { data: remainingSlots = 0 } = useRemainingSlots(userId ?? null);
 
   const { data: streak, isLoading: streakLoading } = useQuery({
     queryKey: ["streak", userId],
@@ -157,6 +163,83 @@ function StudentDashboard() {
             </>
           )}
         </motion.div>
+
+        {/* Subscription Status */}
+        {!subLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {subscription && subscription.status === "active" ? (
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">{subscription.plan?.name}</h3>
+                      </div>
+                      <div className="flex items-center gap-4 pt-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Remaining Slots</p>
+                          <p className="text-2xl font-bold text-primary">
+                            {subscription.current_session_slots}
+                          </p>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground mb-1">
+                            {subscription.total_session_slots - subscription.current_session_slots} / {subscription.total_session_slots} used
+                          </div>
+                          <Progress
+                            value={
+                              ((subscription.total_session_slots - subscription.current_session_slots) /
+                                subscription.total_session_slots) *
+                              100
+                            }
+                            className="h-2"
+                          />
+                        </div>
+                        {subscription.expires_at && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Expires</p>
+                            <p className="text-sm font-semibold">
+                              {new Date(subscription.expires_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <Button asChild>
+                      <Link to="/student/subscriptions">Manage</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-2 border-dashed border-border">
+                <CardContent className="flex items-center justify-between pt-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">No Active Subscription</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Get started with our affordable plans
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button asChild variant="outline">
+                      <Link to="/student/demo-session">
+                        <Zap className="mr-2 h-4 w-4" />
+                        Demo (₹9)
+                      </Link>
+                    </Button>
+                    <Button asChild>
+                      <Link to="/student/pricing">Browse Plans</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        )}
 
         {/* Main grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
