@@ -186,7 +186,7 @@ export function Hero() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base">
-              <Link to="/auth" search={{ mode: "signup", role: "mentor" } as never}>Become a mentor</Link>
+              <Link to="/become-a-mentor">Become a mentor</Link>
             </Button>
           </div>
 

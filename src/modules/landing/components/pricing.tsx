@@ -42,7 +42,7 @@ const PLANS = [
       "Instant payouts",
     ],
     cta: "Become a mentor",
-    search: { mode: "signup", role: "mentor" } as never,
+    search: { },
     featured: true,
   },
 ];
@@ -104,7 +104,7 @@ export function Pricing() {
                 </ul>
 
 <Button asChild size="lg" className="mt-8 w-full" variant={plan.featured ? "default" : "outline"}>
-                  <Link to="/auth" search={plan.search}>{plan.cta}</Link>
+                  <Link to={plan.id === 'mentor' ? '/become-a-mentor' : '/auth'} search={plan.id === 'mentor' ? undefined : plan.search}>{plan.cta}</Link>
                 </Button>
               </div>
             </Reveal>

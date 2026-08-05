@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { getDashboardRoute } from "@/lib/auth";
 
 const NAV_LINKS = [
   { label: "Method", hash: "method" },
@@ -16,7 +17,7 @@ const NAV_LINKS = [
 export function LandingNavbar() {
   const { data } = useAuth();
   const [open, setOpen] = useState(false);
-  const dashHref = data?.role === "mentor" ? "/mentor/dashboard" : "/student/dashboard";
+  const dashHref = getDashboardRoute(data?.role ?? null);
 
   return (
     <header className="sticky top-0 z-50">

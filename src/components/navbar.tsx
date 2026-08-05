@@ -2,10 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Languages } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { getDashboardRoute } from "@/lib/auth";
 
 export function Navbar() {
   const { data } = useAuth();
-  const dashHref = data?.role === "mentor" ? "/mentor/dashboard" : "/student/dashboard";
+  const dashHref = getDashboardRoute(data?.role ?? null);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
