@@ -36,15 +36,39 @@
   --color-student: var(--student);
   --color-mentor: var(--mentor);
   --color-flame: var(--flame);
+  --color-electric: var(--electric);
+  --color-electric-foreground: var(--electric-foreground);
+  --color-primary-soft: var(--primary-soft);
 
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --shadow-soft: 0 4px 20px -8px oklch(0.4 0.15 260 / 0.15);
-  --shadow-glow: 0 0 40px -10px var(--primary);
+  --shadow-lift: 0 1px 1px oklch(0.2 0.04 265 / 0.03), 0 8px 30px -10px oklch(0.35 0.12 265 / 0.18);
+  --shadow-glow: 0 0 60px -18px var(--primary);
+  --shadow-glow-electric: 0 0 60px -14px var(--electric);
 
   --gradient-hero: linear-gradient(135deg, oklch(0.62 0.19 260) 0%, oklch(0.68 0.17 320) 100%);
   --gradient-warm: linear-gradient(135deg, oklch(0.75 0.17 45) 0%, oklch(0.68 0.2 20) 100%);
+  --gradient-brand: linear-gradient(125deg, oklch(0.5 0.22 265) 0%, oklch(0.58 0.2 285) 55%, oklch(0.55 0.24 245) 100%);
+
+  --animate-marquee: marquee 44s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 11s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 3.2s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
 }
 
 :root {
@@ -72,6 +96,10 @@
   --border: oklch(0.92 0.01 260);
   --input: oklch(0.94 0.008 260);
   --ring: oklch(0.55 0.2 260);
+
+  --electric: oklch(0.5 0.2 250);
+  --electric-foreground: oklch(0.99 0 0);
+  --primary-soft: oklch(0.95 0.03 265);
 
   --student: oklch(0.55 0.2 260);
   --mentor: oklch(0.6 0.18 155);
@@ -118,6 +146,10 @@
   --input: oklch(0.28 0.02 265);
   --ring: oklch(0.72 0.17 265);
 
+  --electric: oklch(0.66 0.18 245);
+  --electric-foreground: oklch(0.15 0.02 245);
+  --primary-soft: oklch(0.28 0.05 265);
+
   --sidebar: oklch(0.18 0.03 265);
   --sidebar-foreground: oklch(0.97 0.01 260);
   --sidebar-primary: oklch(0.72 0.17 265);
@@ -141,4 +173,22 @@
 
 @utility bg-hero-gradient { background-image: var(--gradient-hero); }
 @utility bg-warm-gradient { background-image: var(--gradient-warm); }
+@utility bg-brand-gradient { background-image: var(--gradient-brand); }
 @utility shadow-soft { box-shadow: var(--shadow-soft); }
+@utility shadow-lift { box-shadow: var(--shadow-lift); }
+@utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility shadow-glow-electric { box-shadow: var(--shadow-glow-electric); }
+@utility animate-marquee { animation: var(--animate-marquee); }
+@utility animate-float { animation: var(--animate-float); }
+@utility animate-float-slow { animation: var(--animate-float-slow); }
+@utility animate-pulse-soft { animation: var(--animate-pulse-soft); }
+@utility bg-fine-grid {
+  background-image:
+    linear-gradient(to right, oklch(0.2 0.04 265 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.2 0.04 265 / 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+@utility mask-fade-b {
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+}
