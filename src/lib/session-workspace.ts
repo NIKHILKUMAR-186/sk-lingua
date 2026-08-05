@@ -79,8 +79,8 @@ export async function fetchSessionWorkspace(sessionId: string, userId: string) {
 
   return {
     session,
-    homework: mappedHomework as SessionHomework[],
-    submissions: mappedSubmissions as SessionHomeworkSubmission[],
+    homework: mappedHomework.map((h:any)=> ({ ...h, attachments: (h.attachments as unknown) as SessionAttachment[] })) as SessionHomework[],
+    submissions: mappedSubmissions.map((s:any)=> ({ ...s, attachments: (s.attachments as unknown) as SessionAttachment[] })) as SessionHomeworkSubmission[],
     notes: notes as SessionNote[],
     timeline: timeline as SessionTimelineEvent[],
     resources: resources as Array<Record<string, unknown>>,
@@ -89,7 +89,7 @@ export async function fetchSessionWorkspace(sessionId: string, userId: string) {
 }
 
 export async function createSessionTimelineEntry(sessionId: string, eventType: string, title: string, detail: string | null, createdBy: string | null, metadata: Record<string, unknown> | null = null) {
-  const { data, error } = await supabase.from("session_timeline").insert({ session_id: sessionId, event_type: eventType, title, detail, created_by: createdBy, metadata }).select().single();
+  const { data, error } = await supabase.from("session_timeline").insert({ session_id: sessionId, event_type: eventType, title, detail, created_by: createdBy, metadata: (metadata as any) }).select().single();
     if (error) {
       const details = typeof error === 'object' ? JSON.stringify(error) : String(error);
       const msg = `session_timeline insert failed: ${details}`;

@@ -110,7 +110,7 @@ export async function insertNotification(payload: {
     kind: payload.kind ?? "booking",
     category: payload.category ?? "booking",
     related_id: payload.related_id ?? null,
-    metadata: payload.metadata ?? null,
+    metadata: (payload.metadata ?? null) as any,
   });
 
   if (error) throw error;

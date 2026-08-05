@@ -33,7 +33,7 @@ function BecomeAMentorPage() {
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button asChild size="lg" className="h-14 px-8">
-                  <Link to="/auth" search={{ mode: "signup" } as never}>
+                  <Link to="/mentor/apply">
                     Apply as a mentor
                   </Link>
                 </Button>
