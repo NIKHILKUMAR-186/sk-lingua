@@ -20,7 +20,11 @@ type MentorRow = {
 };
 
 export function FeaturedMentors() {
-  const { data: mentors = [], isLoading, isError } = useQuery<MentorRow[]>({
+  const {
+    data: mentors = [],
+    isLoading,
+    isError,
+  } = useQuery<MentorRow[]>({
     queryKey: ["featured-mentors"],
     queryFn: async () => {
       const { data: rows, error } = await supabase
@@ -47,12 +51,15 @@ export function FeaturedMentors() {
     <section id="mentors" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
       <Reveal className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Meet the mentors</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+            Meet the mentors
+          </p>
           <h2 className="mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">
             Learn with people who've lived it.
           </h2>
           <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-            Every mentor is verified, reviewed, and chosen for how they teach — not just what they know.
+            Every mentor is verified, reviewed, and chosen for how they teach — not just what they
+            know.
           </p>
         </div>
         <Button asChild variant="outline" className="group shrink-0">
@@ -82,7 +89,10 @@ export function FeaturedMentors() {
           <div className="rounded-3xl border border-dashed border-border p-16 text-center">
             <p className="text-muted-foreground">
               No mentors yet —{" "}
-              <Link to="/become-a-mentor" className="font-semibold text-primary underline underline-offset-4">
+              <Link
+                to="/become-a-mentor"
+                className="font-semibold text-primary underline underline-offset-4"
+              >
                 become the first!
               </Link>
             </p>
@@ -99,7 +109,12 @@ export function FeaturedMentors() {
                       <div className="relative">
                         <div className="h-14 w-14 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 to-electric/15">
                           {p?.avatar_url ? (
-                            <img src={p.avatar_url} alt={p?.full_name ?? "Mentor"} className="h-full w-full object-cover" loading="lazy" />
+                            <img
+                              src={p.avatar_url}
+                              alt={p?.full_name ?? "Mentor"}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
                           ) : (
                             <span className="flex h-full w-full items-center justify-center text-lg font-bold text-primary">
                               {(p?.full_name ?? "M")[0]}
@@ -128,7 +143,10 @@ export function FeaturedMentors() {
                     {langs.length > 0 && (
                       <div className="mt-4 flex flex-wrap gap-1.5">
                         {langs.slice(0, 3).map((l) => (
-                          <span key={l} className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                          <span
+                            key={l}
+                            className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+                          >
                             {l}
                           </span>
                         ))}
@@ -137,7 +155,9 @@ export function FeaturedMentors() {
 
                     <div className="mt-5 flex items-center justify-between border-t border-border/70 pt-4">
                       <div>
-                        <span className="text-lg font-semibold">${Number(m.hourly_rate ?? 20).toFixed(0)}</span>
+                        <span className="text-lg font-semibold">
+                          ${Number(m.hourly_rate ?? 20).toFixed(0)}
+                        </span>
                         <span className="text-xs text-muted-foreground">/hr</span>
                       </div>
                       <Button asChild size="sm" variant="ghost" className="group/btn">

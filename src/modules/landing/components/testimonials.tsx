@@ -21,14 +21,16 @@ const TESTIMONIALS: Testimonial[] = [
     featured: true,
   },
   {
-    quote: "My mentor understood exactly what I needed. Three months in, I passed my JLPT N4 mock with confidence.",
+    quote:
+      "My mentor understood exactly what I needed. Three months in, I passed my JLPT N4 mock with confidence.",
     name: "Kenji T.",
     role: "Software Engineer · Learning Japanese",
     initials: "KT",
     gradient: "from-electric to-primary",
   },
   {
-    quote: "As a mentor, the booking and payment flow is seamless. I've earned more here in a month than in a year of tutoring apps.",
+    quote:
+      "As a mentor, the booking and payment flow is seamless. I've earned more here in a month than in a year of tutoring apps.",
     name: "Lucía M.",
     role: "Native Spanish Mentor",
     initials: "LM",
@@ -53,7 +55,9 @@ export function Testimonials() {
     <section className="border-t border-border/60 bg-muted/40">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
         <Reveal className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Real outcomes</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+            Real outcomes
+          </p>
           <h2 className="mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">
             Loved by learners and mentors alike.
           </h2>
@@ -69,7 +73,9 @@ export function Testimonials() {
                 <blockquote className="mt-6 text-xl leading-relaxed">“{featured.quote}”</blockquote>
               </div>
               <figcaption className="mt-8 flex items-center gap-3.5">
-                <span className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${featured.gradient} text-sm font-bold text-white ring-2 ring-white/30`}>
+                <span
+                  className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${featured.gradient} text-sm font-bold text-white ring-2 ring-white/30`}
+                >
                   {featured.initials}
                 </span>
                 <div>
@@ -84,13 +90,20 @@ export function Testimonials() {
           <Reveal delay={100} className="lg:col-span-2">
             <div className="grid h-full gap-5 sm:grid-cols-2">
               {rest.map((t) => (
-                <figure key={t.name} className="flex flex-col justify-between rounded-[1.5rem] border border-border/80 bg-card p-7 shadow-sm transition-shadow hover:shadow-lift">
+                <figure
+                  key={t.name}
+                  className="flex flex-col justify-between rounded-[1.5rem] border border-border/80 bg-card p-7 shadow-sm transition-shadow hover:shadow-lift"
+                >
                   <div>
                     <Stars />
-                    <blockquote className="mt-4 text-[15px] leading-relaxed text-foreground">“{t.quote}”</blockquote>
+                    <blockquote className="mt-4 text-[15px] leading-relaxed text-foreground">
+                      “{t.quote}”
+                    </blockquote>
                   </div>
                   <figcaption className="mt-6 flex items-center gap-3">
-                    <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${t.gradient} text-xs font-bold text-white`}>
+                    <span
+                      className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${t.gradient} text-xs font-bold text-white`}
+                    >
                       {t.initials}
                     </span>
                     <div>

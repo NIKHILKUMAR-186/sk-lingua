@@ -1,7 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getActiveRole, getDashboardRoute, getOnboardingRoute, shouldRedirectToOnboarding, type AppRole } from "@/lib/auth";
+import {
+  getActiveRole,
+  getDashboardRoute,
+  getOnboardingRoute,
+  shouldRedirectToOnboarding,
+  type AppRole,
+} from "@/lib/auth";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -20,7 +26,10 @@ function OAuthCallbackPage() {
       let lastError: Error | null = null;
 
       while (!cancelled && Date.now() - start < maxWaitMs) {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
         if (sessionError) {
           lastError = sessionError as Error;
           await new Promise((resolve) => setTimeout(resolve, 150));
@@ -28,7 +37,10 @@ function OAuthCallbackPage() {
         }
 
         if (session?.access_token) {
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          const {
+            data: { user },
+            error: userError,
+          } = await supabase.auth.getUser();
           if (userError) {
             lastError = userError as Error;
             await new Promise((resolve) => setTimeout(resolve, 150));
@@ -68,10 +80,11 @@ function OAuthCallbackPage() {
         const user = await waitForAuthenticatedUser();
         if (!user) throw new Error("No authenticated user returned after OAuth callback.");
 
-        const [{ data: roles, error: rolesError }, { data: profile, error: profileError }] = await Promise.all([
-          supabase.from("user_roles").select("role").eq("user_id", user.id),
-          supabase.from("profiles").select("onboarded").eq("id", user.id).maybeSingle(),
-        ]);
+        const [{ data: roles, error: rolesError }, { data: profile, error: profileError }] =
+          await Promise.all([
+            supabase.from("user_roles").select("role").eq("user_id", user.id),
+            supabase.from("profiles").select("onboarded").eq("id", user.id).maybeSingle(),
+          ]);
 
         if (rolesError || profileError) {
           console.error("OAuth redirect lookup failed", { rolesError, profileError });
@@ -85,7 +98,9 @@ function OAuthCallbackPage() {
           : getDashboardRoute(getActiveRole(fetchedRoles));
 
         if (!cancelled) {
-          await navigate({ to: redirectTo as "/onboarding" | "/mentor/dashboard" | "/student/dashboard" });
+          await navigate({
+            to: redirectTo as "/onboarding" | "/mentor/dashboard" | "/student/dashboard",
+          });
         }
       } catch (error) {
         console.error("OAuth callback failed", error);

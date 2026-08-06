@@ -1,6 +1,7 @@
 export type SessionNoteType = "mentor_private" | "shared" | "student_private";
 
-export type HomeworkStatus = "Assigned" | "In Progress" | "Submitted" | "Reviewed" | "Completed" | "Late";
+export type HomeworkStatus =
+  "Assigned" | "In Progress" | "Submitted" | "Reviewed" | "Completed" | "Late";
 
 export interface SessionAttachment {
   name: string;

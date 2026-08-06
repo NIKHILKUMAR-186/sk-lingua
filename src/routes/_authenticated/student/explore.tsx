@@ -57,7 +57,9 @@ function Explore() {
               <Users className="h-8 w-8 text-muted-foreground/60" />
             </div>
             <h3 className="text-lg font-semibold">No mentors match your filters</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Try adjusting your search criteria or clearing filters.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Try adjusting your search criteria or clearing filters.
+            </p>
           </div>
         ) : (
           <motion.div
@@ -82,19 +84,26 @@ function Explore() {
                     <CardContent className="p-5">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={m.profile?.avatar_url || undefined} alt={m.profile?.full_name || ""} />
+                          <AvatarImage
+                            src={m.profile?.avatar_url || undefined}
+                            alt={m.profile?.full_name || ""}
+                          />
                           <AvatarFallback className="bg-primary/10 text-primary">
                             {m.profile?.full_name?.charAt(0) || "M"}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold truncate">{m.profile?.full_name ?? "Mentor"}</span>
+                            <span className="font-semibold truncate">
+                              {m.profile?.full_name ?? "Mentor"}
+                            </span>
                             {m.is_verified && (
                               <Shield className="h-3.5 w-3.5 shrink-0 text-primary" />
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground truncate">{m.profile?.state}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {m.profile?.state}
+                          </div>
                         </div>
                       </div>
 
@@ -117,9 +126,7 @@ function Explore() {
                         <div className="flex items-center gap-1 text-sm">
                           <Star className="h-3.5 w-3.5 fill-warning text-warning" />
                           {Number(m.rating_avg).toFixed(1)}
-                          <span className="text-xs text-muted-foreground">
-                            ({m.total_reviews})
-                          </span>
+                          <span className="text-xs text-muted-foreground">({m.total_reviews})</span>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           {m.demo_lesson_url && <Video className="h-3.5 w-3.5" />}
@@ -145,4 +152,3 @@ function Explore() {
     </AppShell>
   );
 }
-

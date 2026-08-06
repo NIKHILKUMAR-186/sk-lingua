@@ -51,7 +51,9 @@ export function MentorCta() {
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-white/60">This month</span>
-                  <span className="rounded-full bg-success/20 px-2.5 py-0.5 text-xs font-semibold text-success">+18%</span>
+                  <span className="rounded-full bg-success/20 px-2.5 py-0.5 text-xs font-semibold text-success">
+                    +18%
+                  </span>
                 </div>
                 <div className="mt-3 text-4xl font-display tracking-tight">$1,240</div>
                 <div className="mt-1 text-xs text-white/50">from 22 sessions</div>

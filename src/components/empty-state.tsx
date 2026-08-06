@@ -11,7 +11,14 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({ icon: Icon, title, description, actionLabel, onAction, className = "" }: EmptyStateProps) {
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+  className = "",
+}: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -32,4 +39,3 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
     </motion.div>
   );
 }
-

@@ -50,7 +50,12 @@
 
   --gradient-hero: linear-gradient(135deg, oklch(0.62 0.19 260) 0%, oklch(0.68 0.17 320) 100%);
   --gradient-warm: linear-gradient(135deg, oklch(0.75 0.17 45) 0%, oklch(0.68 0.2 20) 100%);
-  --gradient-brand: linear-gradient(125deg, oklch(0.5 0.22 265) 0%, oklch(0.58 0.2 285) 55%, oklch(0.55 0.24 245) 100%);
+  --gradient-brand: linear-gradient(
+    125deg,
+    oklch(0.5 0.22 265) 0%,
+    oklch(0.58 0.2 285) 55%,
+    oklch(0.55 0.24 245) 100%
+  );
 
   --animate-marquee: marquee 44s linear infinite;
   --animate-float: float 7s ease-in-out infinite;
@@ -59,16 +64,32 @@
 }
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 @keyframes pulse-soft {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.06); }
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
 }
 
 :root {
@@ -161,27 +182,57 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
 }
 
-@utility bg-hero-gradient { background-image: var(--gradient-hero); }
-@utility bg-warm-gradient { background-image: var(--gradient-warm); }
-@utility bg-brand-gradient { background-image: var(--gradient-brand); }
-@utility shadow-soft { box-shadow: var(--shadow-soft); }
-@utility shadow-lift { box-shadow: var(--shadow-lift); }
-@utility shadow-glow { box-shadow: var(--shadow-glow); }
-@utility shadow-glow-electric { box-shadow: var(--shadow-glow-electric); }
-@utility animate-marquee { animation: var(--animate-marquee); }
-@utility animate-float { animation: var(--animate-float); }
-@utility animate-float-slow { animation: var(--animate-float-slow); }
-@utility animate-pulse-soft { animation: var(--animate-pulse-soft); }
+@utility bg-hero-gradient {
+  background-image: var(--gradient-hero);
+}
+@utility bg-warm-gradient {
+  background-image: var(--gradient-warm);
+}
+@utility bg-brand-gradient {
+  background-image: var(--gradient-brand);
+}
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+@utility shadow-glow-electric {
+  box-shadow: var(--shadow-glow-electric);
+}
+@utility animate-marquee {
+  animation: var(--animate-marquee);
+}
+@utility animate-float {
+  animation: var(--animate-float);
+}
+@utility animate-float-slow {
+  animation: var(--animate-float-slow);
+}
+@utility animate-pulse-soft {
+  animation: var(--animate-pulse-soft);
+}
 @utility bg-fine-grid {
   background-image:
     linear-gradient(to right, oklch(0.2 0.04 265 / 0.035) 1px, transparent 1px),

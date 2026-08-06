@@ -2,7 +2,16 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, DollarSign, Star, Medal, CheckCircle, BookOpen, Video, FileCheck } from "lucide-react";
+import {
+  Clock,
+  DollarSign,
+  Star,
+  Medal,
+  CheckCircle,
+  BookOpen,
+  Video,
+  FileCheck,
+} from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -19,7 +28,16 @@ interface GigCardProps {
   onToggleActive?: (id: string, active: boolean) => void;
 }
 
-export function GigCard({ gig, selected, onSelect, showActions, onEdit, onArchive, onDelete, onToggleActive }: GigCardProps) {
+export function GigCard({
+  gig,
+  selected,
+  onSelect,
+  showActions,
+  onEdit,
+  onArchive,
+  onDelete,
+  onToggleActive,
+}: GigCardProps) {
   const lang = LANGUAGES.find((l) => l.code === gig.language);
   const levelColors: Record<string, string> = {
     beginner: "bg-green-100 text-green-700",
@@ -69,9 +87,7 @@ export function GigCard({ gig, selected, onSelect, showActions, onEdit, onArchiv
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-foreground truncate">{gig.title}</h3>
-              {gig.category && (
-                <p className="text-xs text-muted-foreground">{gig.category}</p>
-              )}
+              {gig.category && <p className="text-xs text-muted-foreground">{gig.category}</p>}
             </div>
             <div className="text-right shrink-0">
               <div className="text-lg font-bold text-primary">${Number(gig.price).toFixed(0)}</div>
@@ -80,7 +96,11 @@ export function GigCard({ gig, selected, onSelect, showActions, onEdit, onArchiv
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {lang && <Badge variant="outline" className="text-xs">{lang.emoji} {lang.name}</Badge>}
+            {lang && (
+              <Badge variant="outline" className="text-xs">
+                {lang.emoji} {lang.name}
+              </Badge>
+            )}
             <Badge variant="secondary" className="text-xs flex items-center gap-1">
               <Clock className="h-3 w-3" /> {gig.duration_mins} min
             </Badge>
@@ -100,18 +120,25 @@ export function GigCard({ gig, selected, onSelect, showActions, onEdit, onArchiv
             <p className="text-sm text-muted-foreground line-clamp-2">{gig.description}</p>
           )}
 
-          {gig.whats_included && Array.isArray(gig.whats_included) && gig.whats_included.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {(gig.whats_included as string[]).slice(0, 3).map((item: string, i: number) => (
-                <span key={i} className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <CheckCircle className="h-3 w-3 text-success" /> {item}
-                </span>
-              ))}
-              {(gig.whats_included as string[]).length > 3 && (
-                <span className="text-xs text-muted-foreground">+{(gig.whats_included as string[]).length - 3} more</span>
-              )}
-            </div>
-          )}
+          {gig.whats_included &&
+            Array.isArray(gig.whats_included) &&
+            gig.whats_included.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {(gig.whats_included as string[]).slice(0, 3).map((item: string, i: number) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+                  >
+                    <CheckCircle className="h-3 w-3 text-success" /> {item}
+                  </span>
+                ))}
+                {(gig.whats_included as string[]).length > 3 && (
+                  <span className="text-xs text-muted-foreground">
+                    +{(gig.whats_included as string[]).length - 3} more
+                  </span>
+                )}
+              </div>
+            )}
 
           {showActions && (
             <div className="flex items-center gap-2 pt-2 border-t">
@@ -119,23 +146,48 @@ export function GigCard({ gig, selected, onSelect, showActions, onEdit, onArchiv
                 <Button
                   size="sm"
                   variant={gig.is_active ? "outline" : "default"}
-                  onClick={(e) => { e.stopPropagation(); onToggleActive(gig.id, !gig.is_active); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleActive(gig.id, !gig.is_active);
+                  }}
                 >
                   {gig.is_active ? "Deactivate" : "Activate"}
                 </Button>
               )}
               {onEdit && (
-                <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); onEdit(gig); }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(gig);
+                  }}
+                >
                   Edit
                 </Button>
               )}
               {onArchive && (
-                <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onArchive(gig.id); }}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onArchive(gig.id);
+                  }}
+                >
                   Archive
                 </Button>
               )}
               {onDelete && (
-                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(gig.id); }}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(gig.id);
+                  }}
+                >
                   Delete
                 </Button>
               )}
@@ -146,4 +198,3 @@ export function GigCard({ gig, selected, onSelect, showActions, onEdit, onArchiv
     </motion.div>
   );
 }
-

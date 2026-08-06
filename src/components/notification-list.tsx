@@ -14,9 +14,16 @@ interface NotificationListProps {
   unreadCount: number;
   onMarkAll: () => void;
   onMarkOne: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function NotificationList({ items, unreadCount, onMarkAll, onMarkOne }: NotificationListProps) {
+export function NotificationList({
+  items,
+  unreadCount,
+  onMarkAll,
+  onMarkOne,
+  onDelete,
+}: NotificationListProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -51,8 +58,7 @@ export function NotificationList({ items, unreadCount, onMarkAll, onMarkOne }: N
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(
         (n) =>
-          n.title.toLowerCase().includes(query) ||
-          (n.body && n.body.toLowerCase().includes(query)),
+          n.title.toLowerCase().includes(query) || (n.body && n.body.toLowerCase().includes(query)),
       );
     }
 
@@ -95,6 +101,7 @@ export function NotificationList({ items, unreadCount, onMarkAll, onMarkOne }: N
                 key={notification.id}
                 notification={notification}
                 onMarkRead={onMarkOne}
+                onDelete={onDelete}
               />
             ))
           )}

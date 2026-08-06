@@ -1,15 +1,131 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-export function useNotifications() {
-  const qc = useQueryClient();
-  const client = (supabase as any);
-  const q = useQuery({ queryKey: ['notifications'], queryFn: async () => (await client.from('notifications').select('*').order('created_at', { ascending: false })).data ?? [] });
+export interface NotificationPreferences {
+  id: string;
+  user_id: string;
+  email_notifications: boolean;
+  demo_updates: boolean;
+  subscription_updates: boolean;
+  account_updates: boolean;
+  system_announcements: boolean;
+  marketing_emails: boolean;
+  sms_notifications: boolean;
+  push_notifications: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
-  async function markRead(id: string) {
-    await client.from('notifications').update({ is_read: true }).eq('id', id);
-    qc.invalidateQueries({ queryKey: ['notifications'] });
+// Get notification preferences
+export async function getNotificationPreferences(
+  userId: string,
+): Promise<NotificationPreferences | null> {
+  const { data, error } = await supabase
+    .from("notification_preferences")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  // If no preferences exist, create default ones
+  if (!data) {
+    return createDefaultPreferences(userId);
   }
 
-  return { notifications: q.data ?? [], isLoading: q.isLoading, markRead };
+  return data;
+}
+
+// Create default preferences
+async function createDefaultPreferences(userId: string): Promise<NotificationPreferences> {
+  const { data, error } = await supabase
+    .from("notification_preferences")
+    .insert({
+      user_id: userId,
+      email_notifications: true,
+      demo_updates: true,
+      subscription_updates: true,
+      account_updates: true,
+      system_announcements: true,
+      marketing_emails: false,
+      sms_notifications: false,
+      push_notifications: true,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Update notification preferences
+export async function updateNotificationPreferences(
+  userId: string,
+  updates: Partial<NotificationPreferences>,
+): Promise<NotificationPreferences> {
+  const { data, error } = await supabase
+    .from("notification_preferences")
+    .update(updates)
+    .eq("user_id", userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// React Hook
+export function useNotificationPreferences(userId: string | null) {
+  return useQuery({
+    queryKey: ["notification-preferences", userId],
+    queryFn: () => (userId ? getNotificationPreferences(userId) : null),
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+export function useUpdateNotificationPreferences() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { userId: string; updates: Partial<NotificationPreferences> }) => {
+      return await updateNotificationPreferences(data.userId, data.updates);
+    },
+    onSuccess: (data, variables) => {
+      qc.invalidateQueries({ queryKey: ["notification-preferences", variables.userId] });
+      toast.success("Notification preferences updated");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update preferences");
+    },
+  });
+}
+
+// Delete a notification
+export async function deleteNotification(userId: string, notificationId: string): Promise<void> {
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("user_id", userId)
+    .eq("id", notificationId);
+
+  if (error) throw error;
+}
+
+export function useDeleteNotification() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { userId: string; notificationId: string }) =>
+      await deleteNotification(data.userId, data.notificationId),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["notifications", variables.userId] });
+      qc.invalidateQueries({ queryKey: ["notifications-unread", variables.userId] });
+      toast.success("Notification deleted");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete notification");
+    },
+  });
 }

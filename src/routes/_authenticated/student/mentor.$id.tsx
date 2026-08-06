@@ -11,8 +11,13 @@ import { MentorPublicProfile } from "@/components/mentor-public-profile";
 import { BookingCalendar } from "@/components/booking-calendar";
 import { BookingSummary } from "@/components/booking-summary";
 import { MentorRatingSummary } from "@/components/review/MentorRatingSummary";
-import { useReviews, useMentorRatingSummary } from "@/hooks/use-reviews";
-import { useAvailableSlots, useBookingRequest, calculateAvailableDates, type BookingSummary as BookingSummaryType } from "@/hooks/use-booking";
+import { useMentorRatingSummary } from "@/hooks/use-reviews";
+import {
+  useAvailableSlots,
+  useBookingRequest,
+  calculateAvailableDates,
+  type BookingSummary as BookingSummaryType,
+} from "@/hooks/use-booking";
 import { DashboardSkeleton } from "@/components/skeleton-loader";
 import { format } from "date-fns";
 
@@ -30,18 +35,27 @@ function MentorProfile() {
   const { data: mentor, isLoading } = useQuery({
     queryKey: ["mentor-full", id],
     queryFn: async () => {
-      const [{ data: mp }, { data: profile }, { data: gigs }, { data: reviews }] = await Promise.all([
+      const [{ data: mp }, { data: profile }, { data: gigs }] = await Promise.all([
         supabase.from("mentor_profiles").select("*").eq("user_id", id).maybeSingle(),
         supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
-        supabase.from("gigs").select("*").eq("mentor_id", id).eq("is_active", true).eq("is_archived", false).order("featured", { ascending: false }),
-        supabase.from("reviews").select("*").eq("mentor_id", id).order("created_at", { ascending: false }).limit(50),
+        supabase
+          .from("gigs")
+          .select("*")
+          .eq("mentor_id", id)
+          .eq("is_active", true)
+          .eq("is_archived", false)
+          .order("featured", { ascending: false }),
       ]);
-      return { mp, profile, gigs: gigs ?? [], reviews: reviews ?? [] };
+      return { mp, profile, gigs: gigs ?? [] };
     },
   });
 
   // Reviews with new MentorRatingSummary
-  const { reviews: summaryReviews, stats: summaryStats, isLoading: summaryLoading } = useMentorRatingSummary(id);
+  const {
+    reviews: summaryReviews,
+    stats: summaryStats,
+    isLoading: summaryLoading,
+  } = useMentorRatingSummary(id);
 
   // Booking state
   const [selectedGig, setSelectedGig] = useState<string | null>(null);
@@ -60,7 +74,14 @@ function MentorProfile() {
   const { data: availSlots = [] } = useQuery({
     queryKey: ["availability-slots", id],
     enabled: !!id,
-    queryFn: async () => (await supabase.from("availability_slots").select("*").eq("mentor_id", id).eq("is_available", true)).data ?? [],
+    queryFn: async () =>
+      (
+        await supabase
+          .from("availability_slots")
+          .select("*")
+          .eq("mentor_id", id)
+          .eq("is_available", true)
+      ).data ?? [],
   });
 
   const { slotOptions, groupedSlots } = useAvailableSlots(id, selectedDate, durationMins);
@@ -152,7 +173,12 @@ function MentorProfile() {
   return (
     <AppShell variant="student">
       <div className="mx-auto max-w-6xl">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/student/explore" })} className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate({ to: "/student/explore" })}
+          className="mb-4"
+        >
           <ArrowLeft className="mr-1 h-4 w-4" /> Back to mentors
         </Button>
 
@@ -180,24 +206,60 @@ function MentorProfile() {
             {/* Step indicator */}
             <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
               <div className="flex items-center gap-2 text-sm">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                  hasSelectedGig ? "bg-primary text-primary-foreground" : "bg-muted-foreground/20 text-muted-foreground"
-                }`}>1</span>
-                <span className={hasSelectedGig ? "text-foreground font-medium" : "text-muted-foreground"}>Gig</span>
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                    hasSelectedGig
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted-foreground/20 text-muted-foreground"
+                  }`}
+                >
+                  1
+                </span>
+                <span
+                  className={
+                    hasSelectedGig ? "text-foreground font-medium" : "text-muted-foreground"
+                  }
+                >
+                  Gig
+                </span>
               </div>
               <div className="h-px flex-1 bg-border mx-2" />
               <div className="flex items-center gap-2 text-sm">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                  hasSelectedDate ? "bg-primary text-primary-foreground" : "bg-muted-foreground/20 text-muted-foreground"
-                }`}>2</span>
-                <span className={hasSelectedDate ? "text-foreground font-medium" : "text-muted-foreground"}>Date</span>
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                    hasSelectedDate
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted-foreground/20 text-muted-foreground"
+                  }`}
+                >
+                  2
+                </span>
+                <span
+                  className={
+                    hasSelectedDate ? "text-foreground font-medium" : "text-muted-foreground"
+                  }
+                >
+                  Date
+                </span>
               </div>
               <div className="h-px flex-1 bg-border mx-2" />
               <div className="flex items-center gap-2 text-sm">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                  hasSelectedSlot ? "bg-primary text-primary-foreground" : "bg-muted-foreground/20 text-muted-foreground"
-                }`}>3</span>
-                <span className={hasSelectedSlot ? "text-foreground font-medium" : "text-muted-foreground"}>Book</span>
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                    hasSelectedSlot
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted-foreground/20 text-muted-foreground"
+                  }`}
+                >
+                  3
+                </span>
+                <span
+                  className={
+                    hasSelectedSlot ? "text-foreground font-medium" : "text-muted-foreground"
+                  }
+                >
+                  Book
+                </span>
               </div>
             </div>
 
@@ -242,4 +304,3 @@ function MentorProfile() {
     </AppShell>
   );
 }
-

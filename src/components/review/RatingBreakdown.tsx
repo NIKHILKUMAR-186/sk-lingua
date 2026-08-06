@@ -16,9 +16,7 @@ export function RatingBreakdown({ distribution, total }: RatingBreakdownProps) {
 
         return (
           <div key={star} className="flex items-center gap-2 text-sm group">
-            <span className="w-6 text-right text-xs font-medium text-muted-foreground">
-              {star}
-            </span>
+            <span className="w-6 text-right text-xs font-medium text-muted-foreground">{star}</span>
             <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
@@ -36,4 +34,3 @@ export function RatingBreakdown({ distribution, total }: RatingBreakdownProps) {
     </div>
   );
 }
-

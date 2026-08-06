@@ -7,7 +7,12 @@ interface NotificationBadgeProps {
   className?: string;
 }
 
-export function NotificationBadge({ count, variant = "primary", size = "sm", className }: NotificationBadgeProps) {
+export function NotificationBadge({
+  count,
+  variant = "primary",
+  size = "sm",
+  className,
+}: NotificationBadgeProps) {
   if (count <= 0) return null;
 
   const sizeClasses = {

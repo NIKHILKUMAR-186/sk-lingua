@@ -1,15 +1,22 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { AppShell } from '@/components/app-shell';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import React from 'react';
-import { ApplicationTimeline } from '@/components/application-timeline';
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/app-shell";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import React from "react";
+import { ApplicationTimeline } from "@/components/application-timeline";
 
-export const Route = createFileRoute('/_authenticated/admin/mentor-applications/$id')({ component: MentorApplicationDetail });
+export const Route = createFileRoute("/_authenticated/admin/mentor-applications/$id")({
+  component: MentorApplicationDetail,
+});
 
 function MentorApplicationDetail() {
   const id = Route.useParams().id as string;
-  const { data: app } = useQuery({ queryKey: ['admin-application', id], enabled: !!id, queryFn: async () => (await supabase.from('mentor_applications').select('*').eq('id', id).maybeSingle()).data });
+  const { data: app } = useQuery({
+    queryKey: ["admin-application", id],
+    enabled: !!id,
+    queryFn: async () =>
+      (await supabase.from("mentor_applications").select("*").eq("id", id).maybeSingle()).data,
+  });
 
   if (!app) return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
 

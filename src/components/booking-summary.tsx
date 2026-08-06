@@ -16,7 +16,13 @@ interface BookingSummaryProps {
   isPending: boolean;
 }
 
-export function BookingSummary({ summary, onMessageChange, message, onConfirm, isPending }: BookingSummaryProps) {
+export function BookingSummary({
+  summary,
+  onMessageChange,
+  message,
+  onConfirm,
+  isPending,
+}: BookingSummaryProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -45,7 +51,9 @@ export function BookingSummary({ summary, onMessageChange, message, onConfirm, i
               <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <CalendarDays className="h-4 w-4" /> Date
               </span>
-              <span className="text-sm font-medium">{format(new Date(summary.date), "EEEE, MMM d, yyyy")}</span>
+              <span className="text-sm font-medium">
+                {format(new Date(summary.date), "EEEE, MMM d, yyyy")}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -80,9 +88,13 @@ export function BookingSummary({ summary, onMessageChange, message, onConfirm, i
 
           <Button className="w-full" size="lg" onClick={onConfirm} disabled={isPending}>
             {isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending request...</>
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending request...
+              </>
             ) : (
-              <><Video className="mr-2 h-4 w-4" /> Request session</>
+              <>
+                <Video className="mr-2 h-4 w-4" /> Request session
+              </>
             )}
           </Button>
 
@@ -94,4 +106,3 @@ export function BookingSummary({ summary, onMessageChange, message, onConfirm, i
     </motion.div>
   );
 }
-

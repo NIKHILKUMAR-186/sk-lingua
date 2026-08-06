@@ -1,10 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { LucideIcon } from "lucide-react";
 
 interface SidebarItemProps {
@@ -44,7 +41,9 @@ export function SidebarItem({ icon: Icon, label, to, isActive, badge, tooltip }:
           <Icon
             className={cn(
               "h-5 w-5 shrink-0 stroke-[1.8]",
-              isActive ? "text-white" : "text-muted-foreground group-hover/menu-button:text-foreground",
+              isActive
+                ? "text-white"
+                : "text-muted-foreground group-hover/menu-button:text-foreground",
             )}
           />
 

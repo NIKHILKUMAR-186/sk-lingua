@@ -6,6 +6,7 @@ import { NotificationDot } from "@/components/notification-badge";
 import { getCategoryConfig } from "@/components/notification-types";
 import { formatRelativeTime } from "@/lib/relative-time";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Notification = Tables<"notifications">;
@@ -13,9 +14,10 @@ type Notification = Tables<"notifications">;
 interface NotificationCardProps {
   notification: Notification;
   onMarkRead: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function NotificationCard({ notification, onMarkRead }: NotificationCardProps) {
+export function NotificationCard({ notification, onMarkRead, onDelete }: NotificationCardProps) {
   const config = getCategoryConfig(notification.category);
   const isUnread = !notification.read;
 
@@ -44,7 +46,9 @@ export function NotificationCard({ notification, onMarkRead }: NotificationCardP
       }}
       tabIndex={0}
       role="button"
-      aria-label={isUnread ? `${notification.title} - Unread. Click to mark as read.` : notification.title}
+      aria-label={
+        isUnread ? `${notification.title} - Unread. Click to mark as read.` : notification.title
+      }
       className={cn(
         "group relative cursor-pointer overflow-hidden rounded-xl border bg-white p-4 shadow-sm transition-all duration-200",
         "hover:shadow-md hover:border-slate-200",
@@ -55,10 +59,7 @@ export function NotificationCard({ notification, onMarkRead }: NotificationCardP
           "border-l-[3px] border-l-blue-500",
           "hover:bg-blue-50/60 dark:hover:bg-blue-950/30",
         ],
-        !isUnread && [
-          "bg-white dark:bg-slate-900",
-          "hover:bg-slate-50 dark:hover:bg-slate-800/50",
-        ],
+        !isUnread && ["bg-white dark:bg-slate-900", "hover:bg-slate-50 dark:hover:bg-slate-800/50"],
       )}
     >
       <div className="flex items-start gap-3.5">
@@ -73,14 +74,14 @@ export function NotificationCard({ notification, onMarkRead }: NotificationCardP
                 <h4
                   className={cn(
                     "text-sm font-medium leading-tight",
-                    isUnread ? "text-slate-900 dark:text-slate-100" : "text-slate-700 dark:text-slate-300",
+                    isUnread
+                      ? "text-slate-900 dark:text-slate-100"
+                      : "text-slate-700 dark:text-slate-300",
                   )}
                 >
                   {notification.title}
                 </h4>
-                {isUnread && (
-                  <NotificationDot className="shrink-0 mt-0.5" />
-                )}
+                {isUnread && <NotificationDot className="shrink-0 mt-0.5" />}
               </div>
               {notification.body && (
                 <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
@@ -129,6 +130,18 @@ export function NotificationCard({ notification, onMarkRead }: NotificationCardP
                     {action.label}
                   </Button>
                 ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 rounded-md px-2 text-[11px] font-medium text-slate-600 hover:text-red-700 hover:bg-red-50 dark:text-slate-400 dark:hover:text-red-300 dark:hover:bg-red-950/40"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(notification.id);
+                  }}
+                  tabIndex={0}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </div>
@@ -146,24 +159,13 @@ interface QuickAction {
 function getQuickActions(category: string | null): QuickAction[] {
   switch (category) {
     case "booking":
-      return [
-        { label: "View Request" },
-        { label: "Accept" },
-        { label: "Decline" },
-      ];
+      return [{ label: "View Request" }, { label: "Accept" }, { label: "Decline" }];
     case "session":
-      return [
-        { label: "Open Session" },
-        { label: "View Notes" },
-      ];
+      return [{ label: "Open Session" }, { label: "View Notes" }];
     case "resource":
-      return [
-        { label: "Open Resource" },
-      ];
+      return [{ label: "Open Resource" }];
     case "payment":
-      return [
-        { label: "View Details" },
-      ];
+      return [{ label: "View Details" }];
     default:
       return [];
   }

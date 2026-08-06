@@ -34,13 +34,15 @@ export function HowItWorks() {
           {/* Sticky intro */}
           <div className="lg:sticky lg:top-32 lg:self-start">
             <Reveal>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">How it works</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+                How it works
+              </p>
               <h2 className="mt-4 text-4xl leading-tight tracking-tight sm:text-5xl">
                 From first search to fluent, in four steps.
               </h2>
               <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-                A deliberately simple path from discovery to a habit you'll protect. No clutter,
-                no friction — just momentum.
+                A deliberately simple path from discovery to a habit you'll protect. No clutter, no
+                friction — just momentum.
               </p>
               <Button asChild className="mt-8 group">
                 <Link to="/auth" search={{ mode: "signup" } as never}>
@@ -53,7 +55,10 @@ export function HowItWorks() {
 
           {/* Timeline */}
           <ol className="relative space-y-2">
-            <span className="absolute bottom-8 left-[27px] top-4 w-px bg-gradient-to-b from-primary/40 via-border to-transparent" aria-hidden="true" />
+            <span
+              className="absolute bottom-8 left-[27px] top-4 w-px bg-gradient-to-b from-primary/40 via-border to-transparent"
+              aria-hidden="true"
+            />
             {STEPS.map((step, i) => (
               <Reveal as="li" key={step.title} delay={i * 90}>
                 <div className="group relative flex gap-6 rounded-2xl p-3 transition-colors hover:bg-muted/40 sm:gap-8 sm:p-4">
@@ -62,7 +67,9 @@ export function HowItWorks() {
                   </div>
                   <div className="pt-1">
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs tracking-widest text-muted-foreground">STEP {i + 1}</span>
+                      <span className="font-mono text-xs tracking-widest text-muted-foreground">
+                        STEP {i + 1}
+                      </span>
                     </div>
                     <h3 className="mt-1.5 text-xl tracking-tight">{step.title}</h3>
                     <p className="mt-2 max-w-lg text-muted-foreground">{step.desc}</p>

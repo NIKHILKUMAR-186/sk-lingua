@@ -45,10 +45,12 @@ export function ReviewCard({ review, showSessionInfo, variant = "default" }: Rev
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className={cn(
-        "overflow-hidden transition-all hover:shadow-soft",
-        review.recommend === false && "border-destructive/20"
-      )}>
+      <Card
+        className={cn(
+          "overflow-hidden transition-all hover:shadow-soft",
+          review.recommend === false && "border-destructive/20",
+        )}
+      >
         <CardContent className={cn("p-4", isCompact ? "space-y-2" : "space-y-3")}>
           {/* Header */}
           <div className="flex items-start justify-between gap-3">
@@ -79,9 +81,7 @@ export function ReviewCard({ review, showSessionInfo, variant = "default" }: Rev
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <RatingStars value={review.rating} size="sm" />
-              {review.recommend === true && (
-                <ThumbsUp className="h-3 w-3 text-success ml-1" />
-              )}
+              {review.recommend === true && <ThumbsUp className="h-3 w-3 text-success ml-1" />}
             </div>
           </div>
 
@@ -93,7 +93,9 @@ export function ReviewCard({ review, showSessionInfo, variant = "default" }: Rev
                 if (!val) return null;
                 return (
                   <div key={key} className="rounded-md bg-muted/50 p-1.5 text-center">
-                    <div className="text-[10px] text-muted-foreground truncate">{CATEGORY_LABELS[key]}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">
+                      {CATEGORY_LABELS[key]}
+                    </div>
                     <div className="flex justify-center">
                       <RatingStars value={val} size="sm" />
                     </div>
@@ -105,16 +107,12 @@ export function ReviewCard({ review, showSessionInfo, variant = "default" }: Rev
 
           {/* Review Text */}
           {review.review_text && (
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              "{review.review_text}"
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">"{review.review_text}"</p>
           )}
 
           {/* Fallback to comment */}
           {!review.review_text && review.comment && (
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              "{review.comment}"
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">"{review.comment}"</p>
           )}
 
           {/* Attachment */}
@@ -141,4 +139,3 @@ export function ReviewCard({ review, showSessionInfo, variant = "default" }: Rev
     </motion.div>
   );
 }
-

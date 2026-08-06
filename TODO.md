@@ -1,6 +1,7 @@
 # Landing Page Redesign — Lingua
 
 ## Info Gathered
+
 - TanStack Router + React 19 + Tailwind v4 + lucide-react
 - Light premium theme, Instrument Serif display + Inter sans
 - Deep indigo primary, muted neutral palette
@@ -8,6 +9,7 @@
 - Auth links: `/auth` mode signup, and role mentor
 
 ## Plan / Steps
+
 - [x] 0. Explore repo & establish plan (approved)
 - [x] 1. Update design tokens in `src/styles.css` (electric blue, refined shadows/glows, grid texture, marquee/fade keyframes)
 - [x] 2. Build `reveal.tsx` scroll-reveal wrapper (GPU-friendly)

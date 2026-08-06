@@ -54,9 +54,7 @@ export function NotificationEmptyState({ activeFilter }: NotificationEmptyStateP
       >
         <Bell className="h-9 w-9 text-slate-400 dark:text-slate-500" />
       </motion.div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-        {msg.title}
-      </h3>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{msg.title}</h3>
       <p className="mt-1.5 max-w-sm text-center text-sm text-slate-500 dark:text-slate-400">
         {msg.body}
       </p>

@@ -7,7 +7,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ExternalLink, Download, Search, Bookmark, BookmarkCheck, Filter, ArrowUpDown } from "lucide-react";
+import {
+  BookOpen,
+  ExternalLink,
+  Download,
+  Search,
+  Bookmark,
+  BookmarkCheck,
+  Filter,
+  ArrowUpDown,
+} from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -50,10 +59,19 @@ function Resources() {
   const { data: resources = [] } = useQuery({
     queryKey: ["student-resources", auth?.user?.id],
     enabled: !!auth?.user,
-    queryFn: async () => (await supabase.from("resources").select("*").order("created_at", { ascending: false }).limit(60)).data ?? [],
+    queryFn: async () =>
+      (
+        await supabase
+          .from("resources")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(60)
+      ).data ?? [],
   });
 
-  const sessionResources = resources.filter((r) => r.visibility === "session" && r.student_id === auth?.user?.id);
+  const sessionResources = resources.filter(
+    (r) => r.visibility === "session" && r.student_id === auth?.user?.id,
+  );
   const publicResources = resources.filter((r) => r.visibility === "public");
 
   const allResources = useMemo(() => {
@@ -63,7 +81,9 @@ function Resources() {
     if (category !== "All") items = items.filter((r) => r.category === category.toLowerCase());
     if (search) {
       const q = search.toLowerCase();
-      items = items.filter((r) => r.title.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q));
+      items = items.filter(
+        (r) => r.title.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q),
+      );
     }
 
     items.sort((a, b) => {
@@ -76,9 +96,15 @@ function Resources() {
   }, [sessionResources, publicResources, showBookmarked, category, search, sortNewest]);
 
   async function toggleBookmark(id: string, current: boolean) {
-    const { error } = await supabase.from("resources").update({ is_bookmarked: !current }).eq("id", id);
+    const { error } = await supabase
+      .from("resources")
+      .update({ is_bookmarked: !current })
+      .eq("id", id);
     if (error) toast.error(error.message);
-    else { qc.invalidateQueries({ queryKey: ["student-resources", auth?.user?.id] }); toast.success(current ? "Bookmark removed" : "Bookmarked"); }
+    else {
+      qc.invalidateQueries({ queryKey: ["student-resources", auth?.user?.id] });
+      toast.success(current ? "Bookmark removed" : "Bookmarked");
+    }
   }
 
   return (
@@ -86,21 +112,44 @@ function Resources() {
       <div className="mx-auto max-w-5xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Resources</h1>
-          <p className="text-muted-foreground">Access materials shared by your mentors and session homework.</p>
+          <p className="text-muted-foreground">
+            Access materials shared by your mentors and session homework.
+          </p>
         </div>
 
         {/* Search & filters */}
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search resources..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input
+              placeholder="Search resources..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
           <div className="flex gap-2 overflow-auto">
-            <select className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={category} onChange={(e) => setCategory(e.target.value)}>
-              {RESOURCE_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            <select
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {RESOURCE_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
-            <Button variant={showBookmarked ? "default" : "outline"} size="sm" onClick={() => setShowBookmarked(!showBookmarked)}>
-              {showBookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+            <Button
+              variant={showBookmarked ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowBookmarked(!showBookmarked)}
+            >
+              {showBookmarked ? (
+                <BookmarkCheck className="h-4 w-4" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setSortNewest(!sortNewest)}>
               <ArrowUpDown className="h-4 w-4 mr-1" /> {sortNewest ? "Newest" : "Oldest"}
@@ -153,10 +202,20 @@ function Resources() {
                           <div className="min-w-0">
                             <div className="font-semibold truncate">{resource.title}</div>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                              {lang && <Badge variant="outline" className="text-[10px]">{lang.emoji} {lang.name}</Badge>}
-                              {resource.category && <Badge variant="secondary" className="text-[10px]">{resource.category}</Badge>}
+                              {lang && (
+                                <Badge variant="outline" className="text-[10px]">
+                                  {lang.emoji} {lang.name}
+                                </Badge>
+                              )}
+                              {resource.category && (
+                                <Badge variant="secondary" className="text-[10px]">
+                                  {resource.category}
+                                </Badge>
+                              )}
                               {resource.visibility === "session" && (
-                                <Badge variant="outline" className="text-[10px] text-primary">Protected</Badge>
+                                <Badge variant="outline" className="text-[10px] text-primary">
+                                  Protected
+                                </Badge>
                               )}
                             </div>
                           </div>
@@ -173,17 +232,33 @@ function Resources() {
                               <Bookmark className="h-4 w-4 text-muted-foreground" />
                             )}
                           </Button>
-                          <a href={resource.storage_url || resource.url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary">
+                          <a
+                            href={resource.storage_url || resource.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-muted-foreground hover:text-primary"
+                          >
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         </div>
                       </div>
                       {resource.description && (
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{resource.description}</p>
+                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                          {resource.description}
+                        </p>
                       )}
                       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{resource.file_name ? `${resource.file_name} · ${formatBytes(resource.file_size)}` : "External link"}</span>
-                        <a href={resource.storage_url || resource.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary underline">
+                        <span>
+                          {resource.file_name
+                            ? `${resource.file_name} · ${formatBytes(resource.file_size)}`
+                            : "External link"}
+                        </span>
+                        <a
+                          href={resource.storage_url || resource.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-primary underline"
+                        >
                           <Download className="h-3.5 w-3.5" /> Open
                         </a>
                       </div>
@@ -198,4 +273,3 @@ function Resources() {
     </AppShell>
   );
 }
-

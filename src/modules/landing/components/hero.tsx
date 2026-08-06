@@ -1,14 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, useState, type MouseEvent } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  Star,
-  Flame,
-Video,
-  Mic,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowRight, Star, Flame, Video, Mic, ShieldCheck } from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
 
 /** A purpose-built, hand-crafted product preview — not a stock image. */
@@ -32,7 +25,9 @@ function ProductPreview() {
           </span>
           <div>
             <div className="text-sm font-semibold leading-none">Verified mentor</div>
-            <div className="mt-1 text-[11px] text-muted-foreground">Identity & credentials checked</div>
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              Identity & credentials checked
+            </div>
           </div>
         </div>
       </div>
@@ -70,7 +65,9 @@ function ProductPreview() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <span className="truncate text-sm font-semibold">María González</span>
-              <span className="rounded-md bg-primary-soft px-1.5 py-0.5 text-[10px] font-semibold text-primary">NATIVE</span>
+              <span className="rounded-md bg-primary-soft px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                NATIVE
+              </span>
             </div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Mic className="h-3 w-3" /> Spanish · Madrid
@@ -85,10 +82,14 @@ function ProductPreview() {
         <div className="px-5 py-4">
           <div className="flex items-end justify-between">
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Next available</div>
+              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Next available
+              </div>
               <div className="mt-0.5 text-sm font-semibold">Today, 30 min</div>
             </div>
-            <div className="text-sm font-semibold">$24<span className="text-xs font-normal text-muted-foreground">/session</span></div>
+            <div className="text-sm font-semibold">
+              $24<span className="text-xs font-normal text-muted-foreground">/session</span>
+            </div>
           </div>
 
           {/* Day tabs */}
@@ -124,7 +125,9 @@ function ProductPreview() {
                 {t}
               </span>
             ))}
-            <span className="rounded-lg border border-dashed px-2.5 py-1 text-xs text-muted-foreground">+7</span>
+            <span className="rounded-lg border border-dashed px-2.5 py-1 text-xs text-muted-foreground">
+              +7
+            </span>
           </div>
 
           <Button asChild size="sm" className="mt-4 w-full">
@@ -151,7 +154,11 @@ export function Hero() {
   }
 
   return (
-    <section className="relative overflow-hidden" onMouseMove={handleMove} onMouseLeave={() => setTilt({ x: 0, y: 0 })}>
+    <section
+      className="relative overflow-hidden"
+      onMouseMove={handleMove}
+      onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+    >
       {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-fine-grid mask-fade-b" />
       <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[40rem] w-[60rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-primary/10 via-transparent to-electric/10 blur-3xl" />
@@ -192,7 +199,9 @@ export function Hero() {
 
           {/* Language chips */}
           <div className="mt-10 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Popular</span>
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Popular
+            </span>
             <div className="flex flex-wrap gap-2">
               {LANGUAGES.slice(0, 6).map((lang) => (
                 <span

@@ -119,22 +119,42 @@ export function useMentorRatingSummary(mentorId?: string) {
     stats.average = sum / total;
     stats.total = total;
 
-    let tqSum = 0, tqCount = 0;
-    let commSum = 0, commCount = 0;
-    let knowSum = 0, knowCount = 0;
-    let punctSum = 0, punctCount = 0;
-    let friendSum = 0, friendCount = 0;
+    let tqSum = 0,
+      tqCount = 0;
+    let commSum = 0,
+      commCount = 0;
+    let knowSum = 0,
+      knowCount = 0;
+    let punctSum = 0,
+      punctCount = 0;
+    let friendSum = 0,
+      friendCount = 0;
     let recommendCount = 0;
 
     reviews.forEach((r) => {
       const star = Math.round(r.rating);
       if (star >= 1 && star <= 5) stats.distribution[star]++;
 
-      if (r.teaching_quality_rating) { tqSum += r.teaching_quality_rating; tqCount++; }
-      if (r.communication_rating) { commSum += r.communication_rating; commCount++; }
-      if (r.knowledge_rating) { knowSum += r.knowledge_rating; knowCount++; }
-      if (r.punctuality_rating) { punctSum += r.punctuality_rating; punctCount++; }
-      if (r.friendliness_rating) { friendSum += r.friendliness_rating; friendCount++; }
+      if (r.teaching_quality_rating) {
+        tqSum += r.teaching_quality_rating;
+        tqCount++;
+      }
+      if (r.communication_rating) {
+        commSum += r.communication_rating;
+        commCount++;
+      }
+      if (r.knowledge_rating) {
+        knowSum += r.knowledge_rating;
+        knowCount++;
+      }
+      if (r.punctuality_rating) {
+        punctSum += r.punctuality_rating;
+        punctCount++;
+      }
+      if (r.friendliness_rating) {
+        friendSum += r.friendliness_rating;
+        friendCount++;
+      }
       if (r.recommend === true) recommendCount++;
     });
 
@@ -180,4 +200,3 @@ export function useCreateReview() {
     },
   });
 }
-

@@ -13,7 +13,12 @@ interface NotificationFiltersProps {
   unreadCount: number;
 }
 
-export function NotificationFilters({ activeTab, onTabChange, items, unreadCount }: NotificationFiltersProps) {
+export function NotificationFilters({
+  activeTab,
+  onTabChange,
+  items,
+  unreadCount,
+}: NotificationFiltersProps) {
   const getCountForTab = (tab: TabKey): number => {
     switch (tab) {
       case "all":
@@ -59,7 +64,9 @@ export function NotificationFilters({ activeTab, onTabChange, items, unreadCount
   return (
     <div className="flex flex-wrap gap-1" role="tablist" aria-label="Notification filters">
       {ALL_TABS.map((tab) => {
-        const config = getCategoryConfig(tab.key === "unread" ? null : tab.key === "all" ? null : tab.key);
+        const config = getCategoryConfig(
+          tab.key === "unread" ? null : tab.key === "all" ? null : tab.key,
+        );
         const Icon = config.icon;
         const count = getCountForTab(tab.key);
         const unread = getUnreadForTab(tab.key);
@@ -90,15 +97,15 @@ export function NotificationFilters({ activeTab, onTabChange, items, unreadCount
               <span
                 className={cn(
                   "text-xs tabular-nums",
-                  isActive ? "text-blue-500 dark:text-blue-400" : "text-slate-400 dark:text-slate-500",
+                  isActive
+                    ? "text-blue-500 dark:text-blue-400"
+                    : "text-slate-400 dark:text-slate-500",
                 )}
               >
                 {count}
               </span>
             )}
-            {unread > 0 && (
-              <NotificationBadge count={unread} variant="primary" size="sm" />
-            )}
+            {unread > 0 && <NotificationBadge count={unread} variant="primary" size="sm" />}
           </motion.button>
         );
       })}

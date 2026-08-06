@@ -62,9 +62,7 @@ export function ProfileCard({ auth, collapsed }: ProfileCardProps) {
             <div className="truncate text-sm font-semibold leading-tight text-foreground">
               {auth?.profile?.full_name ?? "User"}
             </div>
-            <div className="truncate text-xs text-muted-foreground">
-              {auth?.user?.email ?? ""}
-            </div>
+            <div className="truncate text-xs text-muted-foreground">{auth?.user?.email ?? ""}</div>
           </motion.div>
         )}
 

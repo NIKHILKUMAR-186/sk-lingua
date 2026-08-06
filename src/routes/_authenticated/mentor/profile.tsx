@@ -48,8 +48,10 @@ function MentorProfileEdit() {
   const uid = auth?.user?.id;
   const qc = useQueryClient();
   const { data: mp } = useQuery({
-    queryKey: ["mentor-profile", uid], enabled: !!uid,
-    queryFn: async () => (await supabase.from("mentor_profiles").select("*").eq("user_id", uid!).maybeSingle()).data,
+    queryKey: ["mentor-profile", uid],
+    enabled: !!uid,
+    queryFn: async () =>
+      (await supabase.from("mentor_profiles").select("*").eq("user_id", uid!).maybeSingle()).data,
   });
   const [values, setValues] = useState<ProfileEditorValues>(initialValues);
   const [saving, setSaving] = useState(false);
@@ -163,9 +165,15 @@ function MentorProfileEdit() {
   return (
     <AppShell variant="mentor">
       <div className="mx-auto max-w-5xl">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
           <h1 className="text-3xl font-display">Mentor profile & gigs</h1>
-          <p className="text-muted-foreground">Manage your professional profile, teaching services, and availability.</p>
+          <p className="text-muted-foreground">
+            Manage your professional profile, teaching services, and availability.
+          </p>
         </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -189,9 +197,7 @@ function MentorProfileEdit() {
             />
           </TabsContent>
 
-          <TabsContent value="gigs">
-            {uid && <GigManager mentorId={uid} />}
-          </TabsContent>
+          <TabsContent value="gigs">{uid && <GigManager mentorId={uid} />}</TabsContent>
 
           <TabsContent value="availability">
             <MentorAvailability />
@@ -201,4 +207,3 @@ function MentorProfileEdit() {
     </AppShell>
   );
 }
-

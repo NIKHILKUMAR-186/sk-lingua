@@ -42,14 +42,17 @@ const PLANS = [
       "Instant payouts",
     ],
     cta: "Become a mentor",
-    search: { },
+    search: {},
     featured: true,
   },
 ];
 
 export function Pricing() {
   return (
-    <section id="pricing" className="relative overflow-hidden border-t border-border/60 bg-background">
+    <section
+      id="pricing"
+      className="relative overflow-hidden border-t border-border/60 bg-background"
+    >
       <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
         <Reveal className="mx-auto max-w-2xl text-center">
@@ -84,7 +87,9 @@ export function Pricing() {
                     <plan.icon className="h-5 w-5" />
                   </span>
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{plan.label}</div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {plan.label}
+                    </div>
                     <div className="text-xl font-semibold">{plan.name}</div>
                   </div>
                 </div>
@@ -97,14 +102,29 @@ export function Pricing() {
                 <ul className="mt-7 flex-1 space-y-3">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-sm">
-                      <Check className={cn("mt-0.5 h-4 w-4 shrink-0", plan.featured ? "text-primary" : "text-success")} />
+                      <Check
+                        className={cn(
+                          "mt-0.5 h-4 w-4 shrink-0",
+                          plan.featured ? "text-primary" : "text-success",
+                        )}
+                      />
                       <span className="text-muted-foreground">{f}</span>
                     </li>
                   ))}
                 </ul>
 
-<Button asChild size="lg" className="mt-8 w-full" variant={plan.featured ? "default" : "outline"}>
-                  <Link to={plan.id === 'mentor' ? '/become-a-mentor' : '/auth'} search={plan.id === 'mentor' ? undefined : plan.search}>{plan.cta}</Link>
+                <Button
+                  asChild
+                  size="lg"
+                  className="mt-8 w-full"
+                  variant={plan.featured ? "default" : "outline"}
+                >
+                  <Link
+                    to={plan.id === "mentor" ? "/become-a-mentor" : "/auth"}
+                    search={plan.id === "mentor" ? undefined : plan.search}
+                  >
+                    {plan.cta}
+                  </Link>
                 </Button>
               </div>
             </Reveal>

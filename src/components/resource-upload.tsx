@@ -4,7 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, ExternalLink, File, ImageIcon, Loader2, Trash2, Video, Volume2, Archive, FileText } from "lucide-react";
+import {
+  BookOpen,
+  ExternalLink,
+  File,
+  ImageIcon,
+  Loader2,
+  Trash2,
+  Video,
+  Volume2,
+  Archive,
+  FileText,
+} from "lucide-react";
 
 export interface ResourceUploadProps {
   title: string;
@@ -60,18 +71,32 @@ export function ResourceUpload({
 
         <div className="space-y-2">
           <Label>External URL</Label>
-          <Input value={url} onChange={(e) => onChangeUrl(e.target.value)} placeholder="https://…" />
+          <Input
+            value={url}
+            onChange={(e) => onChangeUrl(e.target.value)}
+            placeholder="https://…"
+          />
         </div>
 
         <div className="space-y-2">
           <Label>Description</Label>
-          <Textarea rows={3} value={description} onChange={(e) => onChangeDescription(e.target.value)} />
+          <Textarea
+            rows={3}
+            value={description}
+            onChange={(e) => onChangeDescription(e.target.value)}
+          />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Visibility</Label>
-            <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={visibility} onChange={(e) => onChangeVisibility(e.target.value as "public" | "session" | "private") }>
+            <select
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={visibility}
+              onChange={(e) =>
+                onChangeVisibility(e.target.value as "public" | "session" | "private")
+              }
+            >
               <option value="public">Public Resource</option>
               <option value="session">Session Resource</option>
               <option value="private">Private Resource</option>
@@ -80,10 +105,16 @@ export function ResourceUpload({
 
           <div className="space-y-2">
             <Label>Session</Label>
-            <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={sessionId} onChange={(e) => onChangeSessionId(e.target.value)}>
+            <select
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={sessionId}
+              onChange={(e) => onChangeSessionId(e.target.value)}
+            >
               <option value="">Select a completed session</option>
               {sessions.map((session) => (
-                <option key={session.id} value={session.id}>{session.label}</option>
+                <option key={session.id} value={session.id}>
+                  {session.label}
+                </option>
               ))}
             </select>
           </div>
@@ -94,14 +125,26 @@ export function ResourceUpload({
           <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
             <PreviewIcon className="h-4 w-4" />
             <span>{fileName || "Choose PDF, DOCX, image, video, audio, ZIP, or other file"}</span>
-            <input type="file" className="hidden" onChange={(e) => onChangeFile(e.target.files?.[0] ?? null)} />
+            <input
+              type="file"
+              className="hidden"
+              onChange={(e) => onChangeFile(e.target.files?.[0] ?? null)}
+            />
           </label>
-          <p className="text-xs text-muted-foreground">Maximum 12 MB • PDF, DOC, DOCX, PPT, PPTX, images, ZIP, audio, video, and links are supported.</p>
+          <p className="text-xs text-muted-foreground">
+            Maximum 12 MB • PDF, DOC, DOCX, PPT, PPTX, images, ZIP, audio, video, and links are
+            supported.
+          </p>
           {fileName ? (
             <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2"><File className="h-4 w-4" />{fileName}</div>
-                <Button size="sm" variant="ghost" onClick={onClear}><Trash2 className="h-4 w-4" /></Button>
+                <div className="flex items-center gap-2">
+                  <File className="h-4 w-4" />
+                  {fileName}
+                </div>
+                <Button size="sm" variant="ghost" onClick={onClear}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
               <div className="mt-2 flex items-center justify-between text-right">
                 <span>{sizeLabel}</span>
@@ -123,7 +166,11 @@ export function ResourceUpload({
 
         <div className="flex items-center gap-2">
           <Button onClick={onUpload} disabled={uploading}>
-            {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
+            {uploading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <ExternalLink className="mr-2 h-4 w-4" />
+            )}
             Share resource
           </Button>
         </div>

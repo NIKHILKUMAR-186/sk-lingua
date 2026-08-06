@@ -13,4 +13,4 @@ export const LANGUAGES = [
   { code: "en", name: "English", emoji: "🇬🇧" },
 ] as const;
 
-export type LanguageCode = typeof LANGUAGES[number]["code"];
+export type LanguageCode = (typeof LANGUAGES)[number]["code"];

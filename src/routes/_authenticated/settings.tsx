@@ -135,7 +135,9 @@ function Settings() {
         <div className="mx-auto max-w-5xl">
           <div className="mb-6">
             <h1 className="text-3xl font-display">Student profile</h1>
-            <p className="text-muted-foreground">Tell mentors about your learning goals and interests.</p>
+            <p className="text-muted-foreground">
+              Tell mentors about your learning goals and interests.
+            </p>
           </div>
           <ProfileEditor
             mode="student"
@@ -160,20 +162,74 @@ function Settings() {
       <div className="mx-auto max-w-2xl space-y-6">
         <h1 className="text-3xl font-display">Settings</h1>
         <Card>
-          <CardHeader><CardTitle>Profile</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Profile</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
-            <div><Label>Full name</Label><input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.profile?.full_name ?? ""} disabled /></div>
-            <div><Label>Email</Label><input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.user?.email ?? ""} disabled /></div>
-            <div><Label>State</Label><input className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.profile?.state ?? ""} disabled /></div>
-            <div><Label>Native language</Label><select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={auth?.profile?.native_language ?? "en"} disabled>
-              {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.emoji} {l.name}</option>)}
-            </select></div>
-            <div><Label>Bio</Label><textarea className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={auth?.profile?.bio ?? ""} disabled /></div>
+            <div>
+              <Label>Full name</Label>
+              <input
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={auth?.profile?.full_name ?? ""}
+                disabled
+              />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <input
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={auth?.user?.email ?? ""}
+                disabled
+              />
+            </div>
+            <div>
+              <Label>State</Label>
+              <input
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={auth?.profile?.state ?? ""}
+                disabled
+              />
+            </div>
+            <div>
+              <Label>Native language</Label>
+              <select
+                className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={auth?.profile?.native_language ?? "en"}
+                disabled
+              >
+                {LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.emoji} {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Bio</Label>
+              <textarea
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={auth?.profile?.bio ?? ""}
+                disabled
+              />
+            </div>
           </CardContent>
         </Card>
-        <Card><CardHeader><CardTitle>Notifications</CardTitle></CardHeader><CardContent>
-          <div className="flex items-center justify-between"><div><div className="font-medium">Email notifications</div><div className="text-xs text-muted-foreground">Session updates, streaks, reminders.</div></div><Switch checked={emailNotif} onCheckedChange={setEmailNotif} /></div>
-        </CardContent></Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">Email notifications</div>
+                <div className="text-xs text-muted-foreground">
+                  Session updates, streaks, reminders.
+                </div>
+              </div>
+              <Switch checked={emailNotif} onCheckedChange={setEmailNotif} />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AppShell>
   );

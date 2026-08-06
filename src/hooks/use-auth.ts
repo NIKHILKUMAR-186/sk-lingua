@@ -34,7 +34,9 @@ export function useAuth() {
   return useQuery<AuthSession>({
     queryKey: ["auth-session"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return { user: null, profile: null, role: null, roles: [], activeRole: null };
       const [{ data: profile }, { data: roles }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),

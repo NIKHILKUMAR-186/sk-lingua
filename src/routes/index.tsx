@@ -16,9 +16,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Lingua — Learn a language from a real human" },
-      { name: "description", content: "Book 1-on-1 video lessons with real human mentors. Build daily streaks and level up in Spanish, Japanese, French and more." },
+      {
+        name: "description",
+        content:
+          "Book 1-on-1 video lessons with real human mentors. Build daily streaks and level up in Spanish, Japanese, French and more.",
+      },
       { property: "og:title", content: "Lingua — Learn a language from a real human" },
-      { property: "og:description", content: "Book 1-on-1 video lessons with real mentors. Build daily streaks." },
+      {
+        property: "og:description",
+        content: "Book 1-on-1 video lessons with real mentors. Build daily streaks.",
+      },
       { property: "og:type", content: "website" },
     ],
   }),

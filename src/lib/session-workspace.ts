@@ -1,5 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { HomeworkStatus, SessionAttachment, SessionHomework, SessionHomeworkSubmission, SessionNote, SessionTimelineEvent } from "@/types/session-workspace";
+import type {
+  HomeworkStatus,
+  SessionAttachment,
+  SessionHomework,
+  SessionHomeworkSubmission,
+  SessionNote,
+  SessionTimelineEvent,
+} from "@/types/session-workspace";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = [
@@ -20,7 +27,12 @@ const ALLOWED_FILE_TYPES = [
 ];
 
 function isAllowedFileType(type: string) {
-  return ALLOWED_FILE_TYPES.includes(type) || type.startsWith("image/") || type.startsWith("audio/") || type.startsWith("video/");
+  return (
+    ALLOWED_FILE_TYPES.includes(type) ||
+    type.startsWith("image/") ||
+    type.startsWith("audio/") ||
+    type.startsWith("video/")
+  );
 }
 
 function buildAttachment(file: File, bucket: string, folder: string): Promise<SessionAttachment> {
@@ -28,24 +40,30 @@ function buildAttachment(file: File, bucket: string, folder: string): Promise<Se
   if (!isAllowedFileType(file.type)) throw new Error("Unsupported file type.");
 
   const path = `${folder}/${crypto.randomUUID()}-${file.name}`;
-  return supabase.storage.from(bucket).upload(path, file, { upsert: false, contentType: file.type || "application/octet-stream" }).then(({ error }) => {
-    if (error) throw error;
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    return {
-      name: file.name,
-      url: data.publicUrl,
-      type: file.type || "application/octet-stream",
-      bucket,
-      fileSize: file.size,
-    };
-  });
+  return supabase.storage
+    .from(bucket)
+    .upload(path, file, { upsert: false, contentType: file.type || "application/octet-stream" })
+    .then(({ error }) => {
+      if (error) throw error;
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      return {
+        name: file.name,
+        url: data.publicUrl,
+        type: file.type || "application/octet-stream",
+        bucket,
+        fileSize: file.size,
+      };
+    });
 }
 
 export async function uploadSessionFile(file: File, folder: string) {
   return buildAttachment(file, "session-files", folder);
 }
 
-export function calculateHomeworkStatus(deadline: string | null, status: string | null): HomeworkStatus {
+export function calculateHomeworkStatus(
+  deadline: string | null,
+  status: string | null,
+): HomeworkStatus {
   if (!deadline) return (status as HomeworkStatus) ?? "Assigned";
   const deadlineAt = new Date(deadline);
   const now = new Date();
@@ -56,31 +74,79 @@ export function calculateHomeworkStatus(deadline: string | null, status: string 
   return now > deadlineAt ? "Late" : "Assigned";
 }
 
-export function getHomeworkStatusLabel(status: string | null, deadline: string | null): HomeworkStatus {
+export function getHomeworkStatusLabel(
+  status: string | null,
+  deadline: string | null,
+): HomeworkStatus {
   return calculateHomeworkStatus(deadline, status);
 }
 
 export async function fetchSessionWorkspace(sessionId: string, userId: string) {
-  const [{ data: session }, { data: homeworks }, { data: notes }, { data: timeline }, { data: resources }] = await Promise.all([
-    supabase.from("sessions").select("*, mentor:mentor_id(*), student:student_id(*), gig:gig_id(*)").eq("id", sessionId).maybeSingle(),
-    supabase.from("homeworks").select("*").eq("session_id", sessionId).order("created_at", { ascending: false }),
-    supabase.from("session_notes").select("*").eq("session_id", sessionId).order("created_at", { ascending: false }),
-    supabase.from("session_timeline").select("*").eq("session_id", sessionId).order("created_at", { ascending: true }),
-    supabase.from("resources").select("*").eq("session_id", sessionId).order("created_at", { ascending: false }),
+  const [
+    { data: session },
+    { data: homeworks },
+    { data: notes },
+    { data: timeline },
+    { data: resources },
+    { data: workspace },
+  ] = await Promise.all([
+    supabase
+      .from("sessions")
+      .select("*, mentor:mentor_id(*), student:student_id(*), gig:gig_id(*)")
+      .eq("id", sessionId)
+      .maybeSingle(),
+    supabase
+      .from("homeworks")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("session_notes")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("session_timeline")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("resources")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false }),
+    (supabase as any).from("workspaces").select("*").eq("session_id", sessionId).maybeSingle(),
   ]);
 
   const homeworkIds = (homeworks ?? []).map((entry) => entry.id);
   const { data: submissions } = homeworkIds.length
-    ? await supabase.from("homework_submissions").select("*").in("homework_id", homeworkIds).order("created_at", { ascending: false })
+    ? await supabase
+        .from("homework_submissions")
+        .select("*")
+        .in("homework_id", homeworkIds)
+        .order("created_at", { ascending: false })
     : { data: [] };
 
-  const mappedHomework = (homeworks ?? []).map((entry) => ({ ...entry, status: getHomeworkStatusLabel(entry.status, entry.deadline) }));
-  const mappedSubmissions = (submissions ?? []).map((entry) => ({ ...entry, status: getHomeworkStatusLabel(entry.status, null) }));
+  const mappedHomework = (homeworks ?? []).map((entry) => ({
+    ...entry,
+    status: getHomeworkStatusLabel(entry.status, entry.deadline),
+  }));
+  const mappedSubmissions = (submissions ?? []).map((entry) => ({
+    ...entry,
+    status: getHomeworkStatusLabel(entry.status, null),
+  }));
 
   return {
     session,
-    homework: mappedHomework.map((h:any)=> ({ ...h, attachments: (h.attachments as unknown) as SessionAttachment[] })) as SessionHomework[],
-    submissions: mappedSubmissions.map((s:any)=> ({ ...s, attachments: (s.attachments as unknown) as SessionAttachment[] })) as SessionHomeworkSubmission[],
+    workspace: workspace as Record<string, any> | null,
+    homework: mappedHomework.map((h: any) => ({
+      ...h,
+      attachments: h.attachments as unknown as SessionAttachment[],
+    })) as SessionHomework[],
+    submissions: mappedSubmissions.map((s: any) => ({
+      ...s,
+      attachments: s.attachments as unknown as SessionAttachment[],
+    })) as SessionHomeworkSubmission[],
     notes: notes as SessionNote[],
     timeline: timeline as SessionTimelineEvent[],
     resources: resources as Array<Record<string, unknown>>,
@@ -88,13 +154,31 @@ export async function fetchSessionWorkspace(sessionId: string, userId: string) {
   };
 }
 
-export async function createSessionTimelineEntry(sessionId: string, eventType: string, title: string, detail: string | null, createdBy: string | null, metadata: Record<string, unknown> | null = null) {
-  const { data, error } = await supabase.from("session_timeline").insert({ session_id: sessionId, event_type: eventType, title, detail, created_by: createdBy, metadata: (metadata as any) }).select().single();
-    if (error) {
-      const details = typeof error === 'object' ? JSON.stringify(error) : String(error);
-      const msg = `session_timeline insert failed: ${details}`;
-      console.error(msg, { sessionId, eventType, title, createdBy, metadata });
-      throw new Error(msg);
-    }
+export async function createSessionTimelineEntry(
+  sessionId: string,
+  eventType: string,
+  title: string,
+  detail: string | null,
+  createdBy: string | null,
+  metadata: Record<string, unknown> | null = null,
+) {
+  const { data, error } = await supabase
+    .from("session_timeline")
+    .insert({
+      session_id: sessionId,
+      event_type: eventType,
+      title,
+      detail,
+      created_by: createdBy,
+      metadata: metadata as any,
+    })
+    .select()
+    .single();
+  if (error) {
+    const details = typeof error === "object" ? JSON.stringify(error) : String(error);
+    const msg = `session_timeline insert failed: ${details}`;
+    console.error(msg, { sessionId, eventType, title, createdBy, metadata });
+    throw new Error(msg);
+  }
   return data as SessionTimelineEvent;
 }

@@ -43,13 +43,20 @@ function FaqItem({ item, index }: { item: (typeof FAQS)[number]; index: number }
           aria-expanded={open}
           className="flex w-full items-center justify-between gap-6 py-5 text-left"
         >
-          <span className={cn("text-lg font-medium tracking-tight transition-colors", open ? "text-primary" : "text-foreground")}>
+          <span
+            className={cn(
+              "text-lg font-medium tracking-tight transition-colors",
+              open ? "text-primary" : "text-foreground",
+            )}
+          >
             {item.q}
           </span>
           <span
             className={cn(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border transition-all duration-300",
-              open ? "rotate-45 border-primary bg-primary text-primary-foreground" : "text-muted-foreground",
+              open
+                ? "rotate-45 border-primary bg-primary text-primary-foreground"
+                : "text-muted-foreground",
             )}
           >
             <Plus className="h-4 w-4" />

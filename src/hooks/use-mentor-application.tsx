@@ -13,13 +13,23 @@ export function useMentorApplication() {
   const [saving, setSaving] = useState(false);
   const autosaveTimer = useRef<number | null>(null as any);
 
-  const { data: remote, isLoading } = useQuery({ queryKey: ["mentor-application", userId], enabled: !!userId, queryFn: async () => await fetchMyApplication(userId!) });
+  const { data: remote, isLoading } = useQuery({
+    queryKey: ["mentor-application", userId],
+    enabled: !!userId,
+    queryFn: async () => await fetchMyApplication(userId!),
+  });
 
   useEffect(() => {
     if (!userId) return;
-    const saved = typeof window !== "undefined" ? window.localStorage.getItem(`${STORAGE_KEY_PREFIX}:${userId}`) : null;
+    const saved =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem(`${STORAGE_KEY_PREFIX}:${userId}`)
+        : null;
     if (saved) {
-      try { setDraft(JSON.parse(saved)); return; } catch {}
+      try {
+        setDraft(JSON.parse(saved));
+        return;
+      } catch {}
     }
     setDraft(remote ?? {});
   }, [userId, remote]);
@@ -49,7 +59,13 @@ export function useMentorApplication() {
   async function replaceResume(file: File) {
     if (!userId) throw new Error("Not authenticated");
     const upload = await uploadResume(file, `mentor/${userId}/applications`);
-    setDraft((d: any) => ({ ...d, resume_url: upload.publicUrl, resume_path: upload.path, resume_file_name: upload.fileName, resume_file_type: upload.fileType }));
+    setDraft((d: any) => ({
+      ...d,
+      resume_url: upload.publicUrl,
+      resume_path: upload.path,
+      resume_file_name: upload.fileName,
+      resume_file_type: upload.fileType,
+    }));
     await saveDraft();
   }
 

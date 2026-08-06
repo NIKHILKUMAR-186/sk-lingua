@@ -25,6 +25,11 @@ import {
   CircleHelp,
   MessageSquare,
   LogOut,
+  Crown,
+  Clock,
+  History,
+  Users,
+  Inbox,
 } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -38,15 +43,26 @@ const STUDENT_ITEMS = [
   { title: "Discover Mentors", to: "/student/explore", icon: Compass },
   { title: "Sessions", to: "/student/sessions", icon: CalendarDays },
   { title: "Resources", to: "/student/resources", icon: BookOpenText },
-  { title: " Analytics & Streaks", to: "/student/streak", icon: Flame },
+  { title: "Analytics & Streaks", to: "/student/streak", icon: Flame },
+  { title: "Demo Session", to: "/student/demo-session", icon: Clock },
+  { title: "Pricing Plans", to: "/student/pricing", icon: Crown },
+  { title: "My Subscriptions", to: "/student/subscriptions", icon: Crown },
+  { title: "History", to: "/student/history", icon: History },
 ] as const;
 
 const MENTOR_ITEMS = [
   { title: "Dashboard", to: "/mentor/dashboard", icon: LayoutDashboard },
   { title: "Calendar & requests", to: "/mentor/calendar", icon: CalendarDays },
+  { title: "Incoming Requests", to: "/mentor/requests", icon: Inbox },
   { title: "My profile & gigs", to: "/mentor/profile", icon: Compass },
   { title: "Sessions", to: "/mentor/sessions", icon: CalendarDays },
   { title: "Resources", to: "/mentor/resources", icon: BookOpenText },
+] as const;
+
+const ADMIN_ITEMS = [
+  { title: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
+  { title: "Booking Queue", to: "/admin/booking-queue", icon: Inbox },
+  { title: "Mentor Applications", to: "/admin/mentor-applications", icon: Users },
 ] as const;
 
 const ACCOUNT_ITEMS = [
@@ -59,7 +75,7 @@ const ACCOUNT_ITEMS = [
 //   { title: "Send Feedback", to: "/feedback", icon: MessageSquare },
 // ] as const;
 
-function SidebarContentInner({ variant }: { variant: "student" | "mentor" }) {
+function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "admin" }) {
   const { data: auth } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -67,7 +83,8 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" }) {
   const { state: sidebarState } = useSidebar();
   const collapsed = sidebarState === "collapsed";
 
-  const items = variant === "student" ? STUDENT_ITEMS : MENTOR_ITEMS;
+  const items =
+    variant === "student" ? STUDENT_ITEMS : variant === "mentor" ? MENTOR_ITEMS : ADMIN_ITEMS;
 
   const { data: unread = 0 } = useQuery({
     queryKey: ["notifications-unread", auth?.user?.id],
@@ -104,10 +121,7 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" }) {
       <SidebarHeader className="px-4 pt-6 pb-2">
         <Link
           to="/"
-          className={cn(
-            "flex items-center gap-3",
-            collapsed && "justify-center",
-          )}
+          className={cn("flex items-center gap-3", collapsed && "justify-center")}
           aria-label="Lingua Home"
         >
           <motion.div
@@ -130,7 +144,11 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" }) {
                 Lingua
               </span>
               <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                {variant === "student" ? "Student Workspace" : "Mentor Workspace"}
+                {variant === "student"
+                  ? "Student Workspace"
+                  : variant === "mentor"
+                    ? "Mentor Workspace"
+                    : "Admin Workspace"}
               </span>
             </motion.div>
           )}
@@ -147,10 +165,14 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" }) {
               collapsed && "sr-only",
             )}
           >
-            {variant === "student" ? "Learning" : "Teaching"}
+            {variant === "student" ? "Learning" : variant === "mentor" ? "Teaching" : "Manage"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <nav aria-label={variant === "student" ? "Learning" : "Teaching"}>
+            <nav
+              aria-label={
+                variant === "student" ? "Learning" : variant === "mentor" ? "Teaching" : "Manage"
+              }
+            >
               <ul className="flex w-full min-w-0 flex-col gap-0.5">
                 {items.map((item) => (
                   <SidebarItem
@@ -196,7 +218,7 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" }) {
 
         {/* Help Section */}
         {/* <SidebarGroup> */}
-          {/* <SidebarGroupLabel
+        {/* <SidebarGroupLabel
             className={cn(
               "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
               collapsed && "sr-only",
@@ -248,7 +270,13 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" }) {
   );
 }
 
-export function AppShell({ children, variant }: { children: React.ReactNode; variant: "student" | "mentor" }) {
+export function AppShell({
+  children,
+  variant,
+}: {
+  children: React.ReactNode;
+  variant: "student" | "mentor" | "admin";
+}) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[#FCFCFD]">

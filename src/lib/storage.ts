@@ -19,7 +19,12 @@ const ALLOWED_FILE_TYPES = [
 ];
 
 function isAllowedFileType(type: string) {
-  return ALLOWED_FILE_TYPES.includes(type) || type.startsWith("image/") || type.startsWith("audio/") || type.startsWith("video/");
+  return (
+    ALLOWED_FILE_TYPES.includes(type) ||
+    type.startsWith("image/") ||
+    type.startsWith("audio/") ||
+    type.startsWith("video/")
+  );
 }
 
 export async function uploadStorageFile(file: File, folder: string) {

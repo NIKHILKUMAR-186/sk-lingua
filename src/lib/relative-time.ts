@@ -24,7 +24,8 @@ export function formatRelativeTime(dateString: string): string {
   // Less than 24 hours
   if (diffHours < 24) {
     // Check if it was today
-    const isToday = date.getDate() === now.getDate() &&
+    const isToday =
+      date.getDate() === now.getDate() &&
       date.getMonth() === now.getMonth() &&
       date.getFullYear() === now.getFullYear();
     if (isToday) {
@@ -33,7 +34,8 @@ export function formatRelativeTime(dateString: string): string {
     // Yesterday
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    const isYesterday = date.getDate() === yesterday.getDate() &&
+    const isYesterday =
+      date.getDate() === yesterday.getDate() &&
       date.getMonth() === yesterday.getMonth() &&
       date.getFullYear() === yesterday.getFullYear();
     if (isYesterday) {
