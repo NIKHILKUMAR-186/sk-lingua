@@ -23,10 +23,28 @@ export type BookingSlotOption = {
   end: string;
 };
 
-export const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
-export const DAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
+export const DAY_KEYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
+export const DAY_LABELS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
 
-export function normalizeAvailability(value?: Partial<AvailabilityValue> | null): AvailabilityValue {
+export function normalizeAvailability(
+  value?: Partial<AvailabilityValue> | null,
+): AvailabilityValue {
   const weekly = value?.weekly ?? {};
   return {
     timezone: value?.timezone ?? null,

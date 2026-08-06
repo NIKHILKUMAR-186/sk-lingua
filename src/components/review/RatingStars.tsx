@@ -46,7 +46,8 @@ export function RatingStars({
               className={cn(
                 "transition-all",
                 interactive ? "cursor-pointer hover:scale-110" : "cursor-default",
-                interactive && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                interactive &&
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
               )}
             >
               <motion.div
@@ -61,7 +62,7 @@ export function RatingStars({
                       ? "fill-warning text-warning"
                       : half
                         ? "fill-warning/50 text-warning"
-                        : "text-muted-foreground/30"
+                        : "text-muted-foreground/30",
                   )}
                 />
               </motion.div>
@@ -77,4 +78,3 @@ export function RatingStars({
     </div>
   );
 }
-

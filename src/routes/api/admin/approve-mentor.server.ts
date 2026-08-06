@@ -1,20 +1,26 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 function generateTempPassword() {
-  return require('crypto').randomBytes(8).toString('hex');
+  return require("crypto").randomBytes(8).toString("hex");
 }
 
 export async function POST({ request }: { request: Request }) {
   try {
     const body = await request.json();
     const { applicationId, interviewerNotes } = body;
-    if (!applicationId) return new Response(JSON.stringify({ error: 'missing applicationId' }), { status: 400 });
+    if (!applicationId)
+      return new Response(JSON.stringify({ error: "missing applicationId" }), { status: 400 });
 
     // fetch application
     const admin = supabaseAdmin as any;
-    const { data: app, error: appErr } = await admin.from('mentor_applications').select('*').eq('id', applicationId).maybeSingle();
+    const { data: app, error: appErr } = await admin
+      .from("mentor_applications")
+      .select("*")
+      .eq("id", applicationId)
+      .maybeSingle();
     if (appErr) throw appErr;
-    if (!app) return new Response(JSON.stringify({ error: 'application_not_found' }), { status: 404 });
+    if (!app)
+      return new Response(JSON.stringify({ error: "application_not_found" }), { status: 404 });
 
     // begin ops
     const tempPassword = generateTempPassword();
@@ -33,30 +39,65 @@ export async function POST({ request }: { request: Request }) {
     }
 
     // upsert mentor_profile
-    const { error: mpErr } = await admin.from('mentor_profiles').upsert({ user_id: createdUserId, headline: app.headline ?? null, bio: app.experience ?? null, is_active: true }, { onConflict: 'user_id' });
+    const { error: mpErr } = await admin.from("mentor_profiles").upsert(
+      {
+        user_id: createdUserId,
+        headline: app.headline ?? null,
+        bio: app.experience ?? null,
+        is_active: true,
+      },
+      { onConflict: "user_id" },
+    );
     if (mpErr) throw mpErr;
 
     // add mentor role
-    const { error: roleErr } = await admin.from('user_roles').upsert([{ user_id: createdUserId, role: 'mentor' }], { onConflict: 'user_id,role' });
+    const { error: roleErr } = await admin
+      .from("user_roles")
+      .upsert([{ user_id: createdUserId, role: "mentor" }], { onConflict: "user_id,role" });
     if (roleErr) throw roleErr;
 
     // update application status
-    const { error: updErr } = await admin.from('mentor_applications').update({ status: 'approved', user_id: createdUserId }).eq('id', applicationId);
+    const { error: updErr } = await admin
+      .from("mentor_applications")
+      .update({ status: "approved", user_id: createdUserId })
+      .eq("id", applicationId);
     if (updErr) throw updErr;
 
     // status history
     // status history
-    await admin.from('mentor_application_status_history').insert([{ application_id: applicationId, new_status: 'approved', changed_by: null, notes: interviewerNotes ?? 'Approved by admin' }]);
+    await admin.from("mentor_application_status_history").insert([
+      {
+        application_id: applicationId,
+        new_status: "approved",
+        changed_by: null,
+        notes: interviewerNotes ?? "Approved by admin",
+      },
+    ]);
 
     // audit log
-    await admin.from('audit_logs').insert([{ actor_id: null, scope: 'mentor_applications', action: 'approve', details: { application_id: applicationId } }]);
+    await admin.from("audit_logs").insert([
+      {
+        actor_id: null,
+        scope: "mentor_applications",
+        action: "approve",
+        details: { application_id: applicationId },
+      },
+    ]);
 
     // notify applicant
     if (createdUserId) {
-      await admin.from('notifications').insert([{ user_id: createdUserId, type: 'application_approved', payload: { application_id: applicationId, tempPassword } }]);
+      await admin.from("notifications").insert([
+        {
+          user_id: createdUserId,
+          type: "application_approved",
+          payload: { application_id: applicationId, tempPassword },
+        },
+      ]);
     }
 
-    return new Response(JSON.stringify({ userId: createdUserId, tempPassword }), { headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ userId: createdUserId, tempPassword }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err: any) {
     console.error(err);
     return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });

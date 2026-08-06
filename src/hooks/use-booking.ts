@@ -76,7 +76,10 @@ export function useMentorSchedule(mentorId?: string) {
         .eq("mentor_id", mentorId!)
         .eq("is_available", true);
       console.log("🔍 [useMentorSchedule] rows:", slots?.length ?? 0, "error:", error);
-      console.log("🔍 [useMentorSchedule] day_of_week values:", (slots ?? []).map((s: any) => s.day_of_week));
+      console.log(
+        "🔍 [useMentorSchedule] day_of_week values:",
+        (slots ?? []).map((s: any) => s.day_of_week),
+      );
       return slots ?? [];
     },
   });
@@ -114,38 +117,9 @@ export function useAvailableSlots(
     };
   }
 
-  console.group("🕐 [useAvailableSlots]");
-  console.log("mentorId:", mentorId);
-  console.log("selectedDate string:", selectedDate);
-  console.log("durationMins:", durationMins);
-  console.log("Total slots from DB:", slots.length);
-  console.log("Slot day_of_week values:", (slots as any[]).map((s) => s.day_of_week));
-
-  // ---- Build local date & compute weekday ----
-  const dt = dateFromString(selectedDate);
-  console.log("Local date object:", dt.toString());
-  console.log("Local getDay():", dt.getDay(), "(0=Sun, 1=Mon … 6=Sat)");
-
   const dayKey = getDateDayKey(selectedDate);
-  console.log("Computed dayKey for filter:", dayKey);
+  const candidates = (slots as any[]).filter((s) => s.day_of_week === dayKey);
 
-  // ---- Filter slots by day ----
-  const candidates = (slots as any[]).filter((s) => {
-    const match = s.day_of_week === dayKey;
-    console.log(`  Slot day=${s.day_of_week} start=${s.start_time} → ${match ? "✅" : "❌"}`);
-    return match;
-  });
-  console.log("Candidates after day filter:", candidates.length);
-
-  if (candidates.length === 0) {
-    console.log("⚠️ No candidates — possible reasons:");
-    console.log("  1. Mentor has no availability_slots for this day_of_week");
-    console.log("  2. day_of_week stored differs from computed key (e.g. 'mon' vs 'monday')");
-    console.log("  3. is_available = false on all matching slots");
-    console.log("  4. mentor_id mismatch between URL param and DB");
-  }
-
-  // ---- Build slot options with time grouping ----
   const options: SlotOption[] = candidates.flatMap((slot: any) => {
     const [sh, sm] = (slot.start_time ?? "00:00").split(":").map(Number);
     const [eh, em] = (slot.end_time ?? "00:00").split(":").map(Number);
@@ -157,7 +131,6 @@ export function useAvailableSlots(
     slotEnd.setHours(eh, em, 0, 0);
 
     if (slotEnd.getTime() - slotStart.getTime() < durationMins * 60_000) {
-      console.log(`  ⏱️ Slot ${slot.start_time}–${slot.end_time} too short (need ${durationMins}min)`);
       return [];
     }
 
@@ -167,12 +140,9 @@ export function useAvailableSlots(
       const existingEnd = existingStart + s.duration_mins * 60_000;
       const proposedStart = new Date(startIso).getTime();
       const proposedEnd = proposedStart + durationMins * 60_000;
-      const hasConflict = proposedStart < existingEnd && proposedEnd > existingStart;
-      if (hasConflict) console.log(`  ⚔️ Conflict with session ${s.id}`);
-      return hasConflict;
+      return proposedStart < existingEnd && proposedEnd > existingStart;
     });
 
-    const group = getTimeGroup(sh);
     return [
       {
         value: startIso,
@@ -180,13 +150,10 @@ export function useAvailableSlots(
         disabled: conflict,
         startTime: slot.start_time,
         endTime: slot.end_time,
-        group,
+        group: getTimeGroup(sh),
       },
     ];
   });
-
-  console.log("Final slot options:", options.length);
-  console.groupEnd();
 
   const groupedSlots: Record<TimeGroup, SlotOption[]> = {
     morning: [],
@@ -253,9 +220,7 @@ export function calculateAvailableDates(
   while (current <= monthEnd) {
     const dayIndex = current.getDay();
     const dayKey = DAY_KEYS[(dayIndex + 6) % 7];
-    const hasSlots = slots.some(
-      (s) => s.day_of_week === dayKey && s.is_available !== false,
-    );
+    const hasSlots = slots.some((s) => s.day_of_week === dayKey && s.is_available !== false);
     if (hasSlots && current >= today) {
       available.push(new Date(current));
     }
@@ -264,7 +229,10 @@ export function calculateAvailableDates(
 
   console.log("Available dates count:", available.length);
   if (available.length > 0) {
-    console.log("Sample:", available.slice(0, 5).map((d) => d.toDateString()));
+    console.log(
+      "Sample:",
+      available.slice(0, 5).map((d) => d.toDateString()),
+    );
   }
   console.groupEnd();
 

@@ -1,16 +1,17 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Video, Star } from "lucide-react";
+import { BookOpen, Video, Star, Clock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useStudentSessionRequests } from "@/hooks/use-session-requests";
 
 export const Route = createFileRoute("/_authenticated/student/sessions")({
   component: StudentSessions,
@@ -19,7 +20,9 @@ export const Route = createFileRoute("/_authenticated/student/sessions")({
 function StudentSessions() {
   const { data: auth } = useAuth();
   const qc = useQueryClient();
-  const [ratingModal, setRatingModal] = useState<{ sessionId: string; mentorId: string } | null>(null);
+  const [ratingModal, setRatingModal] = useState<{ sessionId: string; mentorId: string } | null>(
+    null,
+  );
   const [ratingValue, setRatingValue] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -48,25 +51,25 @@ function StudentSessions() {
           .order("created_at", { ascending: false })
       ).data ?? [],
   });
+
+  const sessionIds = sessions.map((s) => s.id).sort();
+  const mentorIds = [...new Set(sessions.map((entry) => entry.mentor_id).filter(Boolean))].sort();
+
   const { data: mentors = [] } = useQuery({
-    queryKey: ["student-session-mentors", auth?.user?.id],
-    enabled: !!auth?.user,
+    queryKey: ["student-session-mentors", auth?.user?.id, mentorIds.join(",")],
+    enabled: !!auth?.user && mentorIds.length > 0,
     queryFn: async () => {
-      const ids = [...new Set(sessions.map((entry) => entry.mentor_id).filter(Boolean))];
-      if (!ids.length) return [];
       const { data } = await supabase
         .from("profiles")
         .select("id, full_name, avatar_url")
-        .in("id", ids);
+        .in("id", mentorIds);
       return data ?? [];
     },
   });
   const { data: myReviews = [] } = useQuery({
-    queryKey: ["student-session-reviews", auth?.user?.id],
-    enabled: !!auth?.user,
+    queryKey: ["student-session-reviews", auth?.user?.id, sessionIds.join(",")],
+    enabled: !!auth?.user && sessionIds.length > 0,
     queryFn: async () => {
-      const sessionIds = sessions.map((s) => s.id);
-      if (!sessionIds.length) return [];
       const { data } = await supabase
         .from("reviews")
         .select("*")
@@ -76,6 +79,42 @@ function StudentSessions() {
     },
   });
   const reviewBySessionId = new Map(myReviews.map((r) => [r.session_id, r]));
+
+  // Session request form state (migrated from book-session)
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [reqDate, setReqDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [reqTime, setReqTime] = useState<string>("09:00");
+  const [reqTopic, setReqTopic] = useState<string>("");
+  const [reqDuration, setReqDuration] = useState<number>(30);
+  const [reqLanguage, setReqLanguage] = useState<string>("en");
+  const [reqLoading, setReqLoading] = useState(false);
+
+  async function submitSessionRequest(e?: any) {
+    if (e) e.preventDefault();
+    if (!auth?.user) return toast.error("Please sign in");
+    setReqLoading(true);
+    try {
+      const scheduled = new Date(`${reqDate}T${reqTime}:00.000Z`).toISOString();
+      const sup = supabase as any;
+      const { error } = await sup.from("session_requests").insert([
+        {
+          student_id: auth.user.id,
+          scheduled_time: scheduled,
+          duration_mins: reqDuration,
+          topic: reqTopic,
+          language: reqLanguage,
+        },
+      ]);
+      if (error) throw error;
+      toast.success("Session request submitted — pending admin assignment");
+      setShowRequestModal(false);
+      qc.invalidateQueries();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to request session");
+    } finally {
+      setReqLoading(false);
+    }
+  }
 
   async function handleQuickReviewSubmit() {
     if (!ratingModal || ratingValue === 0) return;
@@ -126,6 +165,7 @@ function StudentSessions() {
         <Tabs defaultValue="upcoming">
           <TabsList>
             <TabsTrigger value="upcoming">Upcoming ({upcoming.length})</TabsTrigger>
+            <TabsTrigger value="requests">Requests</TabsTrigger>
             <TabsTrigger value="past">Past ({past.length})</TabsTrigger>
           </TabsList>
           <TabsContent value="upcoming" className="mt-4 space-y-3">
@@ -147,6 +187,21 @@ function StudentSessions() {
               ))
             )}
           </TabsContent>
+
+          <TabsContent value="requests" className="mt-4 space-y-3">
+            <div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold mb-4">Session requests</h2>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={() => setShowRequestModal(true)}>
+                    Request session
+                  </Button>
+                </div>
+              </div>
+              <RequestList userId={auth?.user?.id} />
+            </div>
+          </TabsContent>
+
           <TabsContent value="past" className="mt-4 space-y-3">
             {past.length === 0 ? (
               <Empty />
@@ -157,7 +212,11 @@ function StudentSessions() {
                   s={s}
                   mentor={mentorById.get(s.mentor_id)}
                   existingReview={reviewBySessionId.get(s.id) ?? null}
-                  onRateClick={s.status === "completed" && !reviewBySessionId.get(s.id) ? () => setRatingModal({ sessionId: s.id, mentorId: s.mentor_id ?? "" }) : undefined}
+                  onRateClick={
+                    s.status === "completed" && !reviewBySessionId.get(s.id)
+                      ? () => setRatingModal({ sessionId: s.id, mentorId: s.mentor_id ?? "" })
+                      : undefined
+                  }
                   resources={resources.filter(
                     (resource) =>
                       resource.session_id === s.id ||
@@ -176,11 +235,20 @@ function StudentSessions() {
           <Card className="w-full max-w-md">
             <CardContent className="space-y-4 p-6">
               <h3 className="text-lg font-semibold">Rate this session</h3>
-              <p className="text-sm text-muted-foreground">How was your experience with this mentor?</p>
+              <p className="text-sm text-muted-foreground">
+                How was your experience with this mentor?
+              </p>
               <div className="flex items-center justify-center gap-2 py-4">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button key={star} type="button" onClick={() => setRatingValue(star)} className="transition hover:scale-110">
-                    <Star className={`h-10 w-10 ${star <= ratingValue ? "fill-warning text-warning" : "text-muted-foreground/30"}`} />
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRatingValue(star)}
+                    className="transition hover:scale-110"
+                  >
+                    <Star
+                      className={`h-10 w-10 ${star <= ratingValue ? "fill-warning text-warning" : "text-muted-foreground/30"}`}
+                    />
                   </button>
                 ))}
               </div>
@@ -191,10 +259,22 @@ function StudentSessions() {
                 rows={3}
               />
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => { setRatingModal(null); setRatingValue(0); setReviewComment(""); }}>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setRatingModal(null);
+                    setRatingValue(0);
+                    setReviewComment("");
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button className="flex-1" disabled={ratingValue === 0 || submittingReview} onClick={handleQuickReviewSubmit}>
+                <Button
+                  className="flex-1"
+                  disabled={ratingValue === 0 || submittingReview}
+                  onClick={handleQuickReviewSubmit}
+                >
                   {submittingReview ? "Submitting..." : "Submit Review"}
                 </Button>
               </div>
@@ -202,7 +282,136 @@ function StudentSessions() {
           </Card>
         </div>
       )}
+      {/* Request Modal */}
+      {showRequestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="space-y-4 p-6">
+              <h3 className="text-lg font-semibold">Request a session</h3>
+              <form onSubmit={submitSessionRequest} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="date"
+                    className="rounded-md border p-2"
+                    value={reqDate}
+                    onChange={(e: any) => setReqDate(e.target.value)}
+                  />
+                  <input
+                    type="time"
+                    className="rounded-md border p-2"
+                    value={reqTime}
+                    onChange={(e: any) => setReqTime(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm">Topic</label>
+                  <input
+                    className="w-full rounded-md border p-2"
+                    value={reqTopic}
+                    onChange={(e: any) => setReqTopic(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm">Duration (mins)</label>
+                    <select
+                      className="w-full rounded-md border px-2 py-2"
+                      value={reqDuration}
+                      onChange={(e: any) => setReqDuration(Number(e.target.value))}
+                    >
+                      <option value={30}>30</option>
+                      <option value={45}>45</option>
+                      <option value={60}>60</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm">Language</label>
+                    <select
+                      className="w-full rounded-md border px-2 py-2"
+                      value={reqLanguage}
+                      onChange={(e: any) => setReqLanguage(e.target.value)}
+                    >
+                      <option value="en">English</option>
+                      <option value="hi">Hindi</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setShowRequestModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={reqLoading}>
+                    {reqLoading ? "Submitting..." : "Request session"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </AppShell>
+  );
+}
+
+function RequestList({ userId }: { userId?: string | null }) {
+  const { data: requests = [], isLoading } = useStudentSessionRequests(userId ?? undefined);
+
+  if (!userId) return null;
+  if (isLoading)
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">Loading...</CardContent>
+      </Card>
+    );
+  if (requests.length === 0)
+    return (
+      <Card>
+        <CardContent className="p-6 text-muted-foreground">No requests yet</CardContent>
+      </Card>
+    );
+
+  const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    pending_admin_assignment: "secondary",
+    pending_mentor_response: "default",
+    confirmed: "default",
+    completed: "outline",
+    cancelled: "destructive",
+    unassigned: "outline",
+  };
+
+  return (
+    <div className="space-y-3">
+      {requests.map((r: any) => (
+        <Card key={r.id}>
+          <CardContent className="pt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <div>{r.topic || "Session request"}</div>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(r.scheduled_time).toLocaleString()}
+                </div>
+              </div>
+              <Badge variant={statusVariant[r.status] ?? "secondary"}>{r.status}</Badge>
+            </div>
+            {r.session_id && r.status === "confirmed" && (
+              <div className="flex justify-end">
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/student/session/$id" params={{ id: r.session_id }}>
+                    Open workspace
+                  </Link>
+                </Button>
+              </div>
+            )}
+            {r.status === "pending_admin_assignment" && (
+              <p className="flex items-center gap-1 text-xs text-amber-600">
+                <Clock className="h-3 w-3" /> Pending admin assignment - a mentor will be assigned
+                soon.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }
 
@@ -290,7 +499,10 @@ function SessionRow({
             {s.status === "completed" && existingReview && (
               <div className="flex items-center gap-1 text-sm">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={`h-4 w-4 ${i < existingReview.rating ? "fill-warning text-warning" : "text-muted-foreground"}`} />
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${i < existingReview.rating ? "fill-warning text-warning" : "text-muted-foreground"}`}
+                  />
                 ))}
               </div>
             )}

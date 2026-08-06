@@ -2,7 +2,20 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Star, CheckCircle2, Video, GraduationCap, Award, Briefcase, BookOpen, Users, Clock, MessageSquare, TrendingUp, Shield } from "lucide-react";
+import {
+  Star,
+  CheckCircle2,
+  Video,
+  GraduationCap,
+  Award,
+  Briefcase,
+  BookOpen,
+  Users,
+  Clock,
+  MessageSquare,
+  TrendingUp,
+  Shield,
+} from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
 import { format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
@@ -19,8 +32,18 @@ interface MentorPublicProfileProps {
   selectedGigId: string | null;
 }
 
-export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, selectedGigId }: MentorPublicProfileProps) {
-  const joinedDate = mentor.joined_date ? new Date(mentor.joined_date) : profile?.created_at ? new Date(profile.created_at) : null;
+export function MentorPublicProfile({
+  mentor,
+  profile,
+  gigs,
+  onSelectGig,
+  selectedGigId,
+}: MentorPublicProfileProps) {
+  const joinedDate = mentor.joined_date
+    ? new Date(mentor.joined_date)
+    : profile?.created_at
+      ? new Date(profile.created_at)
+      : null;
 
   const stats = [
     { icon: Users, label: "Students", value: mentor.total_students?.toString() || "0" },
@@ -32,7 +55,11 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
   ];
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
       {/* Hero Banner */}
       <Card className="overflow-hidden">
         <div className="relative h-48 sm:h-64 bg-gradient-to-br from-primary/20 via-primary/10 to-muted">
@@ -55,11 +82,17 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
             </Avatar>
             <div className="flex-1 pt-2 sm:pt-0 sm:pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-display">{profile?.full_name || "Mentor"}</h1>
+                <h1 className="text-2xl sm:text-3xl font-display">
+                  {profile?.full_name || "Mentor"}
+                </h1>
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-warning text-warning" />
-                  <span className="text-sm font-semibold">{Number(mentor.rating_avg || 0).toFixed(1)}</span>
-                  <span className="text-xs text-muted-foreground">({mentor.total_reviews || 0})</span>
+                  <span className="text-sm font-semibold">
+                    {Number(mentor.rating_avg || 0).toFixed(1)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({mentor.total_reviews || 0})
+                  </span>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">{mentor.headline}</p>
@@ -76,7 +109,9 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-display font-bold text-primary">${Number(mentor.hourly_rate || 0).toFixed(0)}</div>
+              <div className="text-3xl font-display font-bold text-primary">
+                ${Number(mentor.hourly_rate || 0).toFixed(0)}
+              </div>
               <div className="text-xs text-muted-foreground">per hour</div>
             </div>
           </div>
@@ -85,7 +120,11 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
           <div className="mt-4 flex flex-wrap gap-1.5">
             {mentor.languages_taught?.map((code) => {
               const l = LANGUAGES.find((x) => x.code === code);
-              return <Badge key={code} variant="secondary">{l?.emoji} {l?.name || code}</Badge>;
+              return (
+                <Badge key={code} variant="secondary">
+                  {l?.emoji} {l?.name || code}
+                </Badge>
+              );
             })}
           </div>
         </CardContent>
@@ -126,7 +165,9 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
                 <Briefcase className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-semibold">Experience</h2>
               </div>
-              <p className="text-sm text-muted-foreground">{mentor.years_experience} years of teaching experience</p>
+              <p className="text-sm text-muted-foreground">
+                {mentor.years_experience} years of teaching experience
+              </p>
               {mentor.teaching_style && (
                 <div className="mt-3">
                   <div className="text-sm font-medium">Teaching style</div>
@@ -145,7 +186,9 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
                 <GraduationCap className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-semibold">Education</h2>
               </div>
-              <p className="text-sm text-muted-foreground whitespace-pre-line">{mentor.education}</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {mentor.education}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -180,9 +223,19 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
             </h2>
             <div className="aspect-video rounded-lg bg-muted flex items-center justify-center">
               {mentor.demo_lesson_url ? (
-                <iframe src={mentor.demo_lesson_url} className="h-full w-full rounded-lg" allowFullScreen title="Demo lesson" />
+                <iframe
+                  src={mentor.demo_lesson_url}
+                  className="h-full w-full rounded-lg"
+                  allowFullScreen
+                  title="Demo lesson"
+                />
               ) : mentor.intro_video_url ? (
-                <iframe src={mentor.intro_video_url} className="h-full w-full rounded-lg" allowFullScreen title="Intro video" />
+                <iframe
+                  src={mentor.intro_video_url}
+                  className="h-full w-full rounded-lg"
+                  allowFullScreen
+                  title="Intro video"
+                />
               ) : null}
             </div>
           </CardContent>
@@ -196,17 +249,32 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
             <h2 className="text-lg font-semibold mb-3">Connect</h2>
             <div className="flex flex-wrap gap-2">
               {mentor.linkedin_url && (
-                <a href={mentor.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent">
+                <a
+                  href={mentor.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent"
+                >
                   LinkedIn
                 </a>
               )}
               {mentor.website_url && (
-                <a href={mentor.website_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent">
+                <a
+                  href={mentor.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent"
+                >
                   Website
                 </a>
               )}
               {mentor.youtube_url && (
-                <a href={mentor.youtube_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent">
+                <a
+                  href={mentor.youtube_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent"
+                >
                   YouTube
                 </a>
               )}
@@ -242,19 +310,40 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
                   )}
                   <div className="flex items-start justify-between gap-2">
                     <div className="font-medium text-sm">{gig.title}</div>
-                    <div className="text-lg font-bold text-primary shrink-0">${Number(gig.price).toFixed(0)}</div>
+                    <div className="text-lg font-bold text-primary shrink-0">
+                      ${Number(gig.price).toFixed(0)}
+                    </div>
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{gig.duration_mins} min</span>
-                    {gig.level && <><span>•</span><span className="capitalize">{gig.level}</span></>}
+                    {gig.level && (
+                      <>
+                        <span>•</span>
+                        <span className="capitalize">{gig.level}</span>
+                      </>
+                    )}
                   </div>
                   {gig.description && (
-                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{gig.description}</p>
+                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
+                      {gig.description}
+                    </p>
                   )}
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {gig.homework_included && <Badge variant="outline" className="text-[10px]">Homework</Badge>}
-                    {gig.recording_included && <Badge variant="outline" className="text-[10px]">Recording</Badge>}
-                    {gig.certificate_included && <Badge variant="outline" className="text-[10px]">Certificate</Badge>}
+                    {gig.homework_included && (
+                      <Badge variant="outline" className="text-[10px]">
+                        Homework
+                      </Badge>
+                    )}
+                    {gig.recording_included && (
+                      <Badge variant="outline" className="text-[10px]">
+                        Recording
+                      </Badge>
+                    )}
+                    {gig.certificate_included && (
+                      <Badge variant="outline" className="text-[10px]">
+                        Certificate
+                      </Badge>
+                    )}
                   </div>
                 </button>
               ))}
@@ -265,4 +354,3 @@ export function MentorPublicProfile({ mentor, profile, gigs, onSelectGig, select
     </motion.div>
   );
 }
-

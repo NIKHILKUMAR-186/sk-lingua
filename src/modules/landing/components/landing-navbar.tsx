@@ -71,7 +71,9 @@ export function LandingNavbar() {
                   <Link to="/auth">Log in</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link to="/auth" search={{ mode: "signup" } as never}>Get started</Link>
+                  <Link to="/auth" search={{ mode: "signup" } as never}>
+                    Get started
+                  </Link>
                 </Button>
               </>
             )}
@@ -118,7 +120,9 @@ export function LandingNavbar() {
                     <Link to="/auth">Log in</Link>
                   </Button>
                   <Button asChild size="sm" className="flex-1">
-                    <Link to="/auth" search={{ mode: "signup" } as never}>Get started</Link>
+                    <Link to="/auth" search={{ mode: "signup" } as never}>
+                      Get started
+                    </Link>
                   </Button>
                 </>
               )}

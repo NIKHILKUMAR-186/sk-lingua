@@ -20,6 +20,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as MentorApplyRouteImport } from './routes/mentor/apply'
+import { Route as AuthenticatedAdminBookingQueueRouteImport } from './routes/_authenticated/admin/booking-queue'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin/dashboard'
 import { Route as AuthenticatedAdminMentorApplicationsRouteImport } from './routes/_authenticated/admin/mentor-applications'
 import { Route as AuthenticatedMentorApplicationRouteImport } from './routes/_authenticated/mentor/application'
@@ -27,13 +28,21 @@ import { Route as AuthenticatedMentorAvailabilityRouteImport } from './routes/_a
 import { Route as AuthenticatedMentorCalendarRouteImport } from './routes/_authenticated/mentor/calendar'
 import { Route as AuthenticatedMentorDashboardRouteImport } from './routes/_authenticated/mentor/dashboard'
 import { Route as AuthenticatedMentorProfileRouteImport } from './routes/_authenticated/mentor/profile'
+import { Route as AuthenticatedMentorRequestsRouteImport } from './routes/_authenticated/mentor/requests'
 import { Route as AuthenticatedMentorResourcesRouteImport } from './routes/_authenticated/mentor/resources'
 import { Route as AuthenticatedMentorSessionsRouteImport } from './routes/_authenticated/mentor/sessions'
+import { Route as AuthenticatedStudentCheckoutRouteImport } from './routes/_authenticated/student/checkout'
 import { Route as AuthenticatedStudentDashboardRouteImport } from './routes/_authenticated/student/dashboard'
+import { Route as AuthenticatedStudentDemoSessionRouteImport } from './routes/_authenticated/student/demo-session'
 import { Route as AuthenticatedStudentExploreRouteImport } from './routes/_authenticated/student/explore'
+import { Route as AuthenticatedStudentHistoryRouteImport } from './routes/_authenticated/student/history'
+import { Route as AuthenticatedStudentPricingRouteImport } from './routes/_authenticated/student/pricing'
+import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student/profile'
 import { Route as AuthenticatedStudentResourcesRouteImport } from './routes/_authenticated/student/resources'
 import { Route as AuthenticatedStudentSessionsRouteImport } from './routes/_authenticated/student/sessions'
 import { Route as AuthenticatedStudentStreakRouteImport } from './routes/_authenticated/student/streak'
+import { Route as AuthenticatedStudentStudentSettingsRouteImport } from './routes/_authenticated/student/student-settings'
+import { Route as AuthenticatedStudentSubscriptionsRouteImport } from './routes/_authenticated/student/subscriptions'
 import { Route as AuthenticatedAdminMentorApplicationsIdRouteImport } from './routes/_authenticated/admin/mentor-applications/$id'
 import { Route as AuthenticatedMentorSessionIdRouteImport } from './routes/_authenticated/mentor/session.$id'
 import { Route as AuthenticatedStudentMentorIdRouteImport } from './routes/_authenticated/student/mentor.$id'
@@ -94,6 +103,12 @@ const MentorApplyRoute = MentorApplyRouteImport.update({
   path: '/mentor/apply',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminBookingQueueRoute =
+  AuthenticatedAdminBookingQueueRouteImport.update({
+    id: '/admin/booking-queue',
+    path: '/admin/booking-queue',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminDashboardRoute =
   AuthenticatedAdminDashboardRouteImport.update({
     id: '/admin/dashboard',
@@ -136,6 +151,12 @@ const AuthenticatedMentorProfileRoute =
     path: '/mentor/profile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMentorRequestsRoute =
+  AuthenticatedMentorRequestsRouteImport.update({
+    id: '/mentor/requests',
+    path: '/mentor/requests',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMentorResourcesRoute =
   AuthenticatedMentorResourcesRouteImport.update({
     id: '/mentor/resources',
@@ -148,16 +169,46 @@ const AuthenticatedMentorSessionsRoute =
     path: '/mentor/sessions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStudentCheckoutRoute =
+  AuthenticatedStudentCheckoutRouteImport.update({
+    id: '/student/checkout',
+    path: '/student/checkout',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentDashboardRoute =
   AuthenticatedStudentDashboardRouteImport.update({
     id: '/student/dashboard',
     path: '/student/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStudentDemoSessionRoute =
+  AuthenticatedStudentDemoSessionRouteImport.update({
+    id: '/student/demo-session',
+    path: '/student/demo-session',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentExploreRoute =
   AuthenticatedStudentExploreRouteImport.update({
     id: '/student/explore',
     path: '/student/explore',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentHistoryRoute =
+  AuthenticatedStudentHistoryRouteImport.update({
+    id: '/student/history',
+    path: '/student/history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentPricingRoute =
+  AuthenticatedStudentPricingRouteImport.update({
+    id: '/student/pricing',
+    path: '/student/pricing',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentProfileRoute =
+  AuthenticatedStudentProfileRouteImport.update({
+    id: '/student/profile',
+    path: '/student/profile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedStudentResourcesRoute =
@@ -176,6 +227,18 @@ const AuthenticatedStudentStreakRoute =
   AuthenticatedStudentStreakRouteImport.update({
     id: '/student/streak',
     path: '/student/streak',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentStudentSettingsRoute =
+  AuthenticatedStudentStudentSettingsRouteImport.update({
+    id: '/student/student-settings',
+    path: '/student/student-settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStudentSubscriptionsRoute =
+  AuthenticatedStudentSubscriptionsRouteImport.update({
+    id: '/student/subscriptions',
+    path: '/student/subscriptions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminMentorApplicationsIdRoute =
@@ -214,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/mentor/apply': typeof MentorApplyRoute
+  '/admin/booking-queue': typeof AuthenticatedAdminBookingQueueRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/mentor/application': typeof AuthenticatedMentorApplicationRoute
@@ -221,13 +285,21 @@ export interface FileRoutesByFullPath {
   '/mentor/calendar': typeof AuthenticatedMentorCalendarRoute
   '/mentor/dashboard': typeof AuthenticatedMentorDashboardRoute
   '/mentor/profile': typeof AuthenticatedMentorProfileRoute
+  '/mentor/requests': typeof AuthenticatedMentorRequestsRoute
   '/mentor/resources': typeof AuthenticatedMentorResourcesRoute
   '/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
+  '/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/student/dashboard': typeof AuthenticatedStudentDashboardRoute
+  '/student/demo-session': typeof AuthenticatedStudentDemoSessionRoute
   '/student/explore': typeof AuthenticatedStudentExploreRoute
+  '/student/history': typeof AuthenticatedStudentHistoryRoute
+  '/student/pricing': typeof AuthenticatedStudentPricingRoute
+  '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/resources': typeof AuthenticatedStudentResourcesRoute
   '/student/sessions': typeof AuthenticatedStudentSessionsRoute
   '/student/streak': typeof AuthenticatedStudentStreakRoute
+  '/student/student-settings': typeof AuthenticatedStudentStudentSettingsRoute
+  '/student/subscriptions': typeof AuthenticatedStudentSubscriptionsRoute
   '/admin/mentor-applications/$id': typeof AuthenticatedAdminMentorApplicationsIdRoute
   '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
@@ -244,6 +316,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/mentor/apply': typeof MentorApplyRoute
+  '/admin/booking-queue': typeof AuthenticatedAdminBookingQueueRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/mentor/application': typeof AuthenticatedMentorApplicationRoute
@@ -251,13 +324,21 @@ export interface FileRoutesByTo {
   '/mentor/calendar': typeof AuthenticatedMentorCalendarRoute
   '/mentor/dashboard': typeof AuthenticatedMentorDashboardRoute
   '/mentor/profile': typeof AuthenticatedMentorProfileRoute
+  '/mentor/requests': typeof AuthenticatedMentorRequestsRoute
   '/mentor/resources': typeof AuthenticatedMentorResourcesRoute
   '/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
+  '/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/student/dashboard': typeof AuthenticatedStudentDashboardRoute
+  '/student/demo-session': typeof AuthenticatedStudentDemoSessionRoute
   '/student/explore': typeof AuthenticatedStudentExploreRoute
+  '/student/history': typeof AuthenticatedStudentHistoryRoute
+  '/student/pricing': typeof AuthenticatedStudentPricingRoute
+  '/student/profile': typeof AuthenticatedStudentProfileRoute
   '/student/resources': typeof AuthenticatedStudentResourcesRoute
   '/student/sessions': typeof AuthenticatedStudentSessionsRoute
   '/student/streak': typeof AuthenticatedStudentStreakRoute
+  '/student/student-settings': typeof AuthenticatedStudentStudentSettingsRoute
+  '/student/subscriptions': typeof AuthenticatedStudentSubscriptionsRoute
   '/admin/mentor-applications/$id': typeof AuthenticatedAdminMentorApplicationsIdRoute
   '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
@@ -276,6 +357,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/mentor/apply': typeof MentorApplyRoute
+  '/_authenticated/admin/booking-queue': typeof AuthenticatedAdminBookingQueueRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/_authenticated/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/_authenticated/mentor/application': typeof AuthenticatedMentorApplicationRoute
@@ -283,13 +365,21 @@ export interface FileRoutesById {
   '/_authenticated/mentor/calendar': typeof AuthenticatedMentorCalendarRoute
   '/_authenticated/mentor/dashboard': typeof AuthenticatedMentorDashboardRoute
   '/_authenticated/mentor/profile': typeof AuthenticatedMentorProfileRoute
+  '/_authenticated/mentor/requests': typeof AuthenticatedMentorRequestsRoute
   '/_authenticated/mentor/resources': typeof AuthenticatedMentorResourcesRoute
   '/_authenticated/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
+  '/_authenticated/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/_authenticated/student/dashboard': typeof AuthenticatedStudentDashboardRoute
+  '/_authenticated/student/demo-session': typeof AuthenticatedStudentDemoSessionRoute
   '/_authenticated/student/explore': typeof AuthenticatedStudentExploreRoute
+  '/_authenticated/student/history': typeof AuthenticatedStudentHistoryRoute
+  '/_authenticated/student/pricing': typeof AuthenticatedStudentPricingRoute
+  '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
   '/_authenticated/student/resources': typeof AuthenticatedStudentResourcesRoute
   '/_authenticated/student/sessions': typeof AuthenticatedStudentSessionsRoute
   '/_authenticated/student/streak': typeof AuthenticatedStudentStreakRoute
+  '/_authenticated/student/student-settings': typeof AuthenticatedStudentStudentSettingsRoute
+  '/_authenticated/student/subscriptions': typeof AuthenticatedStudentSubscriptionsRoute
   '/_authenticated/admin/mentor-applications/$id': typeof AuthenticatedAdminMentorApplicationsIdRoute
   '/_authenticated/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/_authenticated/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
@@ -308,6 +398,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/auth/callback'
     | '/mentor/apply'
+    | '/admin/booking-queue'
     | '/admin/dashboard'
     | '/admin/mentor-applications'
     | '/mentor/application'
@@ -315,13 +406,21 @@ export interface FileRouteTypes {
     | '/mentor/calendar'
     | '/mentor/dashboard'
     | '/mentor/profile'
+    | '/mentor/requests'
     | '/mentor/resources'
     | '/mentor/sessions'
+    | '/student/checkout'
     | '/student/dashboard'
+    | '/student/demo-session'
     | '/student/explore'
+    | '/student/history'
+    | '/student/pricing'
+    | '/student/profile'
     | '/student/resources'
     | '/student/sessions'
     | '/student/streak'
+    | '/student/student-settings'
+    | '/student/subscriptions'
     | '/admin/mentor-applications/$id'
     | '/mentor/session/$id'
     | '/student/mentor/$id'
@@ -338,6 +437,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/auth/callback'
     | '/mentor/apply'
+    | '/admin/booking-queue'
     | '/admin/dashboard'
     | '/admin/mentor-applications'
     | '/mentor/application'
@@ -345,13 +445,21 @@ export interface FileRouteTypes {
     | '/mentor/calendar'
     | '/mentor/dashboard'
     | '/mentor/profile'
+    | '/mentor/requests'
     | '/mentor/resources'
     | '/mentor/sessions'
+    | '/student/checkout'
     | '/student/dashboard'
+    | '/student/demo-session'
     | '/student/explore'
+    | '/student/history'
+    | '/student/pricing'
+    | '/student/profile'
     | '/student/resources'
     | '/student/sessions'
     | '/student/streak'
+    | '/student/student-settings'
+    | '/student/subscriptions'
     | '/admin/mentor-applications/$id'
     | '/mentor/session/$id'
     | '/student/mentor/$id'
@@ -369,6 +477,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/auth/callback'
     | '/mentor/apply'
+    | '/_authenticated/admin/booking-queue'
     | '/_authenticated/admin/dashboard'
     | '/_authenticated/admin/mentor-applications'
     | '/_authenticated/mentor/application'
@@ -376,13 +485,21 @@ export interface FileRouteTypes {
     | '/_authenticated/mentor/calendar'
     | '/_authenticated/mentor/dashboard'
     | '/_authenticated/mentor/profile'
+    | '/_authenticated/mentor/requests'
     | '/_authenticated/mentor/resources'
     | '/_authenticated/mentor/sessions'
+    | '/_authenticated/student/checkout'
     | '/_authenticated/student/dashboard'
+    | '/_authenticated/student/demo-session'
     | '/_authenticated/student/explore'
+    | '/_authenticated/student/history'
+    | '/_authenticated/student/pricing'
+    | '/_authenticated/student/profile'
     | '/_authenticated/student/resources'
     | '/_authenticated/student/sessions'
     | '/_authenticated/student/streak'
+    | '/_authenticated/student/student-settings'
+    | '/_authenticated/student/subscriptions'
     | '/_authenticated/admin/mentor-applications/$id'
     | '/_authenticated/mentor/session/$id'
     | '/_authenticated/student/mentor/$id'
@@ -478,6 +595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentorApplyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/booking-queue': {
+      id: '/_authenticated/admin/booking-queue'
+      path: '/admin/booking-queue'
+      fullPath: '/admin/booking-queue'
+      preLoaderRoute: typeof AuthenticatedAdminBookingQueueRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/dashboard': {
       id: '/_authenticated/admin/dashboard'
       path: '/admin/dashboard'
@@ -527,6 +651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMentorProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mentor/requests': {
+      id: '/_authenticated/mentor/requests'
+      path: '/mentor/requests'
+      fullPath: '/mentor/requests'
+      preLoaderRoute: typeof AuthenticatedMentorRequestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/mentor/resources': {
       id: '/_authenticated/mentor/resources'
       path: '/mentor/resources'
@@ -541,6 +672,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMentorSessionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/student/checkout': {
+      id: '/_authenticated/student/checkout'
+      path: '/student/checkout'
+      fullPath: '/student/checkout'
+      preLoaderRoute: typeof AuthenticatedStudentCheckoutRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student/dashboard': {
       id: '/_authenticated/student/dashboard'
       path: '/student/dashboard'
@@ -548,11 +686,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/student/demo-session': {
+      id: '/_authenticated/student/demo-session'
+      path: '/student/demo-session'
+      fullPath: '/student/demo-session'
+      preLoaderRoute: typeof AuthenticatedStudentDemoSessionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student/explore': {
       id: '/_authenticated/student/explore'
       path: '/student/explore'
       fullPath: '/student/explore'
       preLoaderRoute: typeof AuthenticatedStudentExploreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/student/history': {
+      id: '/_authenticated/student/history'
+      path: '/student/history'
+      fullPath: '/student/history'
+      preLoaderRoute: typeof AuthenticatedStudentHistoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/student/pricing': {
+      id: '/_authenticated/student/pricing'
+      path: '/student/pricing'
+      fullPath: '/student/pricing'
+      preLoaderRoute: typeof AuthenticatedStudentPricingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/student/profile': {
+      id: '/_authenticated/student/profile'
+      path: '/student/profile'
+      fullPath: '/student/profile'
+      preLoaderRoute: typeof AuthenticatedStudentProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/student/resources': {
@@ -574,6 +740,20 @@ declare module '@tanstack/react-router' {
       path: '/student/streak'
       fullPath: '/student/streak'
       preLoaderRoute: typeof AuthenticatedStudentStreakRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/student/student-settings': {
+      id: '/_authenticated/student/student-settings'
+      path: '/student/student-settings'
+      fullPath: '/student/student-settings'
+      preLoaderRoute: typeof AuthenticatedStudentStudentSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/student/subscriptions': {
+      id: '/_authenticated/student/subscriptions'
+      path: '/student/subscriptions'
+      fullPath: '/student/subscriptions'
+      preLoaderRoute: typeof AuthenticatedStudentSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/mentor-applications/$id': {
@@ -626,6 +806,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedAdminBookingQueueRoute: typeof AuthenticatedAdminBookingQueueRoute
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
   AuthenticatedAdminMentorApplicationsRoute: typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   AuthenticatedMentorApplicationRoute: typeof AuthenticatedMentorApplicationRoute
@@ -633,13 +814,21 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMentorCalendarRoute: typeof AuthenticatedMentorCalendarRoute
   AuthenticatedMentorDashboardRoute: typeof AuthenticatedMentorDashboardRoute
   AuthenticatedMentorProfileRoute: typeof AuthenticatedMentorProfileRoute
+  AuthenticatedMentorRequestsRoute: typeof AuthenticatedMentorRequestsRoute
   AuthenticatedMentorResourcesRoute: typeof AuthenticatedMentorResourcesRoute
   AuthenticatedMentorSessionsRoute: typeof AuthenticatedMentorSessionsRoute
+  AuthenticatedStudentCheckoutRoute: typeof AuthenticatedStudentCheckoutRoute
   AuthenticatedStudentDashboardRoute: typeof AuthenticatedStudentDashboardRoute
+  AuthenticatedStudentDemoSessionRoute: typeof AuthenticatedStudentDemoSessionRoute
   AuthenticatedStudentExploreRoute: typeof AuthenticatedStudentExploreRoute
+  AuthenticatedStudentHistoryRoute: typeof AuthenticatedStudentHistoryRoute
+  AuthenticatedStudentPricingRoute: typeof AuthenticatedStudentPricingRoute
+  AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
   AuthenticatedStudentResourcesRoute: typeof AuthenticatedStudentResourcesRoute
   AuthenticatedStudentSessionsRoute: typeof AuthenticatedStudentSessionsRoute
   AuthenticatedStudentStreakRoute: typeof AuthenticatedStudentStreakRoute
+  AuthenticatedStudentStudentSettingsRoute: typeof AuthenticatedStudentStudentSettingsRoute
+  AuthenticatedStudentSubscriptionsRoute: typeof AuthenticatedStudentSubscriptionsRoute
   AuthenticatedMentorSessionIdRoute: typeof AuthenticatedMentorSessionIdRoute
   AuthenticatedStudentMentorIdRoute: typeof AuthenticatedStudentMentorIdRoute
   AuthenticatedStudentSessionIdRoute: typeof AuthenticatedStudentSessionIdRoute
@@ -649,6 +838,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedAdminBookingQueueRoute: AuthenticatedAdminBookingQueueRoute,
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
   AuthenticatedAdminMentorApplicationsRoute:
     AuthenticatedAdminMentorApplicationsRouteWithChildren,
@@ -657,13 +847,23 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMentorCalendarRoute: AuthenticatedMentorCalendarRoute,
   AuthenticatedMentorDashboardRoute: AuthenticatedMentorDashboardRoute,
   AuthenticatedMentorProfileRoute: AuthenticatedMentorProfileRoute,
+  AuthenticatedMentorRequestsRoute: AuthenticatedMentorRequestsRoute,
   AuthenticatedMentorResourcesRoute: AuthenticatedMentorResourcesRoute,
   AuthenticatedMentorSessionsRoute: AuthenticatedMentorSessionsRoute,
+  AuthenticatedStudentCheckoutRoute: AuthenticatedStudentCheckoutRoute,
   AuthenticatedStudentDashboardRoute: AuthenticatedStudentDashboardRoute,
+  AuthenticatedStudentDemoSessionRoute: AuthenticatedStudentDemoSessionRoute,
   AuthenticatedStudentExploreRoute: AuthenticatedStudentExploreRoute,
+  AuthenticatedStudentHistoryRoute: AuthenticatedStudentHistoryRoute,
+  AuthenticatedStudentPricingRoute: AuthenticatedStudentPricingRoute,
+  AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,
   AuthenticatedStudentResourcesRoute: AuthenticatedStudentResourcesRoute,
   AuthenticatedStudentSessionsRoute: AuthenticatedStudentSessionsRoute,
   AuthenticatedStudentStreakRoute: AuthenticatedStudentStreakRoute,
+  AuthenticatedStudentStudentSettingsRoute:
+    AuthenticatedStudentStudentSettingsRoute,
+  AuthenticatedStudentSubscriptionsRoute:
+    AuthenticatedStudentSubscriptionsRoute,
   AuthenticatedMentorSessionIdRoute: AuthenticatedMentorSessionIdRoute,
   AuthenticatedStudentMentorIdRoute: AuthenticatedStudentMentorIdRoute,
   AuthenticatedStudentSessionIdRoute: AuthenticatedStudentSessionIdRoute,

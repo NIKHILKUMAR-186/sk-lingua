@@ -4,11 +4,17 @@ export const appRolePriority: AppRole[] = ["admin", "mentor", "student"];
 
 export function getActiveRole(roles: AppRole[]): AppRole | null {
   const uniqueRoles = Array.from(new Set(roles));
-  return uniqueRoles.sort((a, b) => appRolePriority.indexOf(a) - appRolePriority.indexOf(b))[0] ?? null;
+  return (
+    uniqueRoles.sort((a, b) => appRolePriority.indexOf(a) - appRolePriority.indexOf(b))[0] ?? null
+  );
 }
 
-export function getDashboardRoute(role: AppRole | null): "/mentor/dashboard" | "/student/dashboard" {
-  return role === "mentor" ? "/mentor/dashboard" : "/student/dashboard";
+export function getDashboardRoute(
+  role: AppRole | null,
+): "/admin/dashboard" | "/mentor/dashboard" | "/student/dashboard" {
+  if (role === "admin") return "/admin/dashboard";
+  if (role === "mentor") return "/mentor/dashboard";
+  return "/student/dashboard";
 }
 
 export function getOnboardingRoute(): "/onboarding" {

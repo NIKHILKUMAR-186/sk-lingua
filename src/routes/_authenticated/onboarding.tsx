@@ -34,10 +34,27 @@ type DraftState = {
   targetLanguage: string;
   currentLevel: string;
   learningGoal: string;
+  careerGoal: string;
+  learningStyle: string;
+  preferredDuration: string;
+  weeklyAvailability: string;
+  college: string;
+  degree: string;
+  semester: string;
   headline: string;
   teachingLangs: string[];
   hourlyRate: string;
 };
+
+const STUDENT_LEARNING_STYLES = [
+  "Conversation practice",
+  "Exam preparation",
+  "Grammar & writing",
+  "Vocabulary building",
+  "Interview readiness",
+];
+
+const SESSION_DURATIONS = ["30", "45", "60"];
 
 const roleCards: Record<
   OnboardingRole,
@@ -64,6 +81,13 @@ const initialDraft: DraftState = {
   targetLanguage: "es",
   currentLevel: "",
   learningGoal: "",
+  careerGoal: "",
+  learningStyle: "Conversation practice",
+  preferredDuration: "45",
+  weeklyAvailability: "",
+  college: "",
+  degree: "",
+  semester: "",
   headline: "",
   teachingLangs: [],
   hourlyRate: "25",
@@ -105,6 +129,13 @@ function Onboarding() {
       targetLanguage: auth.profile?.target_language ?? "es",
       currentLevel: auth.profile?.current_level ?? "",
       learningGoal: auth.profile?.learning_goal ?? "",
+      careerGoal: auth.profile?.interests ?? "",
+      learningStyle: "Conversation practice",
+      preferredDuration: "45",
+      weeklyAvailability: "",
+      college: "",
+      degree: "",
+      semester: "",
     };
 
     const saved = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
@@ -164,6 +195,10 @@ function Onboarding() {
           target_language: draft.targetLanguage,
           current_level: draft.currentLevel,
           learning_goal: draft.learningGoal,
+          interests:
+            [draft.careerGoal, draft.learningStyle, draft.college, draft.degree, draft.semester]
+              .filter(Boolean)
+              .join(" • ") || null,
         },
         { onConflict: "id" },
       );
@@ -372,6 +407,52 @@ function Onboarding() {
                   {isStudent && (
                     <div className="space-y-4 rounded-3xl border border-border bg-background p-6">
                       <p className="text-base font-semibold">Learning preferences</p>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label htmlFor="college">College / Institution</Label>
+                          <Input
+                            id="college"
+                            value={draft.college}
+                            onChange={(e) => updateDraft({ college: e.target.value })}
+                            placeholder="Your college or university"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="degree">Degree / Program</Label>
+                          <Input
+                            id="degree"
+                            value={draft.degree}
+                            onChange={(e) => updateDraft({ degree: e.target.value })}
+                            placeholder="BA, BSc, Diploma, etc."
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label htmlFor="semester">Semester / year</Label>
+                          <Input
+                            id="semester"
+                            value={draft.semester}
+                            onChange={(e) => updateDraft({ semester: e.target.value })}
+                            placeholder="e.g. Semester 4 / Year 2"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="preferred-duration">Preferred session duration</Label>
+                          <select
+                            id="preferred-duration"
+                            value={draft.preferredDuration}
+                            onChange={(e) => updateDraft({ preferredDuration: e.target.value })}
+                            className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                          >
+                            {SESSION_DURATIONS.map((duration) => (
+                              <option key={duration} value={duration}>
+                                {duration} minutes
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
                       <div>
                         <Label htmlFor="target-language">Target language</Label>
                         <select
@@ -388,8 +469,7 @@ function Onboarding() {
                         </select>
                       </div>
                       <div>
-                        <Label htmlFor="current-level">Current Level</Label>
-
+                        <Label htmlFor="current-level">Current level</Label>
                         <Select
                           value={draft.currentLevel}
                           onValueChange={(value) => updateDraft({ currentLevel: value })}
@@ -405,13 +485,6 @@ function Onboarding() {
                             <SelectItem value="C2">Proficient / Native (C2)</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Label htmlFor="current-level">Current level</Label>
-                        <Input
-                          id="current-level"
-                          value={draft.currentLevel}
-                          onChange={(e) => updateDraft({ currentLevel: e.target.value })}
-                          placeholder="Beginner, Intermediate, Advanced"
-                        />
                       </div>
                       <div>
                         <Label htmlFor="learning-goal">Learning goal</Label>
@@ -420,6 +493,42 @@ function Onboarding() {
                           value={draft.learningGoal}
                           onChange={(e) => updateDraft({ learningGoal: e.target.value })}
                           placeholder="I want to speak confidently in everyday conversations."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="career-goal">Career goal</Label>
+                        <Input
+                          id="career-goal"
+                          value={draft.careerGoal}
+                          onChange={(e) => updateDraft({ careerGoal: e.target.value })}
+                          placeholder="e.g. internship interviews, study abroad, career growth"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="learning-style">Learning style</Label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {STUDENT_LEARNING_STYLES.map((style) => {
+                            const selected = draft.learningStyle === style;
+                            return (
+                              <button
+                                type="button"
+                                key={style}
+                                onClick={() => updateDraft({ learningStyle: style })}
+                                className={`rounded-full border px-3 py-1.5 text-sm ${selected ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}
+                              >
+                                {style}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="weekly-availability">Weekly availability</Label>
+                        <Textarea
+                          id="weekly-availability"
+                          value={draft.weeklyAvailability}
+                          onChange={(e) => updateDraft({ weeklyAvailability: e.target.value })}
+                          placeholder="e.g. Weekdays after 6pm, weekends mornings"
                         />
                       </div>
                     </div>
@@ -514,6 +623,31 @@ function Onboarding() {
                           </div>
                           <div>
                             <strong>Learning goal:</strong> {draft.learningGoal || "Not provided"}
+                          </div>
+                          <div>
+                            <strong>Career goal:</strong> {draft.careerGoal || "Not provided"}
+                          </div>
+                          <div>
+                            <strong>Learning style:</strong> {draft.learningStyle || "Not provided"}
+                          </div>
+                          <div>
+                            <strong>Preferred duration:</strong>{" "}
+                            {draft.preferredDuration
+                              ? `${draft.preferredDuration} minutes`
+                              : "Not provided"}
+                          </div>
+                          <div>
+                            <strong>Weekly availability:</strong>{" "}
+                            {draft.weeklyAvailability || "Not provided"}
+                          </div>
+                          <div>
+                            <strong>College:</strong> {draft.college || "Not provided"}
+                          </div>
+                          <div>
+                            <strong>Degree:</strong> {draft.degree || "Not provided"}
+                          </div>
+                          <div>
+                            <strong>Semester:</strong> {draft.semester || "Not provided"}
                           </div>
                         </>
                       )}

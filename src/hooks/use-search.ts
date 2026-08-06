@@ -41,7 +41,9 @@ export function useSearch() {
     queryFn: async () => {
       let query = supabase
         .from("mentor_profiles")
-        .select("user_id, headline, bio, hourly_rate, rating_avg, total_reviews, total_students, total_sessions, languages_taught, years_experience, is_verified, demo_lesson_url, teaching_style, cover_url, availability_preview")
+        .select(
+          "user_id, headline, bio, hourly_rate, rating_avg, total_reviews, total_students, total_sessions, languages_taught, years_experience, is_verified, demo_lesson_url, teaching_style, cover_url, availability_preview",
+        )
         .eq("is_active", true);
 
       // Apply filters
@@ -69,11 +71,20 @@ export function useSearch() {
 
       // Sort
       switch (filters.sortBy) {
-        case "price_low": query = query.order("hourly_rate", { ascending: true }); break;
-        case "price_high": query = query.order("hourly_rate", { ascending: false }); break;
-        case "experience": query = query.order("years_experience", { ascending: false }); break;
-        case "popular": query = query.order("total_sessions", { ascending: false }); break;
-        default: query = query.order("rating_avg", { ascending: false });
+        case "price_low":
+          query = query.order("hourly_rate", { ascending: true });
+          break;
+        case "price_high":
+          query = query.order("hourly_rate", { ascending: false });
+          break;
+        case "experience":
+          query = query.order("years_experience", { ascending: false });
+          break;
+        case "popular":
+          query = query.order("total_sessions", { ascending: false });
+          break;
+        default:
+          query = query.order("rating_avg", { ascending: false });
       }
 
       query = query.limit(60);
@@ -82,7 +93,10 @@ export function useSearch() {
       if (!m?.length) return [];
 
       const ids = m.map((x: any) => x.user_id);
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, avatar_url, state").in("id", ids);
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, state")
+        .in("id", ids);
       const byId = new Map((profs ?? []).map((p: any) => [p.id, p]));
 
       let results = m.map((x: any) => ({ ...x, profile: byId.get(x.user_id) }));
@@ -91,7 +105,8 @@ export function useSearch() {
       if (filters.query) {
         const q = filters.query.toLowerCase();
         results = results.filter((r: any) => {
-          const searchText = `${r.profile?.full_name ?? ""} ${r.headline ?? ""} ${r.bio ?? ""} ${r.teaching_style ?? ""}`.toLowerCase();
+          const searchText =
+            `${r.profile?.full_name ?? ""} ${r.headline ?? ""} ${r.bio ?? ""} ${r.teaching_style ?? ""}`.toLowerCase();
           return searchText.includes(q);
         });
       }
@@ -108,4 +123,3 @@ export function useSearch() {
 
   return { mentors, filters, isLoading, setFilters: updateFilter, resetFilters, defaultFilters };
 }
-

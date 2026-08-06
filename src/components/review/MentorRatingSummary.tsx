@@ -68,7 +68,9 @@ export function MentorRatingSummary({
         <CardContent className="p-8 text-center">
           <Star className="mx-auto h-8 w-8 text-muted-foreground/40" />
           <div className="mt-2 text-sm font-medium text-muted-foreground">No reviews yet</div>
-          <p className="text-xs text-muted-foreground/60">Reviews will appear once students complete sessions</p>
+          <p className="text-xs text-muted-foreground/60">
+            Reviews will appear once students complete sessions
+          </p>
         </CardContent>
       </Card>
     );
@@ -95,7 +97,9 @@ export function MentorRatingSummary({
               {stats.average.toFixed(1)}
             </motion.div>
             <RatingStars value={stats.average} size="md" showValue={false} />
-            <div className="mt-1 text-xs text-muted-foreground">{stats.total} review{stats.total !== 1 ? "s" : ""}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {stats.total} review{stats.total !== 1 ? "s" : ""}
+            </div>
           </div>
 
           <div className="flex-1 w-full">
@@ -109,20 +113,23 @@ export function MentorRatingSummary({
             <div className="text-2xl font-display font-bold text-success">
               {stats.recommendRate.toFixed(0)}%
             </div>
-            <div className="text-xs text-muted-foreground">
-              of students recommend this mentor
-            </div>
+            <div className="text-xs text-muted-foreground">of students recommend this mentor</div>
           </div>
         )}
 
         {/* Category Averages */}
         <div className="space-y-3">
-          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category Breakdown</div>
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Category Breakdown
+          </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {CATEGORY_CONFIG.map((cat) => {
               const value = stats.categoryAverages[cat.key];
               return (
-                <div key={cat.key} className="rounded-lg border p-3 transition-all hover:bg-accent/50">
+                <div
+                  key={cat.key}
+                  className="rounded-lg border p-3 transition-all hover:bg-accent/50"
+                >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <cat.icon className="h-3.5 w-3.5 text-primary" />
@@ -146,7 +153,9 @@ export function MentorRatingSummary({
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Recent Reviews
               </div>
-              <span className="text-xs text-muted-foreground">Showing {Math.min(reviews.length, 5)} of {stats.total}</span>
+              <span className="text-xs text-muted-foreground">
+                Showing {Math.min(reviews.length, 5)} of {stats.total}
+              </span>
             </div>
             <div className="space-y-2">
               {reviews.slice(0, 5).map((review) => (
@@ -159,4 +168,3 @@ export function MentorRatingSummary({
     </Card>
   );
 }
-

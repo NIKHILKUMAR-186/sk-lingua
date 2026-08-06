@@ -37,7 +37,12 @@ const CATEGORIES = [
 
 const LEVELS = ["beginner", "intermediate", "advanced", "all levels"];
 
-export function SearchFiltersPanel({ filters, onFilterChange, onReset, resultsCount }: SearchFiltersProps) {
+export function SearchFiltersPanel({
+  filters,
+  onFilterChange,
+  onReset,
+  resultsCount,
+}: SearchFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
 
   return (
@@ -61,7 +66,9 @@ export function SearchFiltersPanel({ filters, onFilterChange, onReset, resultsCo
           >
             <option value="">Any language</option>
             {LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>{l.emoji} {l.name}</option>
+              <option key={l.code} value={l.code}>
+                {l.emoji} {l.name}
+              </option>
             ))}
           </select>
           <select
@@ -163,7 +170,9 @@ export function SearchFiltersPanel({ filters, onFilterChange, onReset, resultsCo
                 >
                   <option value="">All categories</option>
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -180,7 +189,9 @@ export function SearchFiltersPanel({ filters, onFilterChange, onReset, resultsCo
                 >
                   <option value="">All levels</option>
                   {LEVELS.map((l) => (
-                    <option key={l} value={l}>{l}</option>
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -191,7 +202,10 @@ export function SearchFiltersPanel({ filters, onFilterChange, onReset, resultsCo
                   <div className="text-sm font-medium">Verified only</div>
                   <div className="text-xs text-muted-foreground">Identity verified mentors</div>
                 </div>
-                <Switch checked={filters.verifiedOnly} onCheckedChange={(v) => onFilterChange("verifiedOnly", v)} />
+                <Switch
+                  checked={filters.verifiedOnly}
+                  onCheckedChange={(v) => onFilterChange("verifiedOnly", v)}
+                />
               </div>
 
               {/* Demo available */}
@@ -200,7 +214,10 @@ export function SearchFiltersPanel({ filters, onFilterChange, onReset, resultsCo
                   <div className="text-sm font-medium">Demo lesson</div>
                   <div className="text-xs text-muted-foreground">Has demo video</div>
                 </div>
-                <Switch checked={filters.demoAvailable} onCheckedChange={(v) => onFilterChange("demoAvailable", v)} />
+                <Switch
+                  checked={filters.demoAvailable}
+                  onCheckedChange={(v) => onFilterChange("demoAvailable", v)}
+                />
               </div>
 
               {/* Results count */}
@@ -219,36 +236,61 @@ export function SearchFiltersPanel({ filters, onFilterChange, onReset, resultsCo
       <div className="flex flex-wrap gap-2">
         {filters.language && (
           <Badge variant="secondary" className="gap-1">
-            {LANGUAGES.find((l) => l.code === filters.language)?.emoji} {LANGUAGES.find((l) => l.code === filters.language)?.name}
-            <button onClick={() => onFilterChange("language", "")} className="ml-1 hover:text-foreground">&times;</button>
+            {LANGUAGES.find((l) => l.code === filters.language)?.emoji}{" "}
+            {LANGUAGES.find((l) => l.code === filters.language)?.name}
+            <button
+              onClick={() => onFilterChange("language", "")}
+              className="ml-1 hover:text-foreground"
+            >
+              &times;
+            </button>
           </Badge>
         )}
         {filters.minRating > 0 && (
           <Badge variant="secondary">
             <Star className="mr-0.5 h-3 w-3" /> {filters.minRating}+
-            <button onClick={() => onFilterChange("minRating", 0)} className="ml-1 hover:text-foreground">&times;</button>
+            <button
+              onClick={() => onFilterChange("minRating", 0)}
+              className="ml-1 hover:text-foreground"
+            >
+              &times;
+            </button>
           </Badge>
         )}
         {filters.verifiedOnly && (
           <Badge variant="secondary">
             Verified
-            <button onClick={() => onFilterChange("verifiedOnly", false)} className="ml-1 hover:text-foreground">&times;</button>
+            <button
+              onClick={() => onFilterChange("verifiedOnly", false)}
+              className="ml-1 hover:text-foreground"
+            >
+              &times;
+            </button>
           </Badge>
         )}
         {filters.demoAvailable && (
           <Badge variant="secondary">
             Demo available
-            <button onClick={() => onFilterChange("demoAvailable", false)} className="ml-1 hover:text-foreground">&times;</button>
+            <button
+              onClick={() => onFilterChange("demoAvailable", false)}
+              className="ml-1 hover:text-foreground"
+            >
+              &times;
+            </button>
           </Badge>
         )}
         {filters.category && (
           <Badge variant="secondary">
             {filters.category}
-            <button onClick={() => onFilterChange("category", "")} className="ml-1 hover:text-foreground">&times;</button>
+            <button
+              onClick={() => onFilterChange("category", "")}
+              className="ml-1 hover:text-foreground"
+            >
+              &times;
+            </button>
           </Badge>
         )}
       </div>
     </div>
   );
 }
-

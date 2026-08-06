@@ -12,7 +12,8 @@ export const Route = createFileRoute("/_authenticated/student/session/$id")({
 function StudentSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
-  const { data, isLoading, error, submitHomework, submitReview, fetchExistingReview, createNote } = useSessionWorkspace(id, auth?.user?.id);
+  const { data, isLoading, error, submitHomework, submitReview, fetchExistingReview, createNote } =
+    useSessionWorkspace(id, auth?.user?.id);
   const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
@@ -26,10 +27,14 @@ function StudentSessionDetail() {
       <div className="mx-auto max-w-6xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Session workspace</h1>
-          <p className="text-sm text-muted-foreground">Homework, notes, resources, and timeline in one place.</p>
+          <p className="text-sm text-muted-foreground">
+            Homework, notes, resources, and timeline in one place.
+          </p>
         </div>
         {isLoading ? <div className="text-sm text-muted-foreground">Loading workspace…</div> : null}
-        {error ? <div className="text-sm text-red-500">Unable to load this session workspace.</div> : null}
+        {error ? (
+          <div className="text-sm text-red-500">Unable to load this session workspace.</div>
+        ) : null}
         {!isLoading && data ? (
           <SessionWorkspace
             sessionId={id}
@@ -40,6 +45,7 @@ function StudentSessionDetail() {
             notes={data.notes}
             timeline={data.timeline}
             resources={data.resources}
+            workspace={data.workspace}
             onSubmitHomework={submitHomework}
             onCreateNote={createNote}
             onSubmitReview={submitReview}

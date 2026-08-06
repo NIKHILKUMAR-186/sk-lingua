@@ -108,25 +108,29 @@ export function useGigs(mentorId?: string) {
 
   const updateGig = useMutation({
     mutationFn: async ({ id, form }: { id: string; form: Partial<GigFormData> }) => {
-      const { error } = await supabase.from("gigs").update({
-        title: form.title,
-        description: form.description || null,
-        price: form.price,
-        duration_mins: form.duration_mins,
-        language: form.language,
-        category: form.category || null,
-        level: form.level || null,
-        tags: form.tags,
-        cover_image: form.cover_image,
-        whats_included: form.whats_included as unknown as Json,
-        learning_outcomes: form.learning_outcomes as unknown as Json,
-        prerequisites: form.prerequisites || null,
-        homework_included: form.homework_included,
-        recording_included: form.recording_included,
-        certificate_included: form.certificate_included,
-        featured: form.featured,
-        is_active: form.is_active,
-      }).eq("id", id).eq("mentor_id", mentorId!);
+      const { error } = await supabase
+        .from("gigs")
+        .update({
+          title: form.title,
+          description: form.description || null,
+          price: form.price,
+          duration_mins: form.duration_mins,
+          language: form.language,
+          category: form.category || null,
+          level: form.level || null,
+          tags: form.tags,
+          cover_image: form.cover_image,
+          whats_included: form.whats_included as unknown as Json,
+          learning_outcomes: form.learning_outcomes as unknown as Json,
+          prerequisites: form.prerequisites || null,
+          homework_included: form.homework_included,
+          recording_included: form.recording_included,
+          certificate_included: form.certificate_included,
+          featured: form.featured,
+          is_active: form.is_active,
+        })
+        .eq("id", id)
+        .eq("mentor_id", mentorId!);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -137,7 +141,11 @@ export function useGigs(mentorId?: string) {
 
   const archiveGig = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("gigs").update({ is_archived: true, is_active: false }).eq("id", id).eq("mentor_id", mentorId!);
+      const { error } = await supabase
+        .from("gigs")
+        .update({ is_archived: true, is_active: false })
+        .eq("id", id)
+        .eq("mentor_id", mentorId!);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -148,7 +156,11 @@ export function useGigs(mentorId?: string) {
 
   const deleteGig = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("gigs").delete().eq("id", id).eq("mentor_id", mentorId!);
+      const { error } = await supabase
+        .from("gigs")
+        .delete()
+        .eq("id", id)
+        .eq("mentor_id", mentorId!);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -159,7 +171,11 @@ export function useGigs(mentorId?: string) {
 
   const toggleActive = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase.from("gigs").update({ is_active }).eq("id", id).eq("mentor_id", mentorId!);
+      const { error } = await supabase
+        .from("gigs")
+        .update({ is_active })
+        .eq("id", id)
+        .eq("mentor_id", mentorId!);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -186,4 +202,3 @@ export function useGigs(mentorId?: string) {
     defaultGigForm,
   };
 }
-

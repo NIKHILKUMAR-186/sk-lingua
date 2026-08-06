@@ -82,9 +82,9 @@ function StreakPage() {
             </CardContent>
           </Card>
         </div>
-      <Suspense fallback={<div className="mb-4">Loading analytics…</div>}>
-        <StudentAnalyticsDashboard />
-      </Suspense>
+        <Suspense fallback={<div className="mb-4">Loading analytics…</div>}>
+          <StudentAnalyticsDashboard />
+        </Suspense>
 
         <Card>
           <CardHeader>

@@ -33,24 +33,44 @@ function MentorResources() {
   const uid = auth?.user?.id;
   const qc = useQueryClient();
   const { data: resources = [] } = useQuery({
-    queryKey: ["mentor-resources", uid], enabled: !!uid,
-    queryFn: async () => (await supabase.from("resources").select("*").eq("mentor_id", uid!).order("created_at", { ascending: false })).data ?? [],
+    queryKey: ["mentor-resources", uid],
+    enabled: !!uid,
+    queryFn: async () =>
+      (
+        await supabase
+          .from("resources")
+          .select("*")
+          .eq("mentor_id", uid!)
+          .order("created_at", { ascending: false })
+      ).data ?? [],
   });
   const { data: sessions = [] } = useQuery({
-    queryKey: ["mentor-completed-sessions", uid], enabled: !!uid,
-    queryFn: async () => (await supabase.from("sessions").select("id, student_id, scheduled_time").eq("mentor_id", uid!).eq("status", "completed").order("scheduled_time", { ascending: false })).data ?? [],
+    queryKey: ["mentor-completed-sessions", uid],
+    enabled: !!uid,
+    queryFn: async () =>
+      (
+        await supabase
+          .from("sessions")
+          .select("id, student_id, scheduled_time")
+          .eq("mentor_id", uid!)
+          .eq("status", "completed")
+          .order("scheduled_time", { ascending: false })
+      ).data ?? [],
   });
 
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<typeof visibilityOptions[number]>("public");
+  const [visibility, setVisibility] = useState<(typeof visibilityOptions)[number]>("public");
   const [sessionId, setSessionId] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const sessionMap = useMemo(() => new Map(sessions.map((session) => [session.id, session])), [sessions]);
+  const sessionMap = useMemo(
+    () => new Map(sessions.map((session) => [session.id, session])),
+    [sessions],
+  );
 
   async function addResource() {
     if (!uid) return;
@@ -118,11 +138,12 @@ function MentorResources() {
       file_type: filePayload.file_type,
       file_size: filePayload.file_size,
       thumbnail_url: filePayload.thumbnail_url,
-      student_id: visibility === "session" ? sessionMap.get(sessionId)?.student_id ?? null : null,
+      student_id: visibility === "session" ? (sessionMap.get(sessionId)?.student_id ?? null) : null,
       session_id: visibility === "session" ? sessionId : null,
       created_by: uid,
       is_public: visibility === "public",
-      shared_with: visibility === "session" ? sessionMap.get(sessionId)?.student_id ?? null : null,
+      shared_with:
+        visibility === "session" ? (sessionMap.get(sessionId)?.student_id ?? null) : null,
       created_at: undefined,
     };
 
@@ -161,7 +182,9 @@ function MentorResources() {
       <div className="mx-auto max-w-5xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Resources</h1>
-          <p className="text-muted-foreground">Share learning material, homework, or session files with your students.</p>
+          <p className="text-muted-foreground">
+            Share learning material, homework, or session files with your students.
+          </p>
         </div>
         <ResourceUpload
           title={title}
@@ -193,22 +216,33 @@ function MentorResources() {
               <CardHeader className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle>{resource.title}</CardTitle>
-                  <div className="mt-1 text-sm text-muted-foreground">{toHumanText(resource.visibility)}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {toHumanText(resource.visibility)}
+                  </div>
                 </div>
                 <Badge>{resource.resource_type === "file" ? "File" : "Link"}</Badge>
               </CardHeader>
               <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] items-start">
                 <div className="space-y-2">
-                  {resource.description ? <p className="text-sm text-muted-foreground">{resource.description}</p> : null}
-                  {resource.session_id ? <div className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">Session resource</div> : null}
+                  {resource.description ? (
+                    <p className="text-sm text-muted-foreground">{resource.description}</p>
+                  ) : null}
+                  {resource.session_id ? (
+                    <div className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">
+                      Session resource
+                    </div>
+                  ) : null}
                   <div className="text-xs text-muted-foreground">
-                    {resource.file_name ? `${resource.file_name} • ${resource.file_type} • ${formatBytes(resource.file_size ?? 0)}` : null}
+                    {resource.file_name
+                      ? `${resource.file_name} • ${resource.file_type} • ${formatBytes(resource.file_size ?? 0)}`
+                      : null}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button size="sm" asChild variant="outline">
                     <a href={resource.storage_url || resource.url} target="_blank" rel="noreferrer">
-                      <ExternalLink className="mr-2 h-4 w-4" />Open
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Open
                     </a>
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => deleteResource(resource.id)}>

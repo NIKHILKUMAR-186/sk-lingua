@@ -16,7 +16,7 @@ function StarRating({ value, size = "sm" }: { value: number; size?: "sm" | "md" 
       <Star
         key={i}
         className={`${sizeClass} ${filled ? "fill-warning text-warning" : half ? "fill-warning/50 text-warning" : "text-muted-foreground/30"} transition-colors`}
-      />
+      />,
     );
   }
   return <div className="flex items-center gap-0.5">{stars}</div>;
@@ -81,4 +81,3 @@ export function ReviewStatsCard({ stats }: ReviewStatsProps) {
 }
 
 export { StarRating };
-

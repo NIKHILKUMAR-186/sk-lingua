@@ -70,7 +70,10 @@ function hasValue(value: unknown) {
   return true;
 }
 
-export function getProfileCompletionPercent(values: ProfileCompletionValues, mode: ProfileCompletionMode) {
+export function getProfileCompletionPercent(
+  values: ProfileCompletionValues,
+  mode: ProfileCompletionMode,
+) {
   const fields = mode === "mentor" ? mentorFields : studentFields;
   const filled = fields.filter((field) => hasValue(values[field])).length;
   return Math.round((filled / fields.length) * 100);

@@ -12,7 +12,15 @@ export const Route = createFileRoute("/_authenticated/mentor/session/$id")({
 function MentorSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
-  const { data, isLoading, error, createHomework, reviewHomework, createNote, fetchExistingReview } = useSessionWorkspace(id, auth?.user?.id);
+  const {
+    data,
+    isLoading,
+    error,
+    createHomework,
+    reviewHomework,
+    createNote,
+    fetchExistingReview,
+  } = useSessionWorkspace(id, auth?.user?.id);
   const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
@@ -29,7 +37,9 @@ function MentorSessionDetail() {
           <p className="text-sm text-muted-foreground">Guide the session from booking to review.</p>
         </div>
         {isLoading ? <div className="text-sm text-muted-foreground">Loading workspace…</div> : null}
-        {error ? <div className="text-sm text-red-500">Unable to load this session workspace.</div> : null}
+        {error ? (
+          <div className="text-sm text-red-500">Unable to load this session workspace.</div>
+        ) : null}
         {!isLoading && data ? (
           <SessionWorkspace
             sessionId={id}
@@ -40,6 +50,7 @@ function MentorSessionDetail() {
             notes={data.notes}
             timeline={data.timeline}
             resources={data.resources}
+            workspace={data.workspace}
             onCreateHomework={createHomework}
             onCreateNote={createNote}
             onReviewHomework={reviewHomework}

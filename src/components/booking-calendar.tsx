@@ -4,7 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Clock, CheckCircle2 } from "lucide-react";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameDay, isBefore, startOfDay } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  addMonths,
+  subMonths,
+  isSameDay,
+  isBefore,
+  startOfDay,
+} from "date-fns";
 import { DAY_KEYS } from "@/lib/booking";
 import type { SlotOption, TimeGroup } from "@/hooks/use-booking";
 import { TIME_GROUP_LABELS } from "@/hooks/use-booking";
@@ -66,13 +78,19 @@ export function BookingCalendar({
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <h3 className="text-lg font-semibold">
-              {format(currentMonth, "MMMM yyyy")}
-            </h3>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+            <h3 className="text-lg font-semibold">{format(currentMonth, "MMMM yyyy")}</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -105,7 +123,9 @@ export function BookingCalendar({
                     "relative flex h-10 w-full items-center justify-center rounded-lg text-sm transition-all",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     !isCurrentMonth && "text-muted-foreground/30",
-                    isCurrentMonth && !isDisabled && "hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                    isCurrentMonth &&
+                      !isDisabled &&
+                      "hover:bg-accent hover:text-accent-foreground cursor-pointer",
                     isDisabled && "text-muted-foreground/30 cursor-not-allowed",
                     isSelected && "bg-primary text-primary-foreground hover:bg-primary",
                     isToday && !isSelected && "ring-1 ring-primary",
@@ -161,7 +181,9 @@ export function BookingCalendar({
                           <button
                             key={slot.value}
                             disabled={slot.disabled}
-                            onClick={() => onSelectSlot(selectedSlot === slot.value ? null : slot.value)}
+                            onClick={() =>
+                              onSelectSlot(selectedSlot === slot.value ? null : slot.value)
+                            }
                             className={cn(
                               "relative flex items-center justify-center rounded-lg border px-3 py-2.5 text-sm transition-all",
                               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -169,7 +191,7 @@ export function BookingCalendar({
                                 ? "border-muted bg-muted/30 text-muted-foreground/50 cursor-not-allowed line-through"
                                 : selectedSlot === slot.value
                                   ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                                  : "border-border hover:border-primary/50 hover:bg-accent/50 cursor-pointer"
+                                  : "border-border hover:border-primary/50 hover:bg-accent/50 cursor-pointer",
                             )}
                           >
                             {slot.label}
@@ -190,4 +212,3 @@ export function BookingCalendar({
     </div>
   );
 }
-

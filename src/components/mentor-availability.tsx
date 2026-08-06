@@ -14,13 +14,16 @@ import { Clock, Copy, Plus, Trash2 } from "lucide-react";
 export function MentorAvailability() {
   const { data: auth } = useAuth();
   const mentorId = auth?.user?.id;
-  const { slots, isLoading, addSlot, deleteSlot, duplicateToDay, updateSlot } = useAvailability(mentorId);
+  const { slots, isLoading, addSlot, deleteSlot, duplicateToDay, updateSlot } =
+    useAvailability(mentorId);
   const [newStart, setNewStart] = useState("09:00");
   const [newEnd, setNewEnd] = useState("10:00");
   const [newLabel, setNewLabel] = useState("");
   const [dayIndex, setDayIndex] = useState(0);
   // Optimistic toggle state: immediately reflect toggle changes before API responds
-  const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean | undefined>>({});
+  const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean | undefined>>(
+    {},
+  );
   // Track loading state per day key
   const [dayLoading, setDayLoading] = useState<Record<string, boolean>>({});
 
@@ -70,27 +73,27 @@ export function MentorAvailability() {
       return;
     }
     try {
-      await addSlot({ 
-        mentor_id: mentorId, 
-        day_of_week: DAY_KEYS[dayIndex], 
-        start_time: newStart, 
-        end_time: newEnd, 
-        is_available: true, 
-        label: newLabel || null 
+      await addSlot({
+        mentor_id: mentorId,
+        day_of_week: DAY_KEYS[dayIndex],
+        start_time: newStart,
+        end_time: newEnd,
+        is_available: true,
+        label: newLabel || null,
       });
       setNewLabel("");
       toast.success("Slot added");
-    } catch (e) { 
+    } catch (e) {
       console.error("❌ handleAdd error:", e);
-      toast.error(String(e instanceof Error ? e.message : e)); 
+      toast.error(String(e instanceof Error ? e.message : e));
     }
   }
 
   async function handleToggleDay(dayKey: string, enable: boolean) {
     if (!mentorId) return;
-    
+
     const dayOptKey = `day:${dayKey}`;
-    
+
     // Optimistic: immediately reflect the toggle
     setOptimisticToggles((prev) => ({ ...prev, [dayOptKey]: enable }));
     setDayLoading((prev) => ({ ...prev, [dayKey]: true }));
@@ -106,7 +109,9 @@ export function MentorAvailability() {
           is_available: true,
           label: null,
         });
-        toast.success(`${DAY_LABELS[DAY_KEYS.indexOf(dayKey as typeof DAY_KEYS[number])]} enabled with default slot`);
+        toast.success(
+          `${DAY_LABELS[DAY_KEYS.indexOf(dayKey as (typeof DAY_KEYS)[number])]} enabled with default slot`,
+        );
       } else {
         // Toggle availability of all slots in that day
         const daySlots = grouped[dayKey] ?? [];
@@ -114,7 +119,9 @@ export function MentorAvailability() {
           for (const slot of daySlots) {
             await updateSlot(slot.id, { is_available: enable });
           }
-          toast.success(`${DAY_LABELS[DAY_KEYS.indexOf(dayKey as typeof DAY_KEYS[number])]} ${enable ? "enabled" : "disabled"}`);
+          toast.success(
+            `${DAY_LABELS[DAY_KEYS.indexOf(dayKey as (typeof DAY_KEYS)[number])]} ${enable ? "enabled" : "disabled"}`,
+          );
         }
       }
     } catch (e) {
@@ -132,7 +139,7 @@ export function MentorAvailability() {
 
   async function handleToggleSlot(slotId: string, currentAvailable: boolean) {
     const newValue = !currentAvailable;
-    
+
     // Optimistic: immediately reflect
     setOptimisticToggles((prev) => ({ ...prev, [slotId]: newValue }));
 
@@ -176,7 +183,7 @@ export function MentorAvailability() {
               const isEnabled = getDayEnabled(dayKey);
               const isCurrent = i === dayIndex;
               const isLoadingDay = dayLoading[dayKey];
-              
+
               return (
                 <div
                   key={label}
@@ -202,7 +209,10 @@ export function MentorAvailability() {
                   {hasSlots ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      <span>{(grouped[dayKey] ?? []).length} slot{(grouped[dayKey] ?? []).length !== 1 ? "s" : ""}</span>
+                      <span>
+                        {(grouped[dayKey] ?? []).length} slot
+                        {(grouped[dayKey] ?? []).length !== 1 ? "s" : ""}
+                      </span>
                     </div>
                   ) : (
                     <div className="text-xs text-muted-foreground/50">No slots</div>
@@ -231,15 +241,29 @@ export function MentorAvailability() {
             <div className="flex flex-wrap gap-2 items-end">
               <div className="space-y-1">
                 <Label className="text-xs">Start</Label>
-                <Input type="time" value={newStart} onChange={(e) => setNewStart(e.target.value)} className="w-28" />
+                <Input
+                  type="time"
+                  value={newStart}
+                  onChange={(e) => setNewStart(e.target.value)}
+                  className="w-28"
+                />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">End</Label>
-                <Input type="time" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} className="w-28" />
+                <Input
+                  type="time"
+                  value={newEnd}
+                  onChange={(e) => setNewEnd(e.target.value)}
+                  className="w-28"
+                />
               </div>
               <div className="space-y-1 flex-1 min-w-[120px]">
                 <Label className="text-xs">Label (optional)</Label>
-                <Input placeholder="e.g., Lunch break, Evening batch" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
+                <Input
+                  placeholder="e.g., Lunch break, Evening batch"
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                />
               </div>
               <Button onClick={handleAdd} size="sm" className="mt-auto">
                 <Plus className="h-4 w-4 mr-1" /> Add slot
@@ -254,14 +278,19 @@ export function MentorAvailability() {
                   Loading slots...
                 </div>
               )}
-              
-              {!isLoading && (!grouped[DAY_KEYS[dayIndex]] || grouped[DAY_KEYS[dayIndex]].length === 0) && (
-                <div className="rounded-lg border border-dashed p-6 text-center">
-                  <Clock className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-                  <p className="text-sm text-muted-foreground">No time slots for {DAY_LABELS[dayIndex]}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Add your first time slot above</p>
-                </div>
-              )}
+
+              {!isLoading &&
+                (!grouped[DAY_KEYS[dayIndex]] || grouped[DAY_KEYS[dayIndex]].length === 0) && (
+                  <div className="rounded-lg border border-dashed p-6 text-center">
+                    <Clock className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      No time slots for {DAY_LABELS[dayIndex]}
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">
+                      Add your first time slot above
+                    </p>
+                  </div>
+                )}
 
               {(grouped[DAY_KEYS[dayIndex]] ?? []).map((s: any) => {
                 const slotEnabled = getSlotEnabled(s.id);
@@ -279,11 +308,20 @@ export function MentorAvailability() {
                       />
                       <div>
                         <div className="text-sm font-medium flex items-center gap-2">
-                          <span>{s.start_time?.slice(0, 5)} – {s.end_time?.slice(0, 5)}</span>
+                          <span>
+                            {s.start_time?.slice(0, 5)} – {s.end_time?.slice(0, 5)}
+                          </span>
                           {!slotEnabled ? (
-                            <Badge variant="outline" className="text-[10px] text-muted-foreground">Disabled</Badge>
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                              Disabled
+                            </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] text-green-600 border-green-200 bg-green-50">Active</Badge>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] text-green-600 border-green-200 bg-green-50"
+                            >
+                              Active
+                            </Badge>
                           )}
                         </div>
                         {s.label && <div className="text-xs text-muted-foreground">{s.label}</div>}
@@ -334,4 +372,3 @@ export function MentorAvailability() {
     </div>
   );
 }
-

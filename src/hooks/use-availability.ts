@@ -6,10 +6,18 @@ export function useAvailability(mentorId?: string) {
   const { data = [], isLoading } = useQuery({
     queryKey: ["availability_slots", mentorId],
     enabled: !!mentorId,
-    queryFn: async () => (await supabase.from("availability_slots").select("*").eq("mentor_id", mentorId!)).data ?? [],
+    queryFn: async () =>
+      (await supabase.from("availability_slots").select("*").eq("mentor_id", mentorId!)).data ?? [],
   });
 
-  async function addSlot(payload: { mentor_id: string; day_of_week: string; start_time: string; end_time: string; label?: string | null; is_available?: boolean }) {
+  async function addSlot(payload: {
+    mentor_id: string;
+    day_of_week: string;
+    start_time: string;
+    end_time: string;
+    label?: string | null;
+    is_available?: boolean;
+  }) {
     const insertPayload = {
       ...payload,
       is_available: payload.is_available ?? true,
@@ -17,9 +25,9 @@ export function useAvailability(mentorId?: string) {
     console.log("📍 addSlot called");
     console.log("Insert Payload:", insertPayload);
     console.log("Hook mentorId:", mentorId);
-    
+
     const { error } = await supabase.from("availability_slots").insert(insertPayload);
-    
+
     if (error) {
       console.error("❌ Insert Error:", error);
       console.error("Error Code:", error.code);
@@ -32,7 +40,16 @@ export function useAvailability(mentorId?: string) {
     qc.invalidateQueries({ queryKey: ["availability_slots", mentorId] });
   }
 
-  async function updateSlot(id: string, patch: Partial<{ day_of_week?: string; start_time?: string; end_time?: string; label?: string | null; is_available?: boolean }>) {
+  async function updateSlot(
+    id: string,
+    patch: Partial<{
+      day_of_week?: string;
+      start_time?: string;
+      end_time?: string;
+      label?: string | null;
+      is_available?: boolean;
+    }>,
+  ) {
     const { error } = await supabase.from("availability_slots").update(patch).eq("id", id);
     if (error) {
       const msg = error.message || JSON.stringify(error);
@@ -51,7 +68,11 @@ export function useAvailability(mentorId?: string) {
   }
 
   async function duplicateToDay(slotId: string, targetDay: string) {
-    const { data } = await supabase.from("availability_slots").select("*").eq("id", slotId).maybeSingle();
+    const { data } = await supabase
+      .from("availability_slots")
+      .select("*")
+      .eq("id", slotId)
+      .maybeSingle();
     if (!data) throw new Error("Slot not found");
     const { error } = await supabase.from("availability_slots").insert({
       mentor_id: data.mentor_id,
