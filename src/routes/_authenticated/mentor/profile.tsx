@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -163,7 +163,7 @@ function MentorProfileEdit() {
   }
 
   return (
-    <AppShell variant="mentor">
+    <MentorLayout>
       <div className="mx-auto max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -204,6 +204,6 @@ function MentorProfileEdit() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppShell>
+    </MentorLayout>
   );
 }

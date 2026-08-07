@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Clock, Languages, MessageSquare, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Languages, MessageSquare, AlertCircle, Loader2 } from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { motion } from "framer-motion";
+import { useSlotsByDate } from "@/hooks/use-slots";
+import { getSlotAvailabilityStatus, formatSlotTime } from "@/lib/slots";
+import { Badge } from "@/components/ui/badge";
 
 interface DemoBookingFormProps {
   onSubmit: (data: {
@@ -26,9 +28,10 @@ interface DemoBookingFormProps {
   }) => void;
   loading?: boolean;
   error?: string;
+  price?: number;
 }
 
-export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormProps) {
+export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBookingFormProps) {
   const [date, setDate] = useState<string>("");
   const [timeStart, setTimeStart] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
@@ -38,17 +41,41 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
 
-  const availableTimes = [
-    { start: "09:00", end: "09:30", label: "09:00 AM - 09:30 AM" },
-    { start: "10:00", end: "10:30", label: "10:00 AM - 10:30 AM" },
-    { start: "11:00", end: "11:30", label: "11:00 AM - 11:30 AM" },
-    { start: "14:00", end: "14:30", label: "02:00 PM - 02:30 PM" },
-    { start: "15:00", end: "15:30", label: "03:00 PM - 03:30 PM" },
-    { start: "16:00", end: "16:30", label: "04:00 PM - 04:30 PM" },
-    { start: "17:00", end: "17:30", label: "05:00 PM - 05:30 PM" },
-    { start: "18:00", end: "18:30", label: "06:00 PM - 06:30 PM" },
-    { start: "19:00", end: "19:30", label: "07:00 PM - 07:30 PM" },
-  ];
+  // Fetch real available slots from the database for the selected date/language
+  const { data: slots = [], isLoading: slotsLoading } = useSlotsByDate(
+    date || null,
+    language || undefined,
+  );
+
+  // Group slots by date for the date picker
+  const availableDates = useMemo(() => {
+    const dateSet = new Set<string>();
+    const start = new Date(tomorrow);
+    const end = new Date();
+    end.setDate(end.getDate() + 30); // Show next 30 days
+
+    // Add tomorrow onwards
+    while (start <= end) {
+      dateSet.add(start.toISOString().split("T")[0]);
+      start.setDate(start.getDate() + 1);
+    }
+    return Array.from(dateSet);
+  }, []);
+
+  const availableTimes = useMemo(() => {
+    return slots
+      .filter((slot) => slot.status === "available" || slot.status === "limited")
+      .map((slot) => ({
+        id: slot.id,
+        start: slot.slot_time_start,
+        end: slot.slot_time_end,
+        slot,
+        label: formatSlotTime(slot),
+        availability: getSlotAvailabilityStatus(slot),
+      }));
+  }, [slots]);
+
+  const selectedTimeSlot = availableTimes.find((t) => t.start === timeStart)?.slot;
 
   function handleSubmit() {
     if (!date || !timeStart || !language) {
@@ -78,11 +105,7 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
         </Alert>
       )}
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
-      >
+      <div className="space-y-4">
         {/* Date Selection */}
         <div className="space-y-2">
           <Label htmlFor="date" className="flex items-center gap-2">
@@ -93,42 +116,32 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
             id="date"
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setTimeStart(""); // reset time when date changes
+            }}
             min={minDate}
+            max={availableDates[availableDates.length - 1]}
             disabled={loading}
             className="cursor-pointer"
           />
           <p className="text-xs text-muted-foreground">Choose any date from tomorrow onwards</p>
         </div>
 
-        {/* Time Selection */}
-        <div className="space-y-2">
-          <Label htmlFor="time" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Select Time (IST)
-          </Label>
-          <Select value={timeStart} onValueChange={setTimeStart} disabled={loading}>
-            <SelectTrigger id="time">
-              <SelectValue placeholder="Choose a time slot" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableTimes.map((time) => (
-                <SelectItem key={time.start} value={time.start}>
-                  {time.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">Session duration: 30 minutes</p>
-        </div>
-
-        {/* Language Selection */}
+        {/* Language Selection (moved before time so slots can filter by language) */}
         <div className="space-y-2">
           <Label htmlFor="language" className="flex items-center gap-2">
             <Languages className="h-4 w-4" />
             Learning Language
           </Label>
-          <Select value={language} onValueChange={setLanguage} disabled={loading}>
+          <Select
+            value={language}
+            onValueChange={(val) => {
+              setLanguage(val);
+              setTimeStart(""); // reset time when language changes
+            }}
+            disabled={loading}
+          >
             <SelectTrigger id="language">
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
@@ -140,7 +153,56 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Your mentor will teach in this language</p>
+<p className="text-xs text-muted-foreground">Your session will be conducted in this language</p>
+        </div>
+
+        {/* Time Selection - populated from real available slots */}
+        <div className="space-y-2">
+          <Label htmlFor="time" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Select Time (IST)
+          </Label>
+
+          {date && !language ? (
+            <Alert className="bg-muted">
+              <AlertDescription className="text-sm">
+                Select a language first to see available time slots.
+              </AlertDescription>
+            </Alert>
+          ) : date && language && slotsLoading ? (
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-6 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading available slots...
+            </div>
+          ) : date && language && availableTimes.length === 0 ? (
+            <Alert>
+              <AlertDescription className="text-sm">
+                No available slots for this date and language. Please try a different date.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Select value={timeStart} onValueChange={setTimeStart} disabled={loading || !date || !language}>
+              <SelectTrigger id="time">
+                <SelectValue placeholder={date && language ? "Choose a time slot" : "Select date & language first"} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableTimes.map((time) => (
+                  <SelectItem key={time.start} value={time.start}>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{time.label}</span>
+                      <Badge
+                        variant={time.availability.status === "available" ? "default" : "secondary"}
+                        className="text-[10px]"
+                      >
+                        {time.availability.label}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <p className="text-xs text-muted-foreground">Session duration: 30 minutes</p>
         </div>
 
         {/* Optional Notes */}
@@ -157,8 +219,8 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
             disabled={loading}
             rows={4}
           />
-          <p className="text-xs text-muted-foreground">
-            Share any specific goals or concerns with your mentor
+<p className="text-xs text-muted-foreground">
+            Share any specific goals or concerns with our expert team
           </p>
         </div>
 
@@ -177,6 +239,10 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
                     {availableTimes.find((t) => t.start === timeStart)?.label}
                   </span>
                 </div>
+<div className="flex justify-between">
+                  <span className="text-muted-foreground">Conducted by:</span>
+                  <span className="font-medium">Our expert team</span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Language:</span>
                   <span className="font-medium">
@@ -186,7 +252,7 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
                 <div className="border-t border-primary/20 pt-2">
                   <div className="flex justify-between font-semibold">
                     <span>Price:</span>
-                    <span>₹9</span>
+                    <span>₹{price}</span>
                   </div>
                 </div>
               </div>
@@ -202,7 +268,7 @@ export function DemoBookingForm({ onSubmit, loading, error }: DemoBookingFormPro
         <p className="text-center text-xs text-muted-foreground">
           ✓ Secure payment • ✓ Money-back guarantee • ✓ No commitment
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

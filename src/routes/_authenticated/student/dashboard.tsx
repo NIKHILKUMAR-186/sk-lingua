@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ import { getProfileCompletionPercent } from "@/lib/profile";
 import { EmptyState } from "@/components/empty-state";
 import { StatCardSkeleton, CardSkeleton, ListSkeleton } from "@/components/skeleton-loader";
 import { useStudentSubscription, useRemainingSlots } from "@/hooks/use-subscriptions";
+import { useUpcomingDemoBooking, useHasUsedDemoSession } from "@/hooks/use-demo-bookings";
+import { DemoCtaCard } from "@/components/demo-cta-card";
 import { Progress } from "@/components/ui/progress";
 
 function StatCard({
@@ -68,8 +70,10 @@ function StudentDashboard() {
   const userId = auth?.user?.id;
 
   // Subscription hooks
-  const { data: subscription, isLoading: subLoading } = useStudentSubscription(userId ?? null);
+const { data: subscription, isLoading: subLoading } = useStudentSubscription(userId ?? null);
   const { data: remainingSlots = 0 } = useRemainingSlots(userId ?? null);
+  const { data: upcomingDemo } = useUpcomingDemoBooking(userId ?? null);
+  const { data: demoUsage = { used: false } } = useHasUsedDemoSession(userId ?? null);
 
   const { data: streak, isLoading: streakLoading } = useQuery({
     queryKey: ["streak", userId],
@@ -149,10 +153,12 @@ function StudentDashboard() {
   const hasSubscription = Boolean(subscription?.status === "active");
   const remainingSessionCount = subscription?.current_session_slots ?? remainingSlots;
   const totalSessionCount = subscription?.total_session_slots ?? 0;
-  const recentSessions = upcoming.slice(0, 2);
+const recentSessions = upcoming.slice(0, 2);
+  const hasDemoBooking = Boolean(upcomingDemo);
+  const demoUsed = Boolean(demoUsage.used);
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-6xl space-y-6">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-display">
@@ -163,6 +169,9 @@ function StudentDashboard() {
           </h1>
           <p className="text-muted-foreground">Keep the momentum going.</p>
         </motion.div>
+
+{/* Demo CTA Card - Show only if the student has NOT used their one-lifetime demo */}
+        {!demoUsed && <DemoCtaCard demoStatus={upcomingDemo?.booking_status} hasDemoBooking={hasDemoBooking} />}
 
         {/* Stats */}
         <motion.div
@@ -521,6 +530,6 @@ function StudentDashboard() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

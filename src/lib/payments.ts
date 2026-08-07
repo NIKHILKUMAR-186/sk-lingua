@@ -1,4 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import {
+  bookDemoSession as createDemoBooking,
+  hasUsedDemoSession,
+} from "@/lib/demo-bookings";
 
 export interface DemoSessionBooking {
   id: string;
@@ -41,7 +45,8 @@ export interface PaymentOrder {
   completed_at: string | null;
 }
 
-// Book demo session
+// Book demo session (delegates to the unified demo-bookings logic,
+// which enforces the one-lifetime-demo rule and correct status)
 export async function bookDemoSession(
   userId: string,
   data: {
@@ -51,27 +56,10 @@ export async function bookDemoSession(
     language: string;
     duration_mins?: number;
     notes?: string;
+    price?: number;
   },
 ): Promise<DemoSessionBooking> {
-  const { data: booking, error } = await supabase
-    .from("demo_session_bookings")
-    .insert({
-      user_id: userId,
-      booking_date: data.booking_date,
-      booking_time_start: data.booking_time_start,
-      booking_time_end: data.booking_time_end,
-      language: data.language,
-      duration_mins: data.duration_mins ?? 30,
-      notes: data.notes,
-      payment_status: "pending",
-      booking_status: "pending_assignment",
-      price: 9.0,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return booking;
+  return (await createDemoBooking(userId, data)) as DemoSessionBooking;
 }
 
 // Get demo booking by ID
@@ -92,7 +80,7 @@ export async function getUserDemoBookings(userId: string): Promise<DemoSessionBo
     .from("demo_session_bookings")
     .select("*")
     .eq("user_id", userId)
-    .order("booking_date", { ascending: false });
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
   return data ?? [];
@@ -100,15 +88,12 @@ export async function getUserDemoBookings(userId: string): Promise<DemoSessionBo
 
 // Get upcoming demo booking
 export async function getUpcomingDemoBooking(userId: string): Promise<DemoSessionBooking | null> {
-  const today = new Date().toISOString().split("T")[0];
-
   const { data, error } = await supabase
     .from("demo_session_bookings")
     .select("*")
     .eq("user_id", userId)
-    .gte("booking_date", today)
-    .in("booking_status", ["pending_assignment", "confirmed"])
-    .order("booking_date")
+    .in("booking_status", ["pending_admin_confirmation", "confirmed"])
+    .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
@@ -139,8 +124,9 @@ export async function cancelDemoBooking(id: string): Promise<DemoSessionBooking>
   return updateDemoBooking(id, {
     booking_status: "cancelled",
     payment_status: "cancelled",
+    cancelled_at: now,
     updated_at: now,
-  });
+  } as any);
 }
 
 // Create payment order
@@ -209,13 +195,16 @@ export async function updatePaymentOrder(
 
   // Record in payment history if completed
   if (updates.payment_status === "completed") {
-    await recordPaymentHistory(
-      (await getPaymentOrder(id))?.user_id!,
-      id,
-      "purchase",
-      updates.final_amount ?? 0,
-      "completed",
-    );
+    const order = await getPaymentOrder(id);
+    if (order?.user_id) {
+      await recordPaymentHistory(
+        order.user_id,
+        id,
+        "purchase",
+        updates.final_amount ?? 0,
+        "completed",
+      );
+    }
   }
 
   return data;

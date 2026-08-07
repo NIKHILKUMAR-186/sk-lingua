@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useSessionWorkspace } from "@/hooks/use-session-workspace";
 import { SessionWorkspace } from "@/components/session-workspace";
@@ -12,15 +12,8 @@ export const Route = createFileRoute("/_authenticated/mentor/session/$id")({
 function MentorSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
-  const {
-    data,
-    isLoading,
-    error,
-    createHomework,
-    reviewHomework,
-    createNote,
-    fetchExistingReview,
-  } = useSessionWorkspace(id, auth?.user?.id);
+  const { data, isLoading, error, submitHomework, submitReview, fetchExistingReview, createNote } =
+    useSessionWorkspace(id, auth?.user?.id);
   const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
@@ -30,11 +23,13 @@ function MentorSessionDetail() {
   }, [data?.session?.status, fetchExistingReview]);
 
   return (
-    <AppShell variant="mentor">
+    <MentorLayout>
       <div className="mx-auto max-w-6xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Session workspace</h1>
-          <p className="text-sm text-muted-foreground">Guide the session from booking to review.</p>
+          <p className="text-sm text-muted-foreground">
+            Homework, notes, resources, and timeline in one place.
+          </p>
         </div>
         {isLoading ? <div className="text-sm text-muted-foreground">Loading workspace…</div> : null}
         {error ? (
@@ -51,14 +46,14 @@ function MentorSessionDetail() {
             timeline={data.timeline}
             resources={data.resources}
             workspace={data.workspace}
-            onCreateHomework={createHomework}
+            onSubmitHomework={submitHomework}
             onCreateNote={createNote}
-            onReviewHomework={reviewHomework}
+            onSubmitReview={submitReview}
             existingReview={existingReview}
             currentUserId={auth?.user?.id}
           />
         ) : null}
       </div>
-    </AppShell>
+    </MentorLayout>
   );
 }

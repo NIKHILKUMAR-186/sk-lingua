@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,9 +62,9 @@ function HistoryPage() {
 
   if (!auth?.user) {
     return (
-      <AppShell variant="student">
+      <StudentLayout>
         <div>Loading...</div>
-      </AppShell>
+      </StudentLayout>
     );
   }
 
@@ -76,7 +76,7 @@ function HistoryPage() {
   };
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-4xl space-y-6 py-6">
         {/* Header */}
         <div>
@@ -303,6 +303,6 @@ function HistoryPage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

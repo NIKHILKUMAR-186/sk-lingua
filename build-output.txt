@@ -1,0 +1,575 @@
+
+> build
+> vite build
+
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/mentor-application.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\-mentor-application.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/_authenticated/admin/add-admin-note.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\_authenticated\admin\-add-admin-note.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/signed-url.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\-signed-url.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/approve-mentor.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-approve-mentor.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/assignment-history.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-assignment-history.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/assign-mentor.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-assign-mentor.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/interviews.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-interviews.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/auto-reassign.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-auto-reassign.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/generate-password.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-generate-password.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/toggle-mentor-status.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-toggle-mentor-status.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/admin/resolve-report.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\admin\-resolve-report.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/homework/submit.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\homework\-submit.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/homework/create.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\homework\-create.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/mentor/respond-assignment.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\mentor\-respond-assignment.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/workspace/typing.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\workspace\-typing.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/session/restore-slot.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\session\-restore-slot.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/session/complete.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\session\-complete.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/workspace/post-message.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\workspace\-post-message.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/workspace/messages.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\workspace\-messages.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+Warning: Route file "S:/internship/sugest-key-lingua/speak-pal-streak-main/src/routes/api/session/report-issue.server.ts" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "S:\internship\sugest-key-lingua\speak-pal-streak-main\src\routes\api\session\-report-issue.server.ts" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined
+[36mvite v8.1.5 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Γ£ô 3473 modules transformed.
+rendering chunks...
+computing gzip size...
+.output/public/assets/styles-n7soODRO.css                      139.28 kB Γöé gzip:  21.29 kB
+.output/public/assets/profile-B9b4JIo2.js                        0.07 kB Γöé gzip:   0.08 kB
+.output/public/assets/check-CgIW_8I5.js                          0.12 kB Γöé gzip:   0.14 kB
+.output/public/assets/route-BA1s0ICe.js                          0.14 kB Γöé gzip:   0.13 kB
+.output/public/assets/matchContext-Cvps88pq.js                   0.14 kB Γöé gzip:   0.12 kB
+.output/public/assets/useRouter-uItdi6vu.js                      0.15 kB Γöé gzip:   0.14 kB
+.output/public/assets/plus-CFGOD30g.js                           0.15 kB Γöé gzip:   0.15 kB
+.output/public/assets/arrow-left-VsNuX94z.js                     0.16 kB Γöé gzip:   0.16 kB
+.output/public/assets/arrow-right-DjAjIXiw.js                    0.16 kB Γöé gzip:   0.16 kB
+.output/public/assets/clock-3-DlsTa8LE.js                        0.16 kB Γöé gzip:   0.16 kB
+.output/public/assets/search-Db4UASXy.js                         0.17 kB Γöé gzip:   0.16 kB
+.output/public/assets/booking-CsHaWjx9.js                        0.17 kB Γöé gzip:   0.11 kB
+.output/public/assets/circle-check-C8sqKq0B.js                   0.17 kB Γöé gzip:   0.16 kB
+.output/public/assets/circle-check-big-Br5qPEfA.js               0.19 kB Γöé gzip:   0.18 kB
+.output/public/assets/user-y3oRrcr9.js                           0.19 kB Γöé gzip:   0.18 kB
+.output/public/assets/circle-x-CzOL7Asp.js                       0.20 kB Γöé gzip:   0.17 kB
+.output/public/assets/dollar-sign-CrwpvwXo.js                    0.21 kB Γöé gzip:   0.19 kB
+.output/public/assets/briefcase-DGWhZOFp.js                      0.22 kB Γöé gzip:   0.19 kB
+.output/public/assets/useNavigate-DBMbTgOv.js                    0.22 kB Γöé gzip:   0.19 kB
+.output/public/assets/download-C3tN5g2D.js                       0.23 kB Γöé gzip:   0.19 kB
+.output/public/assets/video-DCK3qoDG.js                          0.24 kB Γöé gzip:   0.22 kB
+.output/public/assets/external-link-Cm0p6qZ-.js                  0.25 kB Γöé gzip:   0.19 kB
+.output/public/assets/calendar-ksIfc63L.js                       0.25 kB Γöé gzip:   0.20 kB
+.output/public/assets/zap-CLQ6o1Rg.js                            0.26 kB Γöé gzip:   0.20 kB
+.output/public/assets/shield-6CKtr8QZ.js                         0.27 kB Γöé gzip:   0.22 kB
+.output/public/assets/book-open-VfCxwdhY.js                      0.27 kB Γöé gzip:   0.20 kB
+.output/public/assets/calendar-check-D_kfkDoS.js                 0.30 kB Γöé gzip:   0.22 kB
+.output/public/assets/languages-2aohcfZl.js                      0.31 kB Γöé gzip:   0.21 kB
+.output/public/assets/shield-check-A6yYD5_R.js                   0.32 kB Γöé gzip:   0.25 kB
+.output/public/assets/auth-CmSW5YrR.js                           0.32 kB Γöé gzip:   0.21 kB
+.output/public/assets/trash-2-feQ8uKYE.js                        0.32 kB Γöé gzip:   0.21 kB
+.output/public/assets/graduation-cap-B4ldNMZN.js                 0.33 kB Γöé gzip:   0.24 kB
+.output/public/assets/calendar-clock-CVl68Csb.js                 0.37 kB Γöé gzip:   0.25 kB
+.output/public/assets/QueryClientProvider-mYsVRMvt.js            0.38 kB Γöé gzip:   0.27 kB
+.output/public/assets/file-text-k9LKTSTE.js                      0.38 kB Γöé gzip:   0.25 kB
+.output/public/assets/trending-up-DIqa0pcr.js                    0.39 kB Γöé gzip:   0.28 kB
+.output/public/assets/star-Boekr98f.js                           0.47 kB Γöé gzip:   0.29 kB
+.output/public/assets/trophy-CuLdZ88V.js                         0.47 kB Γöé gzip:   0.27 kB
+.output/public/assets/sparkles-DuyyV007.js                       0.49 kB Γöé gzip:   0.28 kB
+.output/public/assets/dist-CiunNDoj.js                           0.49 kB Γöé gzip:   0.29 kB
+.output/public/assets/redirect-1Dss4sOM.js                       0.53 kB Γöé gzip:   0.32 kB
+.output/public/assets/package-open-SvtnYZEa.js                   0.57 kB Γöé gzip:   0.33 kB
+.output/public/assets/useMatch-QQSFGX3y.js                       0.65 kB Γöé gzip:   0.40 kB
+.output/public/assets/badge-GjJjLiKV.js                          0.80 kB Γöé gzip:   0.41 kB
+.output/public/assets/empty-state-CmeFutW3.js                    0.85 kB Γöé gzip:   0.47 kB
+.output/public/assets/mentorApplications-C9MPEFDp.js             0.97 kB Γöé gzip:   0.46 kB
+.output/public/assets/use-subscriptions-B0jRW9nd.js              1.18 kB Γöé gzip:   0.50 kB
+.output/public/assets/createLucideIcon-4qPAMeM9.js               1.19 kB Γöé gzip:   0.69 kB
+.output/public/assets/alert-DqrzdAYR.js                          1.26 kB Γöé gzip:   0.63 kB
+.output/public/assets/session._id-DrNwSW5w.js                    1.37 kB Γöé gzip:   0.69 kB
+.output/public/assets/session._id-BfOuI6XL.js                    1.38 kB Γöé gzip:   0.69 kB
+.output/public/assets/use-session-requests-AhKtHw7B.js           1.52 kB Γöé gzip:   0.57 kB
+.output/public/assets/availability-BLoxP8ze.js                   1.56 kB Γöé gzip:   0.78 kB
+.output/public/assets/_id-DKXKpeWA.js                            1.63 kB Γöé gzip:   0.65 kB
+.output/public/assets/skeleton-loader-DL0NyC6d.js                1.66 kB Γöé gzip:   0.51 kB
+.output/public/assets/auth.callback-CJ67tERt.js                  2.00 kB Γöé gzip:   0.99 kB
+.output/public/assets/application-timeline-DNzP27wX.js           2.21 kB Γöé gzip:   0.79 kB
+.output/public/assets/progress-BRvQIU1d.js                       2.24 kB Γöé gzip:   1.09 kB
+.output/public/assets/mentor-analytics-dashboard-BlBAygJL.js     2.31 kB Γöé gzip:   0.70 kB
+.output/public/assets/use-analytics-CMvCWFRh.js                  2.37 kB Γöé gzip:   1.05 kB
+.output/public/assets/avatar-CakKT8GL.js                         2.53 kB Γöé gzip:   1.11 kB
+.output/public/assets/use-payments-C-KdeYKG.js                   3.19 kB Γöé gzip:   1.15 kB
+.output/public/assets/requests--_FINKhn.js                       3.92 kB Γöé gzip:   1.45 kB
+.output/public/assets/AnimatePresence-DeoyzlJv.js                4.17 kB Γöé gzip:   1.91 kB
+.output/public/assets/dashboard-DjAMw0N3.js                      4.19 kB Γöé gzip:   1.25 kB
+.output/public/assets/apply-BMq1OVs9.js                          4.27 kB Γöé gzip:   1.45 kB
+.output/public/assets/link-CL-Qlfuc.js                           4.42 kB Γöé gzip:   2.17 kB
+.output/public/assets/settings-DGAHv4ZL.js                       5.03 kB Γöé gzip:   1.71 kB
+.output/public/assets/resources-B4nLevXj.js                      5.09 kB Γöé gzip:   2.04 kB
+.output/public/assets/resource-upload-E8jQeR_N.js                5.10 kB Γöé gzip:   1.87 kB
+.output/public/assets/streak-N1Iw_OBW.js                         5.11 kB Γöé gzip:   1.80 kB
+.output/public/assets/become-a-mentor-BjPIzODF.js                5.35 kB Γöé gzip:   1.69 kB
+.output/public/assets/payment-summary-qTo64vQJ.js                5.61 kB Γöé gzip:   1.69 kB
+.output/public/assets/application-CAnymH1i.js                    5.81 kB Γöé gzip:   2.12 kB
+.output/public/assets/pricing-FY2ziB3C.js                        6.09 kB Γöé gzip:   2.20 kB
+.output/public/assets/sessions-DdVYCNOc.js                       6.26 kB Γöé gzip:   2.45 kB
+.output/public/assets/resources-C5WXvc3e.js                      6.33 kB Γöé gzip:   2.48 kB
+.output/public/assets/calendar-wLPuf4T6.js                       6.67 kB Γöé gzip:   2.07 kB
+.output/public/assets/checkout-DBzEycfG.js                       6.80 kB Γöé gzip:   2.16 kB
+.output/public/assets/subscriptions-DCBxqRli.js                  7.60 kB Γöé gzip:   1.97 kB
+.output/public/assets/dist-CnLqis2X.js                           8.02 kB Γöé gzip:   3.09 kB
+.output/public/assets/mentor-applications-CXUcnawA.js            8.03 kB Γöé gzip:   2.44 kB
+.output/public/assets/history-CAGJ2HSa.js                        8.07 kB Γöé gzip:   2.47 kB
+.output/public/assets/button--VW5aav2.js                         8.61 kB Γöé gzip:   3.40 kB
+.output/public/assets/jsx-runtime-CdArH33I.js                    8.72 kB Γöé gzip:   3.33 kB
+.output/public/assets/auth-DG0t4SFW.js                           8.87 kB Γöé gzip:   3.05 kB
+.output/public/assets/booking-queue-CPTU6EE2.js                  9.15 kB Γöé gzip:   3.03 kB
+.output/public/assets/dashboard-CC9GcU0Q.js                      9.77 kB Γöé gzip:   2.84 kB
+.output/public/assets/sessions-F118LeJ9.js                      12.56 kB Γöé gzip:   3.67 kB
+.output/public/assets/dashboard-Bh5DD7G7.js                     14.13 kB Γöé gzip:   3.79 kB
+.output/public/assets/demo-session-Da52o7Ow.js                  15.32 kB Γöé gzip:   4.60 kB
+.output/public/assets/notifications-DDGiFsCT.js                 16.37 kB Γöé gzip:   5.06 kB
+.output/public/assets/onboarding-DztA_-d1.js                    17.23 kB Γöé gzip:   4.73 kB
+.output/public/assets/useStore-BslVOzsn.js                      19.09 kB Γöé gzip:   6.87 kB
+.output/public/assets/select-C7krQdCn.js                        21.93 kB Γöé gzip:   7.42 kB
+.output/public/assets/explore-DFhWSXdh.js                       23.78 kB Γöé gzip:   7.58 kB
+.output/public/assets/ReviewCard-CNwGi3pO.js                    24.12 kB Γöé gzip:   7.41 kB
+.output/public/assets/use-auth-dE_GO0BD.js                      24.12 kB Γöé gzip:   8.03 kB
+.output/public/assets/utils-B6KiDbIe.js                         27.26 kB Γöé gzip:   8.69 kB
+.output/public/assets/mentor._id-Dqk0ivL3.js                    31.72 kB Γöé gzip:   8.62 kB
+.output/public/assets/profile-DLuNASyf.js                       32.07 kB Γöé gzip:   8.76 kB
+.output/public/assets/session-workspace-Dz0JwCQb.js             32.14 kB Γöé gzip:   8.85 kB
+.output/public/assets/input-BITlPwBU.js                         33.11 kB Γöé gzip:   9.37 kB
+.output/public/assets/Match-Dj_3Rehn.js                         48.72 kB Γöé gzip:  15.82 kB
+.output/public/assets/routes-Coskoc8b.js                        58.81 kB Γöé gzip:  14.31 kB
+.output/public/assets/client-br2la5Aa.js                       207.29 kB Γöé gzip:  53.54 kB
+.output/public/assets/student-analytics-dashboard-B_dEn4Vf.js  380.89 kB Γöé gzip: 100.77 kB
+.output/public/assets/index-CPVG4bLP.js                        577.18 kB Γöé gzip: 176.36 kB
+
+[PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+  - vite-tsconfig-paths (74%)
+  - tanstack-start-core:import-protection (19%)
+  - tanstack-start-core:import-protection-transform-cache (6%)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[32mΓ£ô built in 6.96s[39m
+[36mvite v8.1.5 [32mbuilding ssr environment for production...[36m[39m
+[2K
+transforming...Γ£ô 230 modules transformed.
+rendering chunks...
+computing gzip size...
+node_modules/.nitro/vite/services/ssr/assets/styles-n7soODRO.css                      139.28 kB Γöé gzip: 21.29 kB
+node_modules/.nitro/vite/services/ssr/assets/utils-C_uf36nf.js                          0.18 kB Γöé gzip:  0.15 kB
+node_modules/.nitro/vite/services/ssr/assets/empty-plugin-adapters-D9UWiqvJ.js          0.22 kB Γöé gzip:  0.16 kB
+node_modules/.nitro/vite/services/ssr/assets/profile-B1ITL6o-.js                        0.24 kB Γöé gzip:  0.17 kB
+node_modules/.nitro/vite/services/ssr/assets/route-Di7iQBCH.js                          0.26 kB Γöé gzip:  0.19 kB
+node_modules/.nitro/vite/services/ssr/assets/booking-BBqhjUVa.js                        0.31 kB Γöé gzip:  0.18 kB
+node_modules/.nitro/vite/services/ssr/assets/mentor._id-CmgO9UQ5.js                     0.38 kB Γöé gzip:  0.23 kB
+node_modules/.nitro/vite/services/ssr/assets/session._id-BDaMVezh.js                    0.38 kB Γöé gzip:  0.23 kB
+node_modules/.nitro/vite/services/ssr/assets/session._id-CK0gGYmw.js                    0.39 kB Γöé gzip:  0.24 kB
+node_modules/.nitro/vite/services/ssr/assets/_id-lRobDByx.js                            0.40 kB Γöé gzip:  0.24 kB
+node_modules/.nitro/vite/services/ssr/assets/checkout-D0vxdP8e.js                       0.44 kB Γöé gzip:  0.26 kB
+node_modules/.nitro/vite/services/ssr/assets/label-BPuF5-mq.js                          0.64 kB Γöé gzip:  0.39 kB
+node_modules/.nitro/vite/services/ssr/assets/textarea-1llmCJsE.js                       0.67 kB Γöé gzip:  0.42 kB
+node_modules/.nitro/vite/services/ssr/assets/auth-BxdT7O2D.js                           0.69 kB Γöé gzip:  0.33 kB
+node_modules/.nitro/vite/services/ssr/assets/progress-BaJBfUMd.js                       0.75 kB Γöé gzip:  0.44 kB
+node_modules/.nitro/vite/services/ssr/assets/input-CITjGSX3.js                          0.76 kB Γöé gzip:  0.45 kB
+node_modules/.nitro/vite/services/ssr/assets/languages-qfarQeoC.js                      0.81 kB Γöé gzip:  0.32 kB
+node_modules/.nitro/vite/services/ssr/assets/createMiddleware-B_4t7rW1.js               0.83 kB Γöé gzip:  0.32 kB
+node_modules/.nitro/vite/services/ssr/assets/auth-DW_9mJHu.js                           0.84 kB Γöé gzip:  0.45 kB
+node_modules/.nitro/vite/services/ssr/assets/use-auth-COpdT9DH.js                       0.95 kB Γöé gzip:  0.49 kB
+node_modules/.nitro/vite/services/ssr/assets/badge-D1Dupn2y.js                          0.98 kB Γöé gzip:  0.50 kB
+node_modules/.nitro/vite/services/ssr/assets/switch-C_mzcXif.js                         1.10 kB Γöé gzip:  0.56 kB
+node_modules/.nitro/vite/services/ssr/assets/avatar-Ci56vr6h.js                         1.13 kB Γöé gzip:  0.44 kB
+node_modules/.nitro/vite/services/ssr/assets/empty-state-DP2sgouZ.js                    1.23 kB Γöé gzip:  0.58 kB
+node_modules/.nitro/vite/services/ssr/assets/alert-TMjSrQRD.js                          1.38 kB Γöé gzip:  0.61 kB
+node_modules/.nitro/vite/services/ssr/assets/storage-BZj17k8U.js                        1.44 kB Γöé gzip:  0.68 kB
+node_modules/.nitro/vite/services/ssr/assets/card-CkAivaVl.js                           1.59 kB Γöé gzip:  0.49 kB
+node_modules/.nitro/vite/services/ssr/assets/tabs-BgKcOzjx.js                           1.64 kB Γöé gzip:  0.60 kB
+node_modules/.nitro/vite/services/ssr/assets/button-MHHI04mG.js                         1.66 kB Γöé gzip:  0.78 kB
+node_modules/.nitro/vite/services/ssr/assets/start-BIVxteIo.js                          1.86 kB Γöé gzip:  0.82 kB
+node_modules/.nitro/vite/services/ssr/assets/use-subscriptions-kYlGeN7-.js              2.04 kB Γöé gzip:  0.62 kB
+node_modules/.nitro/vite/services/ssr/assets/mentorApplications-jOEIuRUT.js             2.04 kB Γöé gzip:  0.79 kB
+node_modules/.nitro/vite/services/ssr/assets/client-ByFbC1ph.js                         2.16 kB Γöé gzip:  0.96 kB
+node_modules/.nitro/vite/services/ssr/assets/session._id-o-DDR_Om.js                    2.24 kB Γöé gzip:  0.88 kB
+node_modules/.nitro/vite/services/ssr/assets/session._id-BVT54ofo.js                    2.25 kB Γöé gzip:  0.89 kB
+node_modules/.nitro/vite/services/ssr/assets/use-session-requests-CkzMIKGh.js           2.29 kB Γöé gzip:  0.73 kB
+node_modules/.nitro/vite/services/ssr/assets/skeleton-loader-Bc7oqySl.js                2.54 kB Γöé gzip:  0.66 kB
+node_modules/.nitro/vite/services/ssr/assets/availability-BFcycxjI.js                   2.60 kB Γöé gzip:  1.03 kB
+node_modules/.nitro/vite/services/ssr/assets/_id-C-aPiiVr.js                            2.67 kB Γöé gzip:  0.89 kB
+node_modules/.nitro/vite/services/ssr/assets/use-notifications-DyCSIbR6.js              2.71 kB Γöé gzip:  0.80 kB
+node_modules/.nitro/vite/services/ssr/assets/application-timeline-IfwqskEu.js           3.29 kB Γöé gzip:  1.01 kB
+node_modules/.nitro/vite/services/ssr/index.js                                          3.41 kB Γöé gzip:  1.46 kB
+node_modules/.nitro/vite/services/ssr/assets/mentor-analytics-dashboard-DGEvYvce.js     3.56 kB Γöé gzip:  0.88 kB
+node_modules/.nitro/vite/services/ssr/assets/auth.callback-Bz9C25xQ.js                  3.58 kB Γöé gzip:  1.36 kB
+node_modules/.nitro/vite/services/ssr/assets/use-analytics-DGudRHda.js                  4.20 kB Γöé gzip:  1.40 kB
+node_modules/.nitro/vite/services/ssr/assets/student-analytics-dashboard-CR5f_8Xl.js    4.57 kB Γöé gzip:  1.22 kB
+node_modules/.nitro/vite/services/ssr/assets/select-BHv1JhlL.js                         4.68 kB Γöé gzip:  1.34 kB
+node_modules/.nitro/vite/services/ssr/assets/use-payments-BkgTc7Np.js                   5.10 kB Γöé gzip:  1.46 kB
+node_modules/.nitro/vite/services/ssr/assets/requests-BqLq8jet.js                       6.00 kB Γöé gzip:  1.77 kB
+node_modules/.nitro/vite/services/ssr/assets/dashboard-CIT10mh7.js                      6.14 kB Γöé gzip:  1.47 kB
+node_modules/.nitro/vite/services/ssr/assets/resource-upload-DMR7fb71.js                6.35 kB Γöé gzip:  1.74 kB
+node_modules/.nitro/vite/services/ssr/assets/ReviewCard-B5Y-ySNO.js                     6.77 kB Γöé gzip:  2.15 kB
+node_modules/.nitro/vite/services/ssr/assets/streak-B33P1BIn.js                         6.82 kB Γöé gzip:  1.88 kB
+node_modules/.nitro/vite/services/ssr/assets/apply-ut3tpPd5.js                          7.09 kB Γöé gzip:  1.82 kB
+node_modules/.nitro/vite/services/ssr/assets/become-a-mentor-B9vTh8MW.js                7.39 kB Γöé gzip:  1.77 kB
+node_modules/.nitro/vite/services/ssr/assets/settings-0mlWSgfE.js                       8.06 kB Γöé gzip:  2.23 kB
+node_modules/.nitro/vite/services/ssr/assets/resources-D4fLa0r8.js                      8.35 kB Γöé gzip:  2.58 kB
+node_modules/.nitro/vite/services/ssr/assets/pricing-CBOmk9iA.js                        9.41 kB Γöé gzip:  2.69 kB
+node_modules/.nitro/vite/services/ssr/assets/payment-summary-DCoggOFy.js                9.44 kB Γöé gzip:  2.20 kB
+node_modules/.nitro/vite/services/ssr/assets/resources-CphVohmt.js                      9.89 kB Γöé gzip:  2.94 kB
+node_modules/.nitro/vite/services/ssr/assets/application-CkU8bvnZ.js                   10.35 kB Γöé gzip:  2.83 kB
+node_modules/.nitro/vite/services/ssr/assets/sessions-CUt0VbXJ.js                      10.52 kB Γöé gzip:  2.96 kB
+node_modules/.nitro/vite/services/ssr/assets/checkout-deugAaeB.js                      11.03 kB Γöé gzip:  2.73 kB
+node_modules/.nitro/vite/services/ssr/assets/calendar-BQK7Adjj.js                      11.31 kB Γöé gzip:  2.74 kB
+node_modules/.nitro/vite/services/ssr/assets/mentor-applications-fKj5igOM.js           11.79 kB Γöé gzip:  2.71 kB
+node_modules/.nitro/vite/services/ssr/assets/profile-editor-D4r6LsYu.js                12.03 kB Γöé gzip:  1.99 kB
+node_modules/.nitro/vite/services/ssr/assets/subscriptions-BWmOwC0M.js                 12.54 kB Γöé gzip:  2.56 kB
+node_modules/.nitro/vite/services/ssr/assets/history-CcDvTdXf.js                       13.40 kB Γöé gzip:  3.05 kB
+node_modules/.nitro/vite/services/ssr/assets/auth-9t2hFITr.js                          14.17 kB Γöé gzip:  3.78 kB
+node_modules/.nitro/vite/services/ssr/assets/booking-queue-Dc9vUGmj.js                 14.30 kB Γöé gzip:  3.68 kB
+node_modules/.nitro/vite/services/ssr/assets/dashboard-DzeipD5E.js                     14.43 kB Γöé gzip:  3.14 kB
+node_modules/.nitro/vite/services/ssr/assets/_tanstack-start-manifest_v-D03EDOir.js    15.89 kB Γöé gzip:  2.56 kB
+node_modules/.nitro/vite/services/ssr/assets/student-settings-D7b901Ka.js              20.36 kB Γöé gzip:  4.57 kB
+node_modules/.nitro/vite/services/ssr/assets/sessions-96GOs9G0.js                      20.56 kB Γöé gzip:  4.74 kB
+node_modules/.nitro/vite/services/ssr/assets/dashboard-8nye5Lpz.js                     22.85 kB Γöé gzip:  4.72 kB
+node_modules/.nitro/vite/services/ssr/assets/explore-DllsvBAB.js                       22.99 kB Γöé gzip:  5.10 kB
+node_modules/.nitro/vite/services/ssr/assets/notifications-BTLaIBnt.js                 23.73 kB Γöé gzip:  6.02 kB
+node_modules/.nitro/vite/services/ssr/assets/demo-session-BdbEKJq1.js                  24.34 kB Γöé gzip:  5.67 kB
+node_modules/.nitro/vite/services/ssr/assets/router-DQLb6DLy.js                        26.47 kB Γöé gzip:  5.31 kB
+node_modules/.nitro/vite/services/ssr/assets/onboarding-_iOP9rHa.js                    29.10 kB Γöé gzip:  5.99 kB
+node_modules/.nitro/vite/services/ssr/assets/app-shell-CqtniDYY.js                     35.59 kB Γöé gzip:  8.14 kB
+node_modules/.nitro/vite/services/ssr/assets/mentor._id-CpjcrijA.js                    50.10 kB Γöé gzip: 11.12 kB
+node_modules/.nitro/vite/services/ssr/assets/session-workspace-DePR7V8D.js             51.25 kB Γöé gzip: 10.79 kB
+node_modules/.nitro/vite/services/ssr/assets/profile-DNt5Ayvg.js                       51.67 kB Γöé gzip: 10.91 kB
+node_modules/.nitro/vite/services/ssr/assets/server-z2g-w0WG.js                        58.73 kB Γöé gzip: 15.11 kB
+node_modules/.nitro/vite/services/ssr/assets/routes-DkIILwQN.js                        80.84 kB Γöé gzip: 16.92 kB
+
+[PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+  - tanstack-start-core:import-protection (48%)
+  - vite-tsconfig-paths (28%)
+  - tanstack-start-core:import-protection-transform-cache (13%)
+  - tanstack-router:code-splitter:compile-reference-file (6%)
+  - tanstack-router:code-splitter:compile-virtual-file (3%)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+[32mΓ£ô built in 5.49s[39m
+[90m[[90mnitro[90m][39m [35mΓùÉ[39m Building [[35mNitro[39m] [2m(preset: [36mcloudflare-module[39m, compatibility: [36m2026-08-06[39m)[22m
+[90m[[90mnitro[90m][39m [32mΓ£ö[39m Generated public [36m.output/public[39m
+[36mvite v8.1.5 [32mbuilding nitro environment for production...[36m[39m
+
+ WARN  inlineDynamicImports option is ignored because the codeSplitting option is specified.
+
+[2K
+transforming...Γ£ô 3421 modules transformed.
+rendering chunks...
+computing gzip size...
+.output/server/_ssr/empty-plugin-adapters-D9UWiqvJ.mjs          0.23 kB Γöé gzip:   0.16 kB
+.output/server/_ssr/profile-B1ITL6o-.mjs                        0.24 kB Γöé gzip:   0.18 kB
+.output/server/_ssr/utils-C_uf36nf.mjs                          0.29 kB Γöé gzip:   0.21 kB
+.output/server/_libs/radix-ui__number.mjs                       0.32 kB Γöé gzip:   0.24 kB
+.output/server/_ssr/booking-BBqhjUVa.mjs                        0.34 kB Γöé gzip:   0.20 kB
+.output/server/_ssr/route-Di7iQBCH.mjs                          0.41 kB Γöé gzip:   0.26 kB
+.output/server/_id-lRobDByx.mjs                                 0.43 kB Γöé gzip:   0.28 kB
+.output/server/_ssr/mentor._id-CmgO9UQ5.mjs                     0.43 kB Γöé gzip:   0.28 kB
+.output/server/_ssr/session._id-BDaMVezh.mjs                    0.43 kB Γöé gzip:   0.28 kB
+.output/server/_ssr/session._id-CK0gGYmw.mjs                    0.43 kB Γöé gzip:   0.29 kB
+.output/server/_ssr/checkout-D0vxdP8e.mjs                       0.48 kB Γöé gzip:   0.31 kB
+.output/server/_chunks/ssr-renderer.mjs                         0.60 kB Γöé gzip:   0.36 kB
+.output/server/_ssr/auth-BxdT7O2D.mjs                           0.73 kB Γöé gzip:   0.37 kB
+.output/server/_libs/radix-ui__react-direction.mjs              0.76 kB Γöé gzip:   0.40 kB
+.output/server/_ssr/createMiddleware-B_4t7rW1.mjs               0.83 kB Γöé gzip:   0.33 kB
+.output/server/_ssr/languages-qfarQeoC.mjs                      0.85 kB Γöé gzip:   0.35 kB
+.output/server/_ssr/label-BPuF5-mq.mjs                          0.96 kB Γöé gzip:   0.48 kB
+.output/server/_ssr/auth-DW_9mJHu.mjs                           0.97 kB Γöé gzip:   0.48 kB
+.output/server/_ssr/textarea-1llmCJsE.mjs                       0.98 kB Γöé gzip:   0.53 kB
+.output/server/_libs/radix-ui__react-label.mjs                  1.00 kB Γöé gzip:   0.51 kB
+.output/server/_ssr/use-auth-COpdT9DH.mjs                       1.02 kB Γöé gzip:   0.53 kB
+.output/server/_ssr/input-CITjGSX3.mjs                          1.07 kB Γöé gzip:   0.57 kB
+.output/server/_ssr/progress-BaJBfUMd.mjs                       1.08 kB Γöé gzip:   0.54 kB
+.output/server/_libs/hookable.mjs                               1.16 kB Γöé gzip:   0.51 kB
+.output/server/_ssr/badge-D1Dupn2y.mjs                          1.19 kB Γöé gzip:   0.56 kB
+.output/server/_ssr/switch-C_mzcXif.mjs                         1.43 kB Γöé gzip:   0.66 kB
+.output/server/_libs/radix-ui__react-separator.mjs              1.44 kB Γöé gzip:   0.63 kB
+.output/server/_ssr/avatar-Ci56vr6h.mjs                         1.45 kB Γöé gzip:   0.54 kB
+.output/server/_ssr/storage-BZj17k8U.mjs                        1.49 kB Γöé gzip:   0.72 kB
+.output/server/_ssr/empty-state-DP2sgouZ.mjs                    1.52 kB Γöé gzip:   0.66 kB
+.output/server/_libs/react-is.mjs                               1.67 kB Γöé gzip:   0.65 kB
+.output/server/_runtime.mjs                                     1.75 kB Γöé gzip:   0.79 kB
+.output/server/_ssr/start-BIVxteIo.mjs                          1.76 kB Γöé gzip:   0.80 kB
+.output/server/_ssr/alert-TMjSrQRD.mjs                          1.77 kB Γöé gzip:   0.72 kB
+.output/server/_libs/radix-ui__primitive.mjs                    1.83 kB Γöé gzip:   0.72 kB
+.output/server/_ssr/button-MHHI04mG.mjs                         1.96 kB Γöé gzip:   0.88 kB
+.output/server/_ssr/tabs-BgKcOzjx.mjs                           2.02 kB Γöé gzip:   0.72 kB
+.output/server/_ssr/card-CkAivaVl.mjs                           2.04 kB Γöé gzip:   0.59 kB
+.output/server/_ssr/mentorApplications-jOEIuRUT.mjs             2.05 kB Γöé gzip:   0.81 kB
+.output/server/_ssr/use-subscriptions-kYlGeN7-.mjs              2.07 kB Γöé gzip:   0.66 kB
+.output/server/_ssr/client-ByFbC1ph.mjs                         2.26 kB Γöé gzip:   1.01 kB
+.output/server/_libs/prop-types.mjs                             2.27 kB Γöé gzip:   0.84 kB
+.output/server/_ssr/use-session-requests-CkzMIKGh.mjs           2.37 kB Γöé gzip:   0.77 kB
+.output/server/_ssr/session._id-o-DDR_Om.mjs                    2.70 kB Γöé gzip:   0.99 kB
+.output/server/_ssr/session._id-BVT54ofo.mjs                    2.71 kB Γöé gzip:   1.00 kB
+.output/server/_ssr/use-notifications-DyCSIbR6.mjs              2.80 kB Γöé gzip:   0.85 kB
+.output/server/_ssr/availability-BFcycxjI.mjs                   3.17 kB Γöé gzip:   1.14 kB
+.output/server/_libs/class-variance-authority+clsx.mjs          3.17 kB Γöé gzip:   1.24 kB
+.output/server/_id-C-aPiiVr.mjs                                 3.23 kB Γöé gzip:   0.92 kB
+.output/server/_libs/d3-path.mjs                                3.25 kB Γöé gzip:   1.16 kB
+.output/server/_ssr/skeleton-loader-Bc7oqySl.mjs                3.29 kB Γöé gzip:   0.75 kB
+.output/server/_ssr/ssr.mjs                                     3.34 kB Γöé gzip:   1.46 kB
+.output/server/_ssr/application-timeline-IfwqskEu.mjs           3.76 kB Γöé gzip:   1.07 kB
+.output/server/_ssr/auth.callback-Bz9C25xQ.mjs                  3.98 kB Γöé gzip:   1.49 kB
+.output/server/_libs/radix-ui__react-progress.mjs               4.07 kB Γöé gzip:   1.34 kB
+.output/server/_ssr/use-analytics-DGudRHda.mjs                  4.27 kB Γöé gzip:   1.43 kB
+.output/server/_ssr/mentor-analytics-dashboard-DGEvYvce.mjs     4.43 kB Γöé gzip:   0.97 kB
+.output/server/_libs/d3-interpolate.mjs                         5.02 kB Γöé gzip:   1.61 kB
+.output/server/_ssr/use-payments-BkgTc7Np.mjs                   5.15 kB Γöé gzip:   1.50 kB
+.output/server/_ssr/select-BHv1JhlL.mjs                         5.61 kB Γöé gzip:   1.53 kB
+.output/server/_ssr/student-analytics-dashboard-CR5f_8Xl.mjs    5.72 kB Γöé gzip:   1.32 kB
+.output/server/_libs/radix-ui__react-tabs.mjs                   6.11 kB Γöé gzip:   1.74 kB
+.output/server/_ssr/requests-BqLq8jet.mjs                       7.12 kB Γöé gzip:   1.86 kB
+.output/server/_libs/tanstack__react-query.mjs                  7.36 kB Γöé gzip:   1.94 kB
+.output/server/_ssr/dashboard-CIT10mh7.mjs                      7.45 kB Γöé gzip:   1.56 kB
+.output/server/_ssr/resource-upload-DMR7fb71.mjs                7.71 kB Γöé gzip:   1.86 kB
+.output/server/_libs/radix-ui__react-switch.mjs                 7.77 kB Γöé gzip:   2.21 kB
+.output/server/_ssr/ReviewCard-B5Y-ySNO.mjs                     7.79 kB Γöé gzip:   2.26 kB
+.output/server/_libs/d3-array.mjs                               8.05 kB Γöé gzip:   2.25 kB
+.output/server/_ssr/streak-B33P1BIn.mjs                         8.28 kB Γöé gzip:   2.01 kB
+.output/server/_libs/eventemitter3.mjs                          8.31 kB Γöé gzip:   2.05 kB
+.output/server/_ssr/apply-ut3tpPd5.mjs                          8.49 kB Γöé gzip:   1.95 kB
+.output/server/_ssr/become-a-mentor-B9vTh8MW.mjs                8.76 kB Γöé gzip:   1.87 kB
+.output/server/_ssr/settings-0mlWSgfE.mjs                       9.36 kB Γöé gzip:   2.36 kB
+.output/server/_ssr/resources-D4fLa0r8.mjs                      9.39 kB Γöé gzip:   2.72 kB
+.output/server/_libs/h3-v2+rou3.mjs                             9.81 kB Γöé gzip:   3.05 kB
+.output/server/_libs/@radix-ui/react-roving-focus+[...].mjs    10.17 kB Γöé gzip:   2.80 kB
+.output/server/_libs/d3-color.mjs                              10.38 kB Γöé gzip:   3.57 kB
+.output/server/_libs/@radix-ui/react-popper+[...].mjs          10.53 kB Γöé gzip:   3.09 kB
+.output/server/_libs/d3-format.mjs                             10.59 kB Γöé gzip:   3.02 kB
+.output/server/_ssr/pricing-CBOmk9iA.mjs                       11.01 kB Γöé gzip:   2.78 kB
+.output/server/_ssr/resources-CphVohmt.mjs                     11.41 kB Γöé gzip:   3.10 kB
+.output/server/_ssr/payment-summary-DCoggOFy.mjs               11.50 kB Γöé gzip:   2.35 kB
+.output/server/_ssr/application-CkU8bvnZ.mjs                   11.80 kB Γöé gzip:   2.93 kB
+.output/server/_ssr/sessions-CUt0VbXJ.mjs                      11.95 kB Γöé gzip:   3.11 kB
+.output/server/_libs/tanstack__history.mjs                     12.09 kB Γöé gzip:   3.48 kB
+.output/server/_libs/supabase__functions-js.mjs                12.52 kB Γöé gzip:   3.47 kB
+.output/server/_ssr/mentor-applications-fKj5igOM.mjs           12.59 kB Γöé gzip:   2.78 kB
+.output/server/_ssr/checkout-deugAaeB.mjs                      13.09 kB Γöé gzip:   2.87 kB
+.output/server/_ssr/calendar-BQK7Adjj.mjs                      13.15 kB Γöé gzip:   2.84 kB
+.output/server/_libs/fast-equals.mjs                           14.37 kB Γöé gzip:   3.62 kB
+.output/server/_ssr/profile-editor-D4r6LsYu.mjs                14.83 kB Γöé gzip:   2.11 kB
+.output/server/_libs/h3+rou3+srvx.mjs                          14.86 kB Γöé gzip:   4.41 kB
+.output/server/_ssr/subscriptions-BWmOwC0M.mjs                 14.88 kB Γöé gzip:   2.66 kB
+.output/server/_ssr/history-CcDvTdXf.mjs                       15.59 kB Γöé gzip:   3.18 kB
+.output/server/_tanstack-start-manifest_v-D03EDOir.mjs         15.94 kB Γöé gzip:   2.60 kB
+.output/server/_ssr/auth-9t2hFITr.mjs                          16.09 kB Γöé gzip:   3.95 kB
+.output/server/_ssr/booking-queue-Dc9vUGmj.mjs                 16.48 kB Γöé gzip:   3.84 kB
+.output/server/_libs/radix-ui__react-collection.mjs            16.52 kB Γöé gzip:   3.69 kB
+.output/server/_ssr/dashboard-DzeipD5E.mjs                     17.19 kB Γöé gzip:   3.31 kB
+.output/server/_libs/radix-ui__react-tooltip.mjs               19.29 kB Γöé gzip:   4.43 kB
+.output/server/_libs/@radix-ui/react-avatar+[...].mjs          19.76 kB Γöé gzip:   5.02 kB
+.output/server/_libs/radix-ui__react-slider.mjs                22.73 kB Γöé gzip:   5.48 kB
+.output/server/_ssr/student-settings-D7b901Ka.mjs              23.20 kB Γöé gzip:   4.75 kB
+.output/server/_libs/decimal.js-light.mjs                      23.31 kB Γöé gzip:   6.89 kB
+.output/server/_ssr/sessions-96GOs9G0.mjs                      23.87 kB Γöé gzip:   4.94 kB
+.output/server/_libs/d3-shape.mjs                              24.72 kB Γöé gzip:   5.02 kB
+.output/server/_ssr/notifications-BTLaIBnt.mjs                 25.09 kB Γöé gzip:   6.12 kB
+.output/server/_ssr/router-DQLb6DLy.mjs                        25.32 kB Γöé gzip:   5.25 kB
+.output/server/_libs/@floating-ui/dom+[...].mjs                25.38 kB Γöé gzip:   6.57 kB
+.output/server/_libs/@floating-ui/core+[...].mjs               25.57 kB Γöé gzip:   6.33 kB
+.output/server/_ssr/explore-DllsvBAB.mjs                       26.46 kB Γöé gzip:   5.25 kB
+.output/server/_ssr/dashboard-8nye5Lpz.mjs                     26.61 kB Γöé gzip:   4.85 kB
+.output/server/_ssr/demo-session-BdbEKJq1.mjs                  28.09 kB Γöé gzip:   5.85 kB
+.output/server/_libs/@floating-ui/react-dom+[...].mjs          31.30 kB Γöé gzip:   7.98 kB
+.output/server/_ssr/onboarding-_iOP9rHa.mjs                    33.64 kB Γöé gzip:   6.20 kB
+.output/server/index.mjs                                       35.09 kB Γöé gzip:   8.93 kB
+.output/server/_libs/supabase__supabase-js.mjs                 36.30 kB Γöé gzip:  10.75 kB
+.output/server/_libs/react-smooth.mjs                          37.83 kB Γöé gzip:   8.15 kB
+.output/server/_ssr/app-shell-CqtniDYY.mjs                     38.59 kB Γöé gzip:   8.35 kB
+.output/server/_libs/@radix-ui/react-select+[...].mjs          46.37 kB Γöé gzip:   9.76 kB
+.output/server/_libs/lucide-react.mjs                          49.06 kB Γöé gzip:   9.01 kB
+.output/server/_libs/supabase__phoenix.mjs                     50.54 kB Γöé gzip:  12.76 kB
+.output/server/_libs/sonner.mjs                                51.91 kB Γöé gzip:  11.77 kB
+.output/server/_ssr/mentor._id-CpjcrijA.mjs                    56.54 kB Γöé gzip:  11.42 kB
+.output/server/_ssr/server-z2g-w0WG.mjs                        56.98 kB Γöé gzip:  14.97 kB
+.output/server/_ssr/profile-DNt5Ayvg.mjs                       57.19 kB Γöé gzip:  11.11 kB
+.output/server/_ssr/session-workspace-DePR7V8D.mjs             57.59 kB Γöé gzip:  11.04 kB
+.output/server/_libs/d3-scale+[...].mjs                        58.25 kB Γöé gzip:  12.11 kB
+.output/server/_libs/tanstack__query-core.mjs                  66.02 kB Γöé gzip:  13.95 kB
+.output/server/_libs/@radix-ui/react-dialog+[...].mjs          75.40 kB Γöé gzip:  17.79 kB
+.output/server/_libs/supabase__realtime-js+unenv.mjs           78.36 kB Γöé gzip:  20.05 kB
+.output/server/_libs/@tanstack/router-core+[...].mjs           80.28 kB Γöé gzip:  20.18 kB
+.output/server/_libs/date-fns.mjs                              87.53 kB Γöé gzip:  16.26 kB
+.output/server/_libs/tailwind-merge.mjs                        88.13 kB Γöé gzip:  15.66 kB
+.output/server/_ssr/routes-DkIILwQN.mjs                        92.74 kB Γöé gzip:  17.41 kB
+.output/server/_libs/zod.mjs                                   99.85 kB Γöé gzip:  17.25 kB
+.output/server/_libs/supabase__postgrest-js.mjs               105.41 kB Γöé gzip:  21.66 kB
+.output/server/_libs/@supabase/storage-js+[...].mjs           119.50 kB Γöé gzip:  22.34 kB
+.output/server/_libs/lodash.mjs                               161.80 kB Γöé gzip:  29.44 kB
+.output/server/_libs/supabase__auth-js.mjs                    302.19 kB Γöé gzip:  60.25 kB
+.output/server/_libs/framer-motion.mjs                        356.76 kB Γöé gzip:  93.14 kB
+.output/server/_libs/recharts+[...].mjs                       514.87 kB Γöé gzip:  96.53 kB
+.output/server/_libs/@tanstack/react-router+[...].mjs         657.46 kB Γöé gzip: 138.38 kB
+
+[32mΓ£ô built in 1.60s[39m
+[90m[[90mnitro[90m][39m [36mΓä╣[39m Using auto generated worker name: [36mnikhilkumar-186-sk-lingua[39m
+[36mΓä╣[39m Generated [36m.output/server/wrangler.json[39m
+[36mΓä╣[39m Generated [36m.wrangler/deploy/config.json[39m
+[36mΓä╣[39m Generated [36m.output/public/_headers[39m
+[36mΓä╣[39m Generated [36m.output/nitro.json[39m
+[90m[[90mnitro[90m][39m [32mΓ£ö[39m You can preview this build using [36mnpx vite preview[39m
+[90m[[90mnitro[90m][39m [32mΓ£ö[39m You can deploy this build using [36mnpx nitro deploy --prebuilt[39m

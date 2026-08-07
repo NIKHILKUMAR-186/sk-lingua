@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,7 +86,7 @@ function MentorCalendar() {
   }
 
   return (
-    <AppShell variant="mentor">
+    <MentorLayout>
       <div className="mx-auto max-w-4xl space-y-6">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-display">Calendar & requests</h1>
@@ -263,6 +263,6 @@ function MentorCalendar() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppShell>
+    </MentorLayout>
   );
 }

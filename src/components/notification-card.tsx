@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NotificationAvatar } from "@/components/notification-avatar";
@@ -6,7 +7,7 @@ import { NotificationDot } from "@/components/notification-badge";
 import { getCategoryConfig } from "@/components/notification-types";
 import { formatRelativeTime } from "@/lib/relative-time";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { X, ExternalLink } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Notification = Tables<"notifications">;
@@ -17,11 +18,58 @@ interface NotificationCardProps {
   onDelete: (id: string) => void;
 }
 
+/**
+ * Resolve a type-safe target route for a notification based on its category/kind.
+ * Returns a route path string that matches the router's expectations.
+ */
+function resolveTarget(notification: Notification): string | null {
+  // If an explicit link is stored, use it (it's a route path in this app).
+  if (notification.link) return notification.link;
+
+  const relatedId = notification.related_id;
+  const kind = notification.kind ?? "";
+  const category = notification.category ?? "";
+
+  // Route based on category/kind to a type-safe destination.
+  if (relatedId) {
+    if (kind === "session" || category === "session") return `/student/session/${relatedId}`;
+    if (kind === "review" || category === "review") return `/student/sessions`;
+    if (kind === "mentor" || category === "mentor") return `/student/explore`;
+    if (kind === "booking" || category === "booking") return `/student/sessions`;
+    if (kind === "payment" || category === "payment") return `/student/subscriptions`;
+    if (kind === "resource" || category === "resource") return `/student/resources`;
+    if (kind === "homework") return `/student/sessions`;
+    if (kind === "mentor_application" || category === "mentor_application")
+      return `/mentor/application`;
+  }
+
+  // Fallback by category.
+  switch (category) {
+    case "session":
+      return "/student/sessions";
+    case "booking":
+      return "/student/sessions";
+    case "payment":
+      return "/student/subscriptions";
+    case "resource":
+      return "/student/resources";
+    case "review":
+      return "/student/sessions";
+    default:
+      return null;
+  }
+}
+
 export function NotificationCard({ notification, onMarkRead, onDelete }: NotificationCardProps) {
   const config = getCategoryConfig(notification.category);
   const isUnread = !notification.read;
+  const navigate = useNavigate();
 
-  const quickActions = getQuickActions(notification.category);
+  function handleOpen() {
+    if (isUnread) onMarkRead(notification.id);
+    const target = resolveTarget(notification);
+    if (target) navigate({ to: target });
+  }
 
   return (
     <motion.div
@@ -35,20 +83,16 @@ export function NotificationCard({ notification, onMarkRead, onDelete }: Notific
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       whileHover={{ y: -2 }}
-      onClick={() => {
-        if (isUnread) onMarkRead(notification.id);
-      }}
+      onClick={handleOpen}
       onKeyDown={(e) => {
-        if (isUnread && (e.key === "Enter" || e.key === " ")) {
+        if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onMarkRead(notification.id);
+          handleOpen();
         }
       }}
       tabIndex={0}
       role="button"
-      aria-label={
-        isUnread ? `${notification.title} - Unread. Click to mark as read.` : notification.title
-      }
+      aria-label={isUnread ? `${notification.title} - Unread. Click to open.` : notification.title}
       className={cn(
         "group relative cursor-pointer overflow-hidden rounded-xl border bg-white p-4 shadow-sm transition-all duration-200",
         "hover:shadow-md hover:border-slate-200",
@@ -113,60 +157,34 @@ export function NotificationCard({ notification, onMarkRead, onDelete }: Notific
             </time>
 
             {/* Quick actions */}
-            {quickActions.length > 0 && (
-              <div className="ml-auto flex items-center gap-1">
-                {quickActions.map((action) => (
-                  <Button
-                    key={action.label}
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 rounded-md px-2 text-[11px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      action.onClick?.(notification);
-                    }}
-                    tabIndex={0}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 rounded-md px-2 text-[11px] font-medium text-slate-600 hover:text-red-700 hover:bg-red-50 dark:text-slate-400 dark:hover:text-red-300 dark:hover:bg-red-950/40"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(notification.id);
-                  }}
-                  tabIndex={0}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+            <div className="ml-auto flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 rounded-md px-2 text-[11px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpen();
+                }}
+              >
+                <ExternalLink className="mr-1 h-3 w-3" />
+                Open
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 rounded-md px-2 text-[11px] font-medium text-slate-600 hover:text-red-700 hover:bg-red-50 dark:text-slate-400 dark:hover:text-red-300 dark:hover:bg-red-950/40"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(notification.id);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     </motion.div>
   );
-}
-
-interface QuickAction {
-  label: string;
-  onClick?: (notification: Notification) => void;
-}
-
-function getQuickActions(category: string | null): QuickAction[] {
-  switch (category) {
-    case "booking":
-      return [{ label: "View Request" }, { label: "Accept" }, { label: "Decline" }];
-    case "session":
-      return [{ label: "Open Session" }, { label: "View Notes" }];
-    case "resource":
-      return [{ label: "Open Resource" }];
-    case "payment":
-      return [{ label: "View Details" }];
-    default:
-      return [];
-  }
 }

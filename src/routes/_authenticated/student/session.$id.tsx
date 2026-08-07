@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useSessionWorkspace } from "@/hooks/use-session-workspace";
 import { SessionWorkspace } from "@/components/session-workspace";
@@ -23,7 +23,7 @@ function StudentSessionDetail() {
   }, [data?.session?.status, fetchExistingReview]);
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-6xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Session workspace</h1>
@@ -54,6 +54,6 @@ function StudentSessionDetail() {
           />
         ) : null}
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

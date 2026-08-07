@@ -38,13 +38,17 @@ export async function POST(req: Request) {
       ]);
     if (e1) throw e1;
 
-    // Update session_requests to set assigned_mentor and status
+    // Update session_requests to set assigned_mentor and status with SLA timer
+    const now = new Date();
+    const slaDeadline = new Date(now.getTime() + 15 * 60 * 1000).toISOString(); // 15 min SLA
     const { error: e2 } = await (supabase as any)
       .from("session_requests")
       .update({
         assigned_mentor: mentor_id,
         status: "pending_mentor_response",
-        updated_at: new Date().toISOString(),
+        sla_assigned_at: now.toISOString(),
+        sla_deadline: slaDeadline,
+        updated_at: now.toISOString(),
       })
       .eq("id", request_id);
     if (e2) throw e2;

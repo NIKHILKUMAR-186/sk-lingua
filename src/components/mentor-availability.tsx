@@ -27,11 +27,14 @@ export function MentorAvailability() {
   // Track loading state per day key
   const [dayLoading, setDayLoading] = useState<Record<string, boolean>>({});
 
-  const grouped: Record<string, any[]> = {};
-  (slots ?? []).forEach((s) => {
-    grouped[s.day_of_week] = grouped[s.day_of_week] ?? [];
-    grouped[s.day_of_week].push(s);
-  });
+  const grouped = useMemo(() => {
+    const result: Record<string, any[]> = {};
+    (slots ?? []).forEach((s) => {
+      result[s.day_of_week] = result[s.day_of_week] ?? [];
+      result[s.day_of_week].push(s);
+    });
+    return result;
+  }, [slots]);
 
   // Compute if a day is effectively enabled (considering optimistic toggles)
   function getDayEnabled(dayKey: string): boolean {

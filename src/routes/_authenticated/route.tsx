@@ -25,17 +25,9 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
     const user = await waitForAuthenticatedUser();
-    console.group("Session");
-    console.log("Route guard", { user });
     if (!user) {
-      console.error("Route guard rejected session");
-      console.groupEnd();
-      console.group("Redirect");
-      console.log("Redirecting unauthenticated user to /auth");
-      console.groupEnd();
       throw redirect({ to: "/auth" });
     }
-    console.groupEnd();
     return { user };
   },
   component: () => <Outlet />,

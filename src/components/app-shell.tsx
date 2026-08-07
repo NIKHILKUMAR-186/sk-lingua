@@ -30,6 +30,7 @@ import {
   History,
   Users,
   Inbox,
+  BarChart3,
 } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -61,8 +62,14 @@ const MENTOR_ITEMS = [
 
 const ADMIN_ITEMS = [
   { title: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
+  { title: "Analytics", to: "/admin/analytics", icon: BarChart3 },
   { title: "Booking Queue", to: "/admin/booking-queue", icon: Inbox },
   { title: "Mentor Applications", to: "/admin/mentor-applications", icon: Users },
+  { title: "Demo Queue", to: "/admin/demo-queue", icon: Clock },
+  { title: "Support Tickets", to: "/admin/support-tickets", icon: MessageSquare },
+  { title: "Notification Broadcasts", to: "/admin/notification-broadcasts", icon: Bell },
+  { title: "Audit Logs", to: "/admin/audit-logs", icon: History },
+  { title: "Subscription Plans", to: "/admin/subscription-plans", icon: Crown },
 ] as const;
 
 const ACCOUNT_ITEMS = [
@@ -100,13 +107,9 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
   });
 
   async function signOut() {
-    console.group("Logout");
     await qc.cancelQueries();
     qc.clear();
     const { error } = await supabase.auth.signOut();
-    console.log("Logout response", { error });
-    if (error) console.error("Logout failed", error);
-    console.groupEnd();
     if (error) {
       toast.error(error.message);
       return;

@@ -38,13 +38,15 @@ export async function POST({ request }: { request: Request }) {
       createdUserId = createResult.data.user?.id ?? null;
     }
 
-    // upsert mentor_profile
+    // upsert mentor_profile with verification status
     const { error: mpErr } = await admin.from("mentor_profiles").upsert(
       {
         user_id: createdUserId,
         headline: app.headline ?? null,
         bio: app.experience ?? null,
         is_active: true,
+        verification_status: "approved",
+        approval_date: new Date().toISOString(),
       },
       { onConflict: "user_id" },
     );
@@ -59,7 +61,7 @@ export async function POST({ request }: { request: Request }) {
     // update application status
     const { error: updErr } = await admin
       .from("mentor_applications")
-      .update({ status: "approved", user_id: createdUserId })
+      .update({ status: "approved", user_id: createdUserId, approved_at: new Date().toISOString() })
       .eq("id", applicationId);
     if (updErr) throw updErr;
 

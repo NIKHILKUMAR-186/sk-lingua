@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Award,
   PackageOpen,
+  ShieldAlert,
 } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
 import React, { Suspense } from "react";
@@ -119,8 +120,28 @@ function MentorDashboard() {
   const isLoading =
     sessionsLoading || mpLoading || gigsLoading || reviewsLoading || resourcesLoading;
 
+  // Guard: only approved mentors can access the dashboard
+  const isApprovedMentor = (auth?.roles ?? []).includes("mentor");
+  if (!isApprovedMentor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="max-w-md text-center space-y-4">
+          <ShieldAlert className="mx-auto h-12 w-12 text-amber-500" />
+          <h1 className="text-2xl font-display">Access Restricted</h1>
+          <p className="text-sm text-muted-foreground">
+            The mentor dashboard is only available to approved mentors. If you've applied to become
+            a mentor, please check your application status.
+          </p>
+          <Button asChild>
+            <Link to="/mentor/application">Check Application Status</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AppShell variant="mentor">
+    <MentorLayout>
       <div className="mx-auto max-w-6xl space-y-6">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-display">
@@ -362,7 +383,7 @@ function MentorDashboard() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </MentorLayout>
   );
 }
 

@@ -8,6 +8,7 @@ import {
   Video,
   Star,
   MessageSquare,
+  UserPlus,
   type LucideIcon,
 } from "lucide-react";
 
@@ -89,6 +90,13 @@ export const CATEGORY_CONFIG: Record<string, NotificationConfig> = {
     color: "text-slate-600 dark:text-slate-400",
     bgColor: "bg-slate-50 dark:bg-slate-950/50",
     dotColor: "bg-slate-500",
+  },
+  mentor_application: {
+    icon: UserPlus,
+    label: "Mentor Applications",
+    color: "text-indigo-600 dark:text-indigo-400",
+    bgColor: "bg-indigo-50 dark:bg-indigo-950/50",
+    dotColor: "bg-indigo-500",
   },
 };
 
