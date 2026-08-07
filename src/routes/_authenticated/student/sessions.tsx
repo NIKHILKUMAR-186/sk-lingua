@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Video, Star, Clock } from "lucide-react";
+import { BookOpen, Video, Star, Clock, Calendar } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useStudentSessionRequests } from "@/hooks/use-session-requests";
+import { useStudentSessionRequests, useCreateSessionRequest } from "@/hooks/use-session-requests";
+import { getUserDemoBookings, getUpcomingDemoBooking } from "@/lib/demo-bookings";
 
 export const Route = createFileRoute("/_authenticated/student/sessions")({
   component: StudentSessions,
@@ -39,6 +40,17 @@ function StudentSessions() {
           .order("scheduled_time", { ascending: false })
       ).data ?? [],
   });
+
+  // Fetch demo bookings for this student
+  const { data: demoBookings = [] } = useQuery({
+    queryKey: ["student-demo-bookings", auth?.user?.id],
+    enabled: !!auth?.user,
+    queryFn: async () => {
+      if (!auth?.user?.id) return [];
+      return await getUserDemoBookings(auth.user.id);
+    },
+  });
+
   const { data: resources = [] } = useQuery({
     queryKey: ["student-session-resources", auth?.user?.id],
     enabled: !!auth?.user,
@@ -66,6 +78,7 @@ function StudentSessions() {
       return data ?? [];
     },
   });
+
   const { data: myReviews = [] } = useQuery({
     queryKey: ["student-session-reviews", auth?.user?.id, sessionIds.join(",")],
     enabled: !!auth?.user && sessionIds.length > 0,
@@ -80,7 +93,7 @@ function StudentSessions() {
   });
   const reviewBySessionId = new Map(myReviews.map((r) => [r.session_id, r]));
 
-  // Session request form state (migrated from book-session)
+  // Session request form state
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [reqDate, setReqDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [reqTime, setReqTime] = useState<string>("09:00");
@@ -89,6 +102,8 @@ function StudentSessions() {
   const [reqLanguage, setReqLanguage] = useState<string>("en");
   const [reqLoading, setReqLoading] = useState(false);
 
+  const createSessionRequest = useCreateSessionRequest();
+
   async function submitSessionRequest(e?: any) {
     if (e) e.preventDefault();
     if (!auth?.user) return toast.error("Please sign in");
@@ -96,20 +111,88 @@ function StudentSessions() {
     try {
       const scheduled = new Date(`${reqDate}T${reqTime}:00.000Z`).toISOString();
       const sup = supabase as any;
-      const { error } = await sup.from("session_requests").insert([
-        {
-          student_id: auth.user.id,
-          scheduled_time: scheduled,
-          duration_mins: reqDuration,
-          topic: reqTopic,
-          language: reqLanguage,
-        },
-      ]);
-      if (error) throw error;
+      
+      // First, check if student has an active subscription
+      const { data: subscription, error: subError } = await sup
+        .from("student_subscriptions")
+        .select("id, current_session_slots, bonus_slots, status, expires_at")
+        .eq("user_id", auth.user.id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (subError) {
+        console.error("Subscription check error:", subError);
+        throw new Error("Failed to verify subscription. Please try again.");
+      }
+
+      if (!subscription) {
+        throw new Error("You need an active subscription to book sessions. Please purchase a plan first.");
+      }
+
+      // Check if subscription is expired
+      if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) {
+        throw new Error("Your subscription has expired. Please renew to continue booking sessions.");
+      }
+
+      // Check if slots are available (including bonus slots)
+      const totalAvailable = (subscription.current_session_slots || 0) + (subscription.bonus_slots || 0);
+      if (totalAvailable <= 0) {
+        throw new Error("No sessions remaining. Please renew your subscription.");
+      }
+
+      // Use the mutation hook (this will automatically invalidate admin queries)
+      const request = await createSessionRequest.mutateAsync({
+        student_id: auth.user.id,
+        scheduled_time: scheduled,
+        duration_mins: reqDuration,
+        topic: reqTopic,
+        language: reqLanguage,
+        status: "pending_admin_assignment",
+      });
+
+      // Send notification to all admins
+      if (request?.id) {
+        try {
+          const { data: admins } = await sup
+            .from("user_roles")
+            .select("user_id")
+            .eq("role", "admin");
+
+          if (admins && admins.length > 0) {
+            const notifications = admins.map((admin: any) => ({
+              user_id: admin.user_id,
+              title: "New Session Request",
+              body: `A student has requested a session. Topic: ${reqTopic || "General"}`,
+              kind: "booking",
+              category: "session_request",
+              related_id: request.id,
+              metadata: {
+                request_id: request.id,
+                student_id: auth.user.id,
+                topic: reqTopic,
+                language: reqLanguage,
+                scheduled_time: scheduled,
+              },
+            }));
+
+            await sup.from("notifications").insert(notifications);
+          }
+        } catch (notifError) {
+          console.error("Failed to send admin notifications:", notifError);
+          // Don't fail the request if notification fails
+        }
+      }
+
       toast.success("Session request submitted — pending admin assignment");
       setShowRequestModal(false);
-      qc.invalidateQueries();
+      
+      // Reset form
+      setReqTopic("");
+      setReqDuration(30);
+      setReqLanguage("en");
+      
     } catch (err: any) {
+      console.error("Session request error:", err);
       toast.error(err?.message || "Failed to request session");
     } finally {
       setReqLoading(false);
@@ -149,8 +232,21 @@ function StudentSessions() {
     }
   }
 
-  const upcoming = sessions.filter((s) => ["pending", "accepted"].includes(s.status));
-  const past = sessions.filter((s) => ["completed", "rejected", "cancelled"].includes(s.status));
+  // Combine regular sessions and demo sessions for display
+  const regularUpcoming = sessions.filter((s) => ["pending", "accepted"].includes(s.status));
+  const regularPast = sessions.filter((s) => ["completed", "rejected", "cancelled"].includes(s.status));
+
+  // Demo sessions: confirmed = upcoming, completed/cancelled/no_show = past
+  const demoUpcoming = demoBookings.filter((d) =>
+    ["pending_admin_confirmation", "confirmed"].includes(d.booking_status),
+  );
+  const demoPast = demoBookings.filter((d) =>
+    ["completed", "cancelled", "no_show"].includes(d.booking_status),
+  );
+
+  const upcoming = [...regularUpcoming, ...demoUpcoming];
+  const past = [...regularPast, ...demoPast];
+
   const mentorById = new Map((mentors ?? []).map((mentor) => [mentor.id, mentor]));
 
   return (
@@ -172,19 +268,24 @@ function StudentSessions() {
             {upcoming.length === 0 ? (
               <Empty />
             ) : (
-              upcoming.map((s) => (
-                <SessionRow
-                  key={s.id}
-                  s={s}
-                  mentor={mentorById.get(s.mentor_id)}
-                  onCancel={cancel}
-                  resources={resources.filter(
-                    (resource) =>
-                      resource.session_id === s.id ||
-                      (resource.visibility === "session" && resource.student_id === auth?.user?.id),
-                  )}
-                />
-              ))
+              <>
+                {regularUpcoming.map((s) => (
+                  <SessionRow
+                    key={s.id}
+                    s={s}
+                    mentor={mentorById.get(s.mentor_id)}
+                    onCancel={cancel}
+                    resources={resources.filter(
+                      (resource) =>
+                        resource.session_id === s.id ||
+                        (resource.visibility === "session" && resource.student_id === auth?.user?.id),
+                    )}
+                  />
+                ))}
+                {demoUpcoming.map((demo) => (
+                  <DemoSessionRow key={demo.id} demo={demo} />
+                ))}
+              </>
             )}
           </TabsContent>
 
@@ -206,24 +307,29 @@ function StudentSessions() {
             {past.length === 0 ? (
               <Empty />
             ) : (
-              past.map((s) => (
-                <SessionRow
-                  key={s.id}
-                  s={s}
-                  mentor={mentorById.get(s.mentor_id)}
-                  existingReview={reviewBySessionId.get(s.id) ?? null}
-                  onRateClick={
-                    s.status === "completed" && !reviewBySessionId.get(s.id)
-                      ? () => setRatingModal({ sessionId: s.id, mentorId: s.mentor_id ?? "" })
-                      : undefined
-                  }
-                  resources={resources.filter(
-                    (resource) =>
-                      resource.session_id === s.id ||
-                      (resource.visibility === "session" && resource.student_id === auth?.user?.id),
-                  )}
-                />
-              ))
+              <>
+                {regularPast.map((s) => (
+                  <SessionRow
+                    key={s.id}
+                    s={s}
+                    mentor={mentorById.get(s.mentor_id)}
+                    existingReview={reviewBySessionId.get(s.id) ?? null}
+                    onRateClick={
+                      s.status === "completed" && !reviewBySessionId.get(s.id)
+                        ? () => setRatingModal({ sessionId: s.id, mentorId: s.mentor_id ?? "" })
+                        : undefined
+                    }
+                    resources={resources.filter(
+                      (resource) =>
+                        resource.session_id === s.id ||
+                        (resource.visibility === "session" && resource.student_id === auth?.user?.id),
+                    )}
+                  />
+                ))}
+                {demoPast.map((demo) => (
+                  <DemoSessionRow key={demo.id} demo={demo} />
+                ))}
+              </>
             )}
           </TabsContent>
         </Tabs>
@@ -561,6 +667,69 @@ function SessionRow({
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DemoSessionRow({ demo }: { demo: any }) {
+  const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    pending_admin_confirmation: "secondary",
+    confirmed: "default",
+    completed: "outline",
+    cancelled: "destructive",
+    no_show: "destructive",
+  };
+
+  const isUpcoming = ["pending_admin_confirmation", "confirmed"].includes(demo.booking_status);
+  const isConfirmed = demo.booking_status === "confirmed";
+
+  return (
+    <Card className={isConfirmed ? "border-green-200 bg-green-50/30" : ""}>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-base">Demo Session</h3>
+              <Badge variant={statusColors[demo.booking_status] || "secondary"}>
+                {demo.booking_status.replace(/_/g, " ")}
+              </Badge>
+            </div>
+            <div className="space-y-1.5 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5" />
+                <span>
+                  {new Date(demo.booking_date).toLocaleDateString()} • {demo.booking_time_start} - {demo.booking_time_end}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs">Duration: {demo.duration_mins} min</span>
+                <span className="text-xs">Language: {demo.language?.toUpperCase()}</span>
+              </div>
+              {demo.admin_notes && (
+                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs">
+                  <strong>Admin Notes:</strong> {demo.admin_notes}
+                </div>
+              )}
+              {isConfirmed && demo.meeting_link && (
+                <div className="mt-2">
+                  <Button size="sm" asChild>
+                    <a href={demo.meeting_link} target="_blank" rel="noreferrer">
+                      <Video className="mr-2 h-4 w-4" />
+                      Join Demo Session
+                    </a>
+                  </Button>
+                </div>
+              )}
+              {isUpcoming && !isConfirmed && (
+                <p className="text-xs text-amber-600 mt-2">
+                  Waiting for admin confirmation...
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

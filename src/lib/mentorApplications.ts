@@ -188,6 +188,32 @@ export async function fetchActivationHistory(applicationId: string) {
   return data ?? [];
 }
 
+// Insert a notification via the privileged (SECURITY DEFINER) function.
+// This is required because the applicant cannot insert a notification whose
+// user_id is an admin (cross-user inserts are blocked by RLS). The function
+// bypasses RLS but is tightly scoped to the notifications table.
+export async function insertNotification(opts: {
+  userId: string;
+  title: string;
+  body?: string;
+  category?: string;
+  kind?: string;
+  relatedId?: string;
+  link?: string;
+}) {
+  const { error } = await (supabase as any).rpc("insert_notification", {
+    p_user_id: opts.userId,
+    p_title: opts.title,
+    p_body: opts.body ?? null,
+    p_category: opts.category ?? "general",
+    p_kind: opts.kind ?? "system",
+    p_related_id: opts.relatedId ?? null,
+    p_link: opts.link ?? null,
+  });
+  if (error) throw error;
+  return true;
+}
+
 export async function fetchApplicationHistory(applicationId: string) {
   const { data, error } = await client
     .from("mentor_application_status_history")

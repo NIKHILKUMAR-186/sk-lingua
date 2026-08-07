@@ -28,6 +28,7 @@ import { Route as AuthenticatedAdminDemoQueueRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminMentorApplicationsRouteImport } from './routes/_authenticated/admin/mentor-applications'
 import { Route as AuthenticatedAdminNotificationBroadcastsRouteImport } from './routes/_authenticated/admin/notification-broadcasts'
 import { Route as AuthenticatedAdminSlotManagementRouteImport } from './routes/_authenticated/admin/slot-management'
+import { Route as AuthenticatedAdminSubscriptionManagementRouteImport } from './routes/_authenticated/admin/subscription-management'
 import { Route as AuthenticatedAdminSubscriptionPlansRouteImport } from './routes/_authenticated/admin/subscription-plans'
 import { Route as AuthenticatedAdminSupportTicketsRouteImport } from './routes/_authenticated/admin/support-tickets'
 import { Route as AuthenticatedMentorApplicationRouteImport } from './routes/_authenticated/mentor/application'
@@ -158,6 +159,12 @@ const AuthenticatedAdminSlotManagementRoute =
   AuthenticatedAdminSlotManagementRouteImport.update({
     id: '/admin/slot-management',
     path: '/admin/slot-management',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminSubscriptionManagementRoute =
+  AuthenticatedAdminSubscriptionManagementRouteImport.update({
+    id: '/admin/subscription-management',
+    path: '/admin/subscription-management',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminSubscriptionPlansRoute =
@@ -348,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/admin/notification-broadcasts': typeof AuthenticatedAdminNotificationBroadcastsRoute
   '/admin/slot-management': typeof AuthenticatedAdminSlotManagementRoute
+  '/admin/subscription-management': typeof AuthenticatedAdminSubscriptionManagementRoute
   '/admin/subscription-plans': typeof AuthenticatedAdminSubscriptionPlansRoute
   '/admin/support-tickets': typeof AuthenticatedAdminSupportTicketsRoute
   '/mentor/application': typeof AuthenticatedMentorApplicationRoute
@@ -396,6 +404,7 @@ export interface FileRoutesByTo {
   '/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/admin/notification-broadcasts': typeof AuthenticatedAdminNotificationBroadcastsRoute
   '/admin/slot-management': typeof AuthenticatedAdminSlotManagementRoute
+  '/admin/subscription-management': typeof AuthenticatedAdminSubscriptionManagementRoute
   '/admin/subscription-plans': typeof AuthenticatedAdminSubscriptionPlansRoute
   '/admin/support-tickets': typeof AuthenticatedAdminSupportTicketsRoute
   '/mentor/application': typeof AuthenticatedMentorApplicationRoute
@@ -446,6 +455,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/_authenticated/admin/notification-broadcasts': typeof AuthenticatedAdminNotificationBroadcastsRoute
   '/_authenticated/admin/slot-management': typeof AuthenticatedAdminSlotManagementRoute
+  '/_authenticated/admin/subscription-management': typeof AuthenticatedAdminSubscriptionManagementRoute
   '/_authenticated/admin/subscription-plans': typeof AuthenticatedAdminSubscriptionPlansRoute
   '/_authenticated/admin/support-tickets': typeof AuthenticatedAdminSupportTicketsRoute
   '/_authenticated/mentor/application': typeof AuthenticatedMentorApplicationRoute
@@ -496,6 +506,7 @@ export interface FileRouteTypes {
     | '/admin/mentor-applications'
     | '/admin/notification-broadcasts'
     | '/admin/slot-management'
+    | '/admin/subscription-management'
     | '/admin/subscription-plans'
     | '/admin/support-tickets'
     | '/mentor/application'
@@ -544,6 +555,7 @@ export interface FileRouteTypes {
     | '/admin/mentor-applications'
     | '/admin/notification-broadcasts'
     | '/admin/slot-management'
+    | '/admin/subscription-management'
     | '/admin/subscription-plans'
     | '/admin/support-tickets'
     | '/mentor/application'
@@ -593,6 +605,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/mentor-applications'
     | '/_authenticated/admin/notification-broadcasts'
     | '/_authenticated/admin/slot-management'
+    | '/_authenticated/admin/subscription-management'
     | '/_authenticated/admin/subscription-plans'
     | '/_authenticated/admin/support-tickets'
     | '/_authenticated/mentor/application'
@@ -766,6 +779,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/slot-management'
       fullPath: '/admin/slot-management'
       preLoaderRoute: typeof AuthenticatedAdminSlotManagementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/subscription-management': {
+      id: '/_authenticated/admin/subscription-management'
+      path: '/admin/subscription-management'
+      fullPath: '/admin/subscription-management'
+      preLoaderRoute: typeof AuthenticatedAdminSubscriptionManagementRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/subscription-plans': {
@@ -994,6 +1014,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminMentorApplicationsRoute: typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   AuthenticatedAdminNotificationBroadcastsRoute: typeof AuthenticatedAdminNotificationBroadcastsRoute
   AuthenticatedAdminSlotManagementRoute: typeof AuthenticatedAdminSlotManagementRoute
+  AuthenticatedAdminSubscriptionManagementRoute: typeof AuthenticatedAdminSubscriptionManagementRoute
   AuthenticatedAdminSubscriptionPlansRoute: typeof AuthenticatedAdminSubscriptionPlansRoute
   AuthenticatedAdminSupportTicketsRoute: typeof AuthenticatedAdminSupportTicketsRoute
   AuthenticatedMentorApplicationRoute: typeof AuthenticatedMentorApplicationRoute
@@ -1037,6 +1058,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminNotificationBroadcastsRoute:
     AuthenticatedAdminNotificationBroadcastsRoute,
   AuthenticatedAdminSlotManagementRoute: AuthenticatedAdminSlotManagementRoute,
+  AuthenticatedAdminSubscriptionManagementRoute:
+    AuthenticatedAdminSubscriptionManagementRoute,
   AuthenticatedAdminSubscriptionPlansRoute:
     AuthenticatedAdminSubscriptionPlansRoute,
   AuthenticatedAdminSupportTicketsRoute: AuthenticatedAdminSupportTicketsRoute,
