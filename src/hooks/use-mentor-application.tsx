@@ -121,8 +121,18 @@ export function useMentorApplication() {
   }, [draft, userId, saveDraft]);
 
   async function replaceResume(file: File) {
-    if (!userId) throw new Error("Not authenticated");
-    const upload = await uploadResume(file, `mentor/${userId}/applications`);
+    // For guests, generate a temporary ID so they can upload resumes too
+    const effectiveUserId = userId || (() => {
+      const guestId = typeof window !== "undefined" ? window.localStorage.getItem("lingua-guest-id") : null;
+      if (guestId) return guestId;
+      const newGuestId = `guest-${crypto.randomUUID()}`;
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("lingua-guest-id", newGuestId);
+      }
+      return newGuestId;
+    })();
+
+    const upload = await uploadResume(file, `mentor/${effectiveUserId}/applications`);
     setDraft((d: any) => ({
       ...d,
       resume_url: upload.publicUrl,

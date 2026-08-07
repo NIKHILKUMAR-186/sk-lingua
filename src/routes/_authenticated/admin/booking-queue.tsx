@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useAdminSessionRequests, useAssignmentHistory } from "@/hooks/use-session-requests";
 import { useAuth } from "@/hooks/use-auth";
+import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription";
 
 export const Route = createFileRoute("/_authenticated/admin/booking-queue")({
   component: AdminBookingQueue,
@@ -69,13 +70,33 @@ function formatSla(seconds: number) {
 function AdminBookingQueue() {
   const qc = useQueryClient();
   const { data: auth } = useAuth();
-  const { data: requests = [], isLoading } = useAdminSessionRequests();
+  const { data: requests = [], isLoading, refetch } = useAdminSessionRequests();
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<string>("pending_admin_assignment");
   const [assigning, setAssigning] = useState(false);
   const [autoMatching, setAutoMatching] = useState(false);
   const [selectedMentorId, setSelectedMentorId] = useState<string>("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Realtime subscription for instant updates
+  useRealtimeSubscription({
+    channel: "admin-booking-queue",
+    table: "session_requests",
+    event: "*",
+    onInsert: () => {
+      console.log("New session request received (realtime)");
+      refetch();
+    },
+    onUpdate: () => {
+      console.log("Session request updated (realtime)");
+      refetch();
+    },
+    onDelete: () => {
+      console.log("Session request deleted (realtime)");
+      refetch();
+    },
+    filter: undefined, // Admin can see all requests
+  });
 
   // Fetch mentors for assignment
   const { data: mentors = [] } = useQuery({

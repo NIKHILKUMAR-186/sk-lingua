@@ -23,6 +23,7 @@ export interface StudentSubscription {
   current_session_slots: number;
   total_session_slots: number;
   used_session_slots: number;
+  bonus_slots: number;
   purchased_at: string;
   activated_at: string | null;
   expires_at: string | null;
@@ -73,6 +74,19 @@ export async function getStudentSubscription(userId: string): Promise<StudentSub
     .select("*, plan:subscription_plans(*)")
     .eq("user_id", userId)
     .eq("status", "active")
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ?? null;
+}
+
+// Get current subscription for student (including expired/cancelled)
+export async function getStudentSubscriptionAnyStatus(userId: string): Promise<StudentSubscription | null> {
+  const { data, error } = await (supabase.from("student_subscriptions" as any) as any)
+    .select("*, plan:subscription_plans(*)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) throw error;
@@ -237,7 +251,7 @@ export async function getRemainingSlots(userId: string): Promise<number> {
   return sub?.current_session_slots ?? 0;
 }
 
-// Check if subscription is active and has slots
+// Check if subscription is active and has slots (enhanced with bonus slots)
 export async function canBookSession(userId: string): Promise<{
   canBook: boolean;
   reason?: string;
@@ -253,13 +267,59 @@ export async function canBookSession(userId: string): Promise<{
     return { canBook: false, reason: "Subscription is not active" };
   }
 
-  if (sub.current_session_slots <= 0) {
-    return { canBook: false, reason: "No slots remaining" };
-  }
-
   if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
     return { canBook: false, reason: "Subscription expired" };
   }
 
-  return { canBook: true, slotsRemaining: sub.current_session_slots };
+  // Check total available slots (regular + bonus)
+  const totalAvailable = sub.current_session_slots + sub.bonus_slots;
+  if (totalAvailable <= 0) {
+    return { canBook: false, reason: "No slots remaining" };
+  }
+
+  return { canBook: true, slotsRemaining: totalAvailable };
+}
+
+// Add bonus slots to subscription (admin function)
+export async function addBonusSlots(
+  userId: string,
+  bonusSlots: number,
+  reason: string,
+): Promise<StudentSubscription> {
+  const sub = await getStudentSubscription(userId);
+  if (!sub) throw new Error("No active subscription found");
+
+  const { data, error } = await (supabase.from("student_subscriptions" as any) as any)
+    .update({
+      bonus_slots: (sub.bonus_slots || 0) + bonusSlots,
+    })
+    .eq("id", sub.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Remove bonus slots from subscription (admin function)
+export async function removeBonusSlots(
+  userId: string,
+  bonusSlotsToRemove: number,
+  reason: string,
+): Promise<StudentSubscription> {
+  const sub = await getStudentSubscription(userId);
+  if (!sub) throw new Error("No active subscription found");
+
+  const newBonusSlots = Math.max(0, (sub.bonus_slots || 0) - bonusSlotsToRemove);
+
+  const { data, error } = await (supabase.from("student_subscriptions" as any) as any)
+    .update({
+      bonus_slots: newBonusSlots,
+    })
+    .eq("id", sub.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 }

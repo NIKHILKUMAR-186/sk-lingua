@@ -101,36 +101,122 @@ DROP POLICY IF EXISTS "Demo bookings mentor update" ON public.demo_session_booki
 -- 4b. Recreate student UPDATE so students can NEVER change status to
 --     completed/no_show, or set admin fields. Students may only cancel
 --     their own booking (set status -> cancelled).
+--
+--     NOTE: PostgreSQL RLS policies do NOT support the NEW/OLD keywords
+--     (that was the source of the 42P01 error). The WITH CHECK clause
+--     implicitly refers to the NEW row. The old-vs-new business rules
+--     (e.g. only allow cancellation from pending/confirmed, and forbid
+--     tampering with admin fields) are enforced by the
+--     enforce_demo_booking_update_rules() trigger defined below, which is
+--     the only place in PostgreSQL that can compare OLD and NEW values.
 DROP POLICY IF EXISTS "Demo bookings student update own" ON public.demo_session_bookings;
 CREATE POLICY "Demo bookings student update own" ON public.demo_session_bookings
   FOR UPDATE TO authenticated
   USING (user_id = auth.uid())
   WITH CHECK (
     user_id = auth.uid()
-    AND (
-      -- Allow transition to 'cancelled' only
-      NEW.booking_status = 'cancelled'
-      AND OLD.booking_status IN (
-        'pending_admin_confirmation',
-        'confirmed'
-      )
-      -- student may not null out admin fields or tamper with timestamps
-      AND NEW.admin_id IS NOT DISTINCT FROM OLD.admin_id
-      AND NEW.meeting_link IS NOT DISTINCT FROM OLD.meeting_link
-      AND NEW.admin_notes IS NOT DISTINCT FROM OLD.admin_notes
-      AND NEW.completed_at IS NOT DISTINCT FROM OLD.completed_at
-      AND NEW.no_show_at IS NOT DISTINCT FROM OLD.no_show_at
-    )
+    -- The row-level guard only allows the student path to produce a
+    -- 'cancelled' booking. Deeper transition + admin-field rules are
+    -- enforced by the BEFORE UPDATE trigger.
+    AND booking_status = 'cancelled'
   );
+
+-- 4b-2. Hard bind the student UPDATE security rules that RLS cannot express.
+--       This SECURITY DEFINER BEFORE UPDATE trigger is the authoritative
+--       enforcement layer for:
+--         * Only the booking owner (student) or an admin may update a row.
+--         * A student may ONLY transition their own booking to 'cancelled',
+--           and only from 'pending_admin_confirmation' or 'confirmed'.
+--         * A student may never modify admin-managed fields (admin_id,
+--           meeting_link, admin_notes, completed_at, no_show_at,
+--           confirmed_at, rescheduled_at).
+--       Admins and the service role (NULL auth.uid()) bypass these
+--       restrictions, so the full admin workflow keeps working.
+DROP TRIGGER IF EXISTS trg_enforce_demo_booking_update_rules
+  ON public.demo_session_bookings;
+DROP FUNCTION IF EXISTS public.enforce_demo_booking_update_rules();
+CREATE OR REPLACE FUNCTION public.enforce_demo_booking_update_rules()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_uid uuid := auth.uid();
+  v_is_admin boolean;
+BEGIN
+  -- Service role (e.g. server-side / trigger context) and admins bypass.
+  v_is_admin := v_uid IS NULL OR public.has_role(v_uid, 'admin');
+  IF v_is_admin THEN
+    RETURN NEW;
+  END IF;
+
+  -- Only the booking owner may touch their own booking.
+  IF v_uid IS DISTINCT FROM NEW.user_id THEN
+    RAISE EXCEPTION 'Only the booking owner or an admin may update this demo booking.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  -- Students may ONLY cancel: the new status must be 'cancelled'.
+  IF NEW.booking_status IS DISTINCT FROM 'cancelled' THEN
+    RAISE EXCEPTION 'Students may only cancel their demo booking.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  -- Cancellation is only allowed from a not-yet-concluded state.
+  IF OLD.booking_status NOT IN ('pending_admin_confirmation', 'confirmed') THEN
+    RAISE EXCEPTION 'This demo booking cannot be cancelled from its current state.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  -- Students may not modify any admin-managed field.
+  IF NOT (
+       NEW.admin_id           IS NOT DISTINCT FROM OLD.admin_id
+   AND NEW.meeting_link       IS NOT DISTINCT FROM OLD.meeting_link
+   AND NEW.admin_notes        IS NOT DISTINCT FROM OLD.admin_notes
+   AND NEW.completed_at       IS NOT DISTINCT FROM OLD.completed_at
+   AND NEW.no_show_at         IS NOT DISTINCT FROM OLD.no_show_at
+   AND NEW.confirmed_at       IS NOT DISTINCT FROM OLD.confirmed_at
+   AND NEW.rescheduled_at     IS NOT DISTINCT FROM OLD.rescheduled_at
+  ) THEN
+    RAISE EXCEPTION 'Students may not modify admin-managed demo booking fields.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_enforce_demo_booking_update_rules
+  ON public.demo_session_bookings;
+CREATE TRIGGER trg_enforce_demo_booking_update_rules
+  BEFORE UPDATE ON public.demo_session_bookings
+  FOR EACH ROW
+  EXECUTE FUNCTION public.enforce_demo_booking_update_rules();
 
 -- 4c. Explicitly revoke mentor access. Mentors are NOT admins and are NOT
 --     the booking owner, so existing student-read + admin-manage policies
---     already exclude them. We add an explicit defensive deny for clarity.
+--     already exclude them.
+--
+--     IMPORTANT: This deny is FOR SELECT ONLY. A `FOR ALL ... WITH CHECK
+--     (false)` policy would ALSO reject INSERT/UPDATE/DELETE for every
+--     authenticated user (including the booking owner), because a row-level
+--     policy applies to the command it is declared for. RLS policies are
+--     OR'd, but a `FOR ALL` policy participates in INSERT checks and its
+--     false WITH CHECK would block legitimate student inserts. Using
+--     FOR SELECT prevents mentors from reading demo data without ever
+--     interfering with the student INSERT/UPDATE/DELETE paths.
 DROP POLICY IF EXISTS "Demo bookings mentor no access" ON public.demo_session_bookings;
 CREATE POLICY "Demo bookings mentor no access" ON public.demo_session_bookings
-  FOR ALL TO authenticated
-  USING (false)
-  WITH CHECK (false);
+  FOR SELECT TO authenticated
+  USING (false);
+
+-- 4d. Defensively recreate the student INSERT policy so a booking owner can
+--     always create their own booking. Guarantees the INSERT path is open.
+DROP POLICY IF EXISTS "Demo bookings student create" ON public.demo_session_bookings;
+CREATE POLICY "Demo bookings student create" ON public.demo_session_bookings
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
 
 -- ============================================================
 -- 5. Drop unused legacy demo functions (mentor-assignment based)
@@ -165,8 +251,12 @@ CREATE POLICY "Demo workspace conductor access" ON public.demo_session_workspace
   USING (mentor_id = auth.uid())
   WITH CHECK (mentor_id = auth.uid());
 
--- demo_assignment_history: remove legacy mentor-read policy; admins manage
+-- demo_assignment_history: remove legacy mentor-read policy; admins manage.
+-- Also drop any pre-existing "admin manage" policy so this CREATE is
+-- idempotent (the policy was originally created in the
+-- 20260816000000_demo_conversion_system.sql migration).
 DROP POLICY IF EXISTS "Demo assignment history mentor read" ON public.demo_assignment_history;
+DROP POLICY IF EXISTS "Demo assignment history admin manage" ON public.demo_assignment_history;
 CREATE POLICY "Demo assignment history admin manage" ON public.demo_assignment_history
   FOR ALL TO authenticated
   USING (public.has_role(auth.uid(), 'admin'))
@@ -174,7 +264,10 @@ CREATE POLICY "Demo assignment history admin manage" ON public.demo_assignment_h
 
 -- demo_session_resources: remove legacy mentor-upload policy; admins (as
 -- conductors) can upload, students can read.
+-- Drop both the legacy mentor-upload policy AND any previously-created
+-- conductor-upload policy so this CREATE is idempotent on re-run.
 DROP POLICY IF EXISTS "Demo resources mentor upload" ON public.demo_session_resources;
+DROP POLICY IF EXISTS "Demo resources conductor upload" ON public.demo_session_resources;
 CREATE POLICY "Demo resources conductor upload" ON public.demo_session_resources
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -207,7 +300,22 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_read
 -- ============================================================
 -- 7. Realtime publication (idempotent)
 -- ============================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE public.demo_session_bookings;
+-- Plain `ALTER PUBLICATION ... ADD TABLE` errors (42710) if the table
+-- is already a member of the publication (e.g. from the earlier
+-- 20260823000000_demo_admin_workflow.sql migration), so guard it.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime'
+      AND schemaname = 'public'
+      AND tablename = 'demo_session_bookings'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.demo_session_bookings;
+  END IF;
+END
+$$;
 
 -- ============================================================
 -- 8. Grants (idempotent)

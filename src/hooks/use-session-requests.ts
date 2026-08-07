@@ -92,6 +92,7 @@ export function useCreateSessionRequest() {
       topic?: string;
       language?: string;
       notes?: string;
+      status?: string;
     }) => {
       const { data, error } = await (supabase as any)
         .from("session_requests")
@@ -102,7 +103,9 @@ export function useCreateSessionRequest() {
       return data as SessionRequest;
     },
     onSuccess: () => {
+      // Invalidate both student and admin queries
       qc.invalidateQueries({ queryKey: ["session-requests"] });
+      qc.invalidateQueries({ queryKey: ["admin-session-requests"] });
     },
   });
 }

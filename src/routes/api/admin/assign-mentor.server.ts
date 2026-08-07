@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { notifyMentorOfAssignment, notifyStudentOfMentorAssignment } from "@/lib/session-request-notifications";
 
 export async function POST(req: Request) {
   try {
@@ -30,6 +31,22 @@ export async function POST(req: Request) {
       });
     }
 
+    // Get mentor and student names for notifications
+    const { data: mentorProfileData } = await (supabase as any)
+      .from("profiles")
+      .select("full_name")
+      .eq("id", mentor_id)
+      .maybeSingle();
+
+    const { data: studentProfile } = await (supabase as any)
+      .from("profiles")
+      .select("full_name")
+      .eq("id", request.student_id)
+      .maybeSingle();
+
+    const mentorName = mentorProfileData?.full_name || "A mentor";
+    const studentName = studentProfile?.full_name || "Student";
+
     // Insert assignment_history
     const { error: e1 } = await (supabase as any)
       .from("assignment_history")
@@ -53,18 +70,22 @@ export async function POST(req: Request) {
       .eq("id", request_id);
     if (e2) throw e2;
 
-    // Notify the mentor
-    await (supabase as any).from("notifications").insert([
-      {
-        user_id: mentor_id,
-        title: "New session request assigned",
-        body: `A session request for "${request.topic || "language session"}" has been assigned to you. Please respond.`,
-        link: "/mentor/requests",
-        category: "session",
-        kind: "session_assigned",
-        related_id: request_id,
-      },
-    ]);
+    // Send notifications using the notification service
+    await notifyMentorOfAssignment({
+      requestId: request_id,
+      mentorId: mentor_id,
+      studentName: studentName,
+      topic: request.topic || "General",
+      scheduledTime: request.scheduled_time,
+      slaDeadline: slaDeadline,
+    });
+
+    await notifyStudentOfMentorAssignment({
+      requestId: request_id,
+      studentId: request.student_id,
+      mentorName: mentorName,
+      topic: request.topic || "General",
+    });
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   } catch (err: any) {

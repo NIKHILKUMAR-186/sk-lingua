@@ -22,7 +22,7 @@ export async function validateBookingEligibility(
   const errors: string[] = [];
   const details: BookingValidationResult["details"] = {};
 
-  // 1. Check subscription status
+  // 1. Check subscription status (includes bonus slots)
   const subscriptionCheck = await canBookSession(userId);
   if (!subscriptionCheck.canBook) {
     errors.push(subscriptionCheck.reason || "Cannot book session");
@@ -31,9 +31,9 @@ export async function validateBookingEligibility(
     details.slotsRemaining = subscriptionCheck.slotsRemaining;
   }
 
-  // 2. Check subscription expiry
+  // 2. Check subscription expiry (already handled in canBookSession, but double-check)
   const sub = await getRemainingSlots(userId);
-  if (sub <= 0) {
+  if (sub < 0) {
     errors.push("No slots remaining. Please renew your subscription.");
   }
 

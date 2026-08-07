@@ -12,7 +12,7 @@ import { Loader2, Upload, CheckCircle2, FileText, Save, ArrowLeft, ArrowRight } 
 import { LANGUAGES } from "@/lib/languages";
 import { ResumePreview } from "@/components/resume-preview";
 import { ApplicationTimeline } from "@/components/application-timeline";
-import { APPLICATION_STATUS_LABELS } from "@/lib/mentorApplications";
+import { APPLICATION_STATUS_LABELS, insertNotification } from "@/lib/mentorApplications";
 import { cn } from "@/lib/utils";
 
 const MAX_RESUME_SIZE = 10 * 1024 * 1024;
@@ -130,10 +130,6 @@ export function MentorApplicationForm() {
   }
 
   async function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!auth?.user) {
-      toast.error("Please sign in to upload your resume.");
-      return;
-    }
     const file = e.target.files?.[0];
     if (!file) return;
     setResumeError(null);
@@ -214,29 +210,25 @@ export function MentorApplicationForm() {
         .eq("role", "admin");
       if (admins) {
         for (const admin of admins) {
-          await (supabase as any).from("notifications").insert([
-            {
-              user_id: admin.user_id,
-              title: "New Mentor Application",
-              body: `${draft.full_name} submitted a mentor application.`,
-              category: "general",
-              kind: "mentor_application",
-              related_id: applicationId,
-              link: "/admin/mentor-applications",
-            },
-          ]);
+          await insertNotification({
+            userId: admin.user_id,
+            title: "New Mentor Application",
+            body: `${draft.full_name} submitted a mentor application.`,
+            category: "general",
+            kind: "mentor_application",
+            relatedId: applicationId,
+            link: "/admin/mentor-applications",
+          });
         }
       }
-      await (supabase as any).from("notifications").insert([
-        {
-          user_id: auth?.user?.id,
-          title: "Application Submitted",
-          body: "Your mentor application has been submitted successfully.",
-          category: "general",
-          kind: "mentor_application",
-          related_id: applicationId,
-        },
-      ]);
+      await insertNotification({
+        userId: auth?.user?.id,
+        title: "Application Submitted",
+        body: "Your mentor application has been submitted successfully.",
+        category: "general",
+        kind: "mentor_application",
+        relatedId: applicationId,
+      });
       toast.success("Application submitted successfully!");
       setDraft({ ...draft, id: applicationId, status: "submitted" });
     } catch (err: any) {
