@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -145,24 +145,24 @@ function MentorProfile() {
 
   if (isLoading) {
     return (
-      <AppShell variant="student">
+      <StudentLayout>
         <div className="mx-auto max-w-5xl">
           <DashboardSkeleton />
         </div>
-      </AppShell>
+      </StudentLayout>
     );
   }
 
   if (!mentor?.mp) {
     return (
-      <AppShell variant="student">
+      <StudentLayout>
         <div className="mx-auto max-w-5xl">
           <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/student/explore" })}>
             <ArrowLeft className="mr-1 h-4 w-4" /> Back
           </Button>
           <div className="mt-8 text-center text-muted-foreground">Mentor not found.</div>
         </div>
-      </AppShell>
+      </StudentLayout>
     );
   }
 
@@ -171,7 +171,7 @@ function MentorProfile() {
   const hasSelectedSlot = !!selectedSlot;
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-6xl">
         <Button
           variant="ghost"
@@ -301,6 +301,6 @@ function MentorProfile() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

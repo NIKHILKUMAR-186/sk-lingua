@@ -1,6 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMyApplication, upsertMyApplication, uploadResume } from "@/lib/mentorApplications";
+import {
+  fetchMyApplication,
+  upsertMyApplication,
+  uploadResume,
+  fetchApplicationHistory,
+  fetchApplicationInterviews,
+} from "@/lib/mentorApplications";
 import { useAuth } from "@/hooks/use-auth";
 
 const STORAGE_KEY_PREFIX = "lingua-mentor-application-draft";
@@ -20,7 +26,44 @@ export function useMentorApplication() {
   });
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      // Not authenticated: load from localStorage only
+      const saved =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem(`${STORAGE_KEY_PREFIX}:guest`)
+          : null;
+      if (saved) {
+        try {
+          setDraft(JSON.parse(saved));
+          return;
+        } catch {}
+      }
+      setDraft({});
+      return;
+    }
+
+    // Authenticated: check if there's a guest draft to migrate
+    const guestKey = `${STORAGE_KEY_PREFIX}:guest`;
+    const guestSaved =
+      typeof window !== "undefined" ? window.localStorage.getItem(guestKey) : null;
+    if (guestSaved) {
+      try {
+        const guestDraft = JSON.parse(guestSaved);
+        // Migrate guest draft to user-specific key
+        const userKey = `${STORAGE_KEY_PREFIX}:${userId}`;
+        const existingSaved =
+          typeof window !== "undefined" ? window.localStorage.getItem(userKey) : null;
+        if (!existingSaved && Object.keys(guestDraft).length > 0) {
+          window.localStorage.setItem(userKey, JSON.stringify(guestDraft));
+          window.localStorage.removeItem(guestKey);
+          setDraft(guestDraft);
+          return;
+        }
+        window.localStorage.removeItem(guestKey);
+      } catch {}
+    }
+
+    // Authenticated: prefer localStorage, fall back to remote
     const saved =
       typeof window !== "undefined"
         ? window.localStorage.getItem(`${STORAGE_KEY_PREFIX}:${userId}`)
@@ -34,27 +77,48 @@ export function useMentorApplication() {
     setDraft(remote ?? {});
   }, [userId, remote]);
 
-  useEffect(() => {
-    if (!userId || draft == null) return;
-    window.localStorage.setItem(`${STORAGE_KEY_PREFIX}:${userId}`, JSON.stringify(draft));
-
-    if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
-    autosaveTimer.current = window.setTimeout(() => void saveDraft(), 2000);
-  }, [draft]);
-
-  async function saveDraft() {
-    if (!userId || !draft) return;
+  const saveDraft = useCallback(async () => {
+    if (!draft) return;
     setSaving(true);
     try {
+      // Always persist to localStorage
+      const storageKey = userId ? `${STORAGE_KEY_PREFIX}:${userId}` : `${STORAGE_KEY_PREFIX}:guest`;
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(storageKey, JSON.stringify(draft));
+      }
+
+      // If authenticated, also persist to Supabase
+      if (!userId) {
+        return;
+      }
       const payload = { ...draft, user_id: userId };
-      await upsertMyApplication(payload);
+      const saved = (await upsertMyApplication(payload)) as any;
+      // Ensure the returned row (with id) is reflected in local state
+      if (saved && Array.isArray(saved) && saved[0]?.id) {
+        setDraft((d: any) => ({ ...(d ?? {}), id: saved[0].id }));
+      } else if (saved && saved.id) {
+        setDraft((d: any) => ({ ...(d ?? {}), id: saved.id }));
+      }
       qc.invalidateQueries({ queryKey: ["mentor-application", userId] });
+      return saved;
     } catch (err) {
       console.error("Save draft failed", err);
+      throw err;
     } finally {
       setSaving(false);
     }
-  }
+  }, [userId, draft, qc]);
+
+  useEffect(() => {
+    if (!draft) return;
+    const storageKey = userId ? `${STORAGE_KEY_PREFIX}:${userId}` : `${STORAGE_KEY_PREFIX}:guest`;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(storageKey, JSON.stringify(draft));
+    }
+
+    if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = window.setTimeout(() => void saveDraft(), 2000);
+  }, [draft, userId, saveDraft]);
 
   async function replaceResume(file: File) {
     if (!userId) throw new Error("Not authenticated");
@@ -69,5 +133,26 @@ export function useMentorApplication() {
     await saveDraft();
   }
 
-  return { draft, setDraft, saveDraft, replaceResume, saving, isLoading };
+  const { data: history = [] } = useQuery({
+    queryKey: ["mentor-application-history", draft?.id],
+    enabled: !!draft?.id,
+    queryFn: async () => await fetchApplicationHistory(draft.id),
+  });
+
+  const { data: interviews = [] } = useQuery({
+    queryKey: ["mentor-application-interviews", draft?.id],
+    enabled: !!draft?.id,
+    queryFn: async () => await fetchApplicationInterviews(draft.id),
+  });
+
+  return {
+    draft,
+    setDraft,
+    saveDraft,
+    replaceResume,
+    saving,
+    isLoading,
+    history,
+    interviews,
+  };
 }

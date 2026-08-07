@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -150,7 +150,7 @@ function MentorSessions() {
   }
 
   return (
-    <AppShell variant="mentor">
+    <MentorLayout>
       <div className="mx-auto max-w-4xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Sessions</h1>
@@ -285,6 +285,6 @@ function MentorSessions() {
           })
         )}
       </div>
-    </AppShell>
+    </MentorLayout>
   );
 }

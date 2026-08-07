@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { ProfileEditor, type ProfileEditorValues } from "@/components/profile-editor";
 import { useAuth } from "@/hooks/use-auth";
 import { useNotificationPreferences } from "@/hooks/use-notifications";
@@ -153,14 +153,14 @@ export function StudentSettingsPage() {
 
   if (!auth?.user) {
     return (
-      <AppShell variant="student">
+      <StudentLayout>
         <div>Loading...</div>
-      </AppShell>
+      </StudentLayout>
     );
   }
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-5xl space-y-6 py-6">
         <div className="flex items-center gap-3">
           <SettingsIcon className="h-6 w-6 text-primary" />
@@ -345,6 +345,6 @@ export function StudentSettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

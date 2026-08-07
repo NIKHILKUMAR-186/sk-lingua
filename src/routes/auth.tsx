@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -292,9 +292,24 @@ function AuthPage() {
                   </form>
                 </TabsContent>
                 <TabsContent value="signup" className="space-y-4">
-                  <div className="rounded-3xl border border-border bg-background p-6 text-sm text-muted-foreground">
-                    Create a Student account and start learning with verified mentors. Mentor
-                    accounts are now managed through a dedicated application process.
+                  <div className="rounded-3xl border border-border bg-background p-4 text-sm text-muted-foreground">
+                    Create a Student account and start learning with verified mentors.
+                  </div>
+                  <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Want to become a mentor?
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Mentor accounts are reviewed by our team. Apply through our dedicated
+                          application process.
+                        </p>
+                      </div>
+                      <Button asChild size="sm" variant="outline" className="shrink-0">
+                        <Link to="/become-a-mentor">Apply as a mentor</Link>
+                      </Button>
+                    </div>
                   </div>
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div>

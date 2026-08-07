@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscriptionPlans } from "@/hooks/use-subscriptions";
 import { useCreatePaymentOrder, useCompletePayment } from "@/hooks/use-payments";
@@ -40,7 +40,7 @@ function CheckoutPage() {
 
   if (!auth?.user) {
     return (
-      <AppShell variant="student">
+      <StudentLayout>
         <div className="flex min-h-screen items-center justify-center">
           <Card>
             <CardContent className="pt-6 text-center">
@@ -51,7 +51,7 @@ function CheckoutPage() {
             </CardContent>
           </Card>
         </div>
-      </AppShell>
+      </StudentLayout>
     );
   }
 
@@ -60,7 +60,7 @@ function CheckoutPage() {
 
   if (!plan) {
     return (
-      <AppShell variant="student">
+      <StudentLayout>
         <div className="flex min-h-screen items-center justify-center">
           <Card>
             <CardContent className="pt-6 text-center">
@@ -71,7 +71,7 @@ function CheckoutPage() {
             </CardContent>
           </Card>
         </div>
-      </AppShell>
+      </StudentLayout>
     );
   }
 
@@ -142,7 +142,7 @@ function CheckoutPage() {
   }
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-3xl space-y-6 py-6">
         {/* Header */}
         {step === "checkout" && (
@@ -265,6 +265,6 @@ function CheckoutPage() {
           )}
         </div>
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

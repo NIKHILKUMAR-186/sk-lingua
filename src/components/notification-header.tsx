@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCheck, Search, Settings } from "lucide-react";
@@ -61,12 +62,15 @@ export function NotificationHeader({
             </motion.div>
           )}
           <Button
+            asChild
             variant="ghost"
             size="sm"
             className="h-9 w-9 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             aria-label="Notification settings"
           >
-            <Settings className="h-4 w-4" />
+            <Link to="/settings">
+              <Settings className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </div>

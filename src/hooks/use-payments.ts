@@ -55,6 +55,7 @@ export function useBookDemoSession() {
       language: string;
       duration_mins?: number;
       notes?: string;
+      price?: number;
     }) => {
       const { userId, ...bookingData } = data;
       return await bookDemoSession(userId, bookingData);

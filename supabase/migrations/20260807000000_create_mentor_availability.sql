@@ -18,10 +18,15 @@ GRANT ALL ON public.mentor_availability TO service_role;
 
 ALTER TABLE public.mentor_availability ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they already exist (idempotent re-run)
+DROP POLICY IF EXISTS "Mentor availability owner manage" ON public.mentor_availability;
+DROP POLICY IF EXISTS "Mentor availability admin manage" ON public.mentor_availability;
+
 -- Owners can manage their own availability
 CREATE POLICY "Mentor availability owner manage" ON public.mentor_availability FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- Admins can manage all
 CREATE POLICY "Mentor availability admin manage" ON public.mentor_availability FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
+DROP TRIGGER IF EXISTS trg_mentor_availability_updated ON public.mentor_availability;
 CREATE TRIGGER trg_mentor_availability_updated BEFORE UPDATE ON public.mentor_availability FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

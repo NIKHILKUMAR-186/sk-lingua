@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { GraduationCap, Users, Languages, Loader2 } from "lucide-react";
+import { GraduationCap, Loader2 } from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
 import {
   Select,
@@ -23,7 +23,7 @@ import {
 const STORAGE_KEY = "lingua-onboarding-draft";
 const TOTAL_STEPS = 5;
 
-type OnboardingRole = "student" | "mentor";
+type OnboardingRole = "student";
 
 type DraftState = {
   role: OnboardingRole;
@@ -65,11 +65,6 @@ const roleCards: Record<
     description: "Learn faster with one-on-one mentors and guided practice.",
     icon: GraduationCap,
   },
-  mentor: {
-    title: "Mentor",
-    description: "Share your expertise, create sessions, and grow your income.",
-    icon: Users,
-  },
 };
 
 const initialDraft: DraftState = {
@@ -107,7 +102,6 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
 
   const isStudent = draft.role === "student";
-  const isMentor = draft.role === "mentor";
 
   useEffect(() => {
     if (!auth?.user) return;
@@ -118,10 +112,7 @@ function Onboarding() {
 
     const initialState: DraftState = {
       ...initialDraft,
-      role:
-        auth.role === "mentor" || auth.user?.user_metadata?.intended_role === "mentor"
-          ? "mentor"
-          : "student",
+      role: "student",
       fullName: auth.profile?.full_name ?? "",
       state: auth.profile?.state ?? "",
       nativeLang: auth.profile?.native_language ?? "en",
@@ -167,16 +158,11 @@ function Onboarding() {
       setStep(3);
       return;
     }
-    if (isMentor && draft.teachingLangs.length === 0) {
-      toast.error("Select at least one language you teach.");
-      setStep(4);
-      return;
-    }
 
     setSaving(true);
     try {
-      const roleRows: { user_id: string; role: "student" | "mentor" }[] = [
-        { user_id: auth.user.id, role: draft.role as "student" | "mentor" },
+      const roleRows: { user_id: string; role: "student" }[] = [
+        { user_id: auth.user.id, role: "student" },
       ];
 
       const { error: roleError } = await supabase
@@ -203,20 +189,6 @@ function Onboarding() {
         { onConflict: "id" },
       );
       if (profileError) throw profileError;
-
-      if (isMentor) {
-        const { error: mentorProfileError } = await supabase.from("mentor_profiles").upsert(
-          {
-            user_id: auth.user.id,
-            headline: draft.headline,
-            bio: draft.bio,
-            languages_taught: draft.teachingLangs,
-            hourly_rate: Number(draft.hourlyRate) || 0,
-          },
-          { onConflict: "user_id" },
-        );
-        if (mentorProfileError) throw mentorProfileError;
-      }
 
       await qc.invalidateQueries();
       window.localStorage.removeItem(STORAGE_KEY);
@@ -533,54 +505,6 @@ function Onboarding() {
                       </div>
                     </div>
                   )}
-                  {isMentor && (
-                    <div className="space-y-4 rounded-3xl border border-border bg-background p-6">
-                      <p className="text-base font-semibold">Mentor profile</p>
-                      <div>
-                        <Label htmlFor="headline">Professional headline</Label>
-                        <Input
-                          id="headline"
-                          value={draft.headline}
-                          onChange={(e) => updateDraft({ headline: e.target.value })}
-                          placeholder="Native Spanish speaker | 5 years teaching"
-                        />
-                      </div>
-                      <div>
-                        <Label>Languages you teach</Label>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {LANGUAGES.map((language) => {
-                            const selected = draft.teachingLangs.includes(language.code);
-                            return (
-                              <button
-                                type="button"
-                                key={language.code}
-                                onClick={() =>
-                                  updateDraft({
-                                    teachingLangs: selected
-                                      ? draft.teachingLangs.filter((code) => code !== language.code)
-                                      : [...draft.teachingLangs, language.code],
-                                  })
-                                }
-                                className={`rounded-full border px-3 py-1.5 text-sm ${selected ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}
-                              >
-                                {language.emoji} {language.name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="hourly-rate">Hourly rate (USD)</Label>
-                        <Input
-                          id="hourly-rate"
-                          type="number"
-                          min={0}
-                          value={draft.hourlyRate}
-                          onChange={(e) => updateDraft({ hourlyRate: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  )}
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep(3)}>
                       Back
@@ -648,26 +572,6 @@ function Onboarding() {
                           </div>
                           <div>
                             <strong>Semester:</strong> {draft.semester || "Not provided"}
-                          </div>
-                        </>
-                      )}
-                      {isMentor && (
-                        <>
-                          <div>
-                            <strong>Headline:</strong> {draft.headline || "Not provided"}
-                          </div>
-                          <div>
-                            <strong>Languages taught:</strong>{" "}
-                            {draft.teachingLangs.length
-                              ? draft.teachingLangs
-                                  .map(
-                                    (code) => LANGUAGES.find((l) => l.code === code)?.name ?? code,
-                                  )
-                                  .join(", ")
-                              : "None selected"}
-                          </div>
-                          <div>
-                            <strong>Hourly rate:</strong> ${draft.hourlyRate || "0"}
                           </div>
                         </>
                       )}

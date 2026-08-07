@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,7 +56,7 @@ function StreakPage() {
   });
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-4xl space-y-6">
         <h1 className="text-3xl font-display">Your streak & points</h1>
         <div className="grid gap-4 md:grid-cols-3">
@@ -158,6 +158,6 @@ function StreakPage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

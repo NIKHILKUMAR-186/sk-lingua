@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscriptionPlans } from "@/hooks/use-subscriptions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,11 +19,11 @@ function PricingPage() {
 
   if (!auth?.user) {
     return (
-      <AppShell variant="student">
+      <StudentLayout>
         <div className="text-center">
           <p>Please log in to view pricing.</p>
         </div>
-      </AppShell>
+      </StudentLayout>
     );
   }
 
@@ -42,7 +42,7 @@ function PricingPage() {
   ];
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-7xl space-y-12 py-6">
         {/* Header */}
         <div className="text-center">
@@ -222,6 +222,6 @@ function PricingPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

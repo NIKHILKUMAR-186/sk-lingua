@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -17,7 +17,7 @@ function Explore() {
   const { mentors, filters, isLoading, setFilters, resetFilters } = useSearch();
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-6xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Find your mentor</h1>
@@ -149,6 +149,6 @@ function Explore() {
           </motion.div>
         )}
       </div>
-    </AppShell>
+    </StudentLayout>
   );
 }

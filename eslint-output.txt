@@ -1,0 +1,30 @@
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\components\mentor-availability.tsx
+  30:9  warning  The 'grouped' object makes the dependencies of useMemo Hook (at line 63) change on every render. To fix this, wrap the initialization of 'grouped' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\components\ui\badge.tsx
+  32:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\components\ui\button.tsx
+  49:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\components\ui\form.tsx
+  163:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\components\ui\navigation-menu.tsx
+  111:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\components\ui\sidebar.tsx
+  740:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\components\ui\toggle.tsx
+  42:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\hooks\use-mentor-application.tsx
+  43:6  warning  React Hook useEffect has missing dependencies: 'saveDraft' and 'userId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+S:\internship\sugest-key-lingua\speak-pal-streak-main\src\lib\payments.ts
+  213:7  error  Optional chain expressions can return undefined by design - using a non-null assertion is unsafe and wrong  @typescript-eslint/no-non-null-asserted-optional-chain
+
+Γ£û 9 problems (1 error, 8 warnings)
+

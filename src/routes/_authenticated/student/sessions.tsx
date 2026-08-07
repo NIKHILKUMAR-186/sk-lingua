@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell } from "@/components/app-shell";
+import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -154,7 +154,7 @@ function StudentSessions() {
   const mentorById = new Map((mentors ?? []).map((mentor) => [mentor.id, mentor]));
 
   return (
-    <AppShell variant="student">
+    <StudentLayout>
       <div className="mx-auto max-w-4xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">My sessions</h1>
@@ -349,7 +349,7 @@ function StudentSessions() {
           </Card>
         </div>
       )}
-    </AppShell>
+    </StudentLayout>
   );
 }
 
