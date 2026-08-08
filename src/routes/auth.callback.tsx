@@ -99,7 +99,11 @@ function OAuthCallbackPage() {
 
         if (!cancelled) {
           await navigate({
-            to: redirectTo as "/onboarding" | "/mentor/dashboard" | "/student/dashboard",
+            to: redirectTo as
+              | "/onboarding"
+              | "/mentor/dashboard"
+              | "/mentor/pending"
+              | "/student/dashboard",
           });
         }
       } catch (error) {

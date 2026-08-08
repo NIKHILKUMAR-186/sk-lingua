@@ -39,8 +39,8 @@ export function MentorCta() {
                 size="lg"
                 className="mt-9 h-12 bg-background px-7 text-base text-foreground hover:bg-white"
               >
-                <Link to="/become-a-mentor" className="group">
-                  Become a mentor
+                <Link to="/mentor-signup" className="group">
+                  Teach languages
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </Button>

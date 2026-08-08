@@ -3,12 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 async function waitForAuthenticatedUser(maxWaitMs = 3000) {
   const start = Date.now();
-  let lastError: Error | null = null;
 
   while (Date.now() - start < maxWaitMs) {
     const { data, error } = await supabase.auth.getUser();
     if (error) {
-      lastError = error as Error;
       await new Promise((resolve) => setTimeout(resolve, 150));
       continue;
     }
@@ -17,7 +15,6 @@ async function waitForAuthenticatedUser(maxWaitMs = 3000) {
     await new Promise((resolve) => setTimeout(resolve, 150));
   }
 
-  if (lastError) throw lastError;
   return null;
 }
 

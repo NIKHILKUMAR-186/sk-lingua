@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Clock, Users, BarChart3, MessageSquare } from "lucide-react";
+import { Check, Clock, Users, BarChart3, MessageSquare, Shield, Star } from "lucide-react";
 
 interface DemoInfoPageProps {
   onGetStarted: () => void;
@@ -10,6 +10,16 @@ interface DemoInfoPageProps {
 
 export function DemoInfoPage({ onGetStarted, loading, price = 9 }: DemoInfoPageProps) {
 const benefits = [
+    {
+      icon: Shield,
+      title: "100% Satisfaction Guarantee",
+      description: "If you're not satisfied with your demo session, we offer a full money-back guarantee.",
+    },
+    {
+      icon: Star,
+      title: "Expert Assessment",
+      description: "Get a personalized language assessment from our experienced team to chart your learning path.",
+    },
     {
       icon: Users,
       title: "Expert Team",
@@ -62,14 +72,17 @@ const benefits = [
   return (
     <div className="space-y-12">
       {/* Hero */}
-      <div className="rounded-3xl border border-border bg-gradient-to-br from-primary/5 via-primary/3 to-transparent p-8 text-center md:p-12">
+      {/* <div className="rounded-3xl border border-border bg-gradient-to-br from-primary/80 via-primary/4 to-transparent p-8 text-center md:p-12"> */}
+      <div className="rounded-3xl border border-border bg-gradient-to-br from-primary/80 via-primary/4 to-mentor/10 p-8 text-center md:p-12">
         <h1 className="text-4xl font-display md:text-5xl">Your First Step to Fluency</h1>
         <p className="mt-4 text-lg text-muted-foreground">
           Book a demo session and discover your personalized learning path.
         </p>
-        <div className="mt-8 inline-block rounded-2xl bg-primary px-6 py-2 text-primary-foreground">
+        <div className="mt-8  inline-block rounded-2xl   px-6 py-2 text-primary-foreground">
+        <Button onClick={onGetStarted} size="lg" className="mt-2" disabled={loading}>
           <span className="text-lg font-semibold">Just ₹{price}</span>
           <span className="ml-2 text-sm">for your first 30 minutes</span>
+        </Button>
         </div>
       </div>
 

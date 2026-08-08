@@ -23,12 +23,17 @@ export function useAdminSessionRequests() {
   return useQuery({
     queryKey: ["admin-session-requests"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("session_requests")
         .select("*")
         .order("created_at", { ascending: false });
+      if (error) throw error;
       return (data ?? []) as SessionRequest[];
     },
+    // Fallback polling so the admin queue always stays fresh even if
+    // realtime is unavailable. Realtime is the primary mechanism; this
+    // is a safety net.
+    refetchInterval: 15_000,
   });
 }
 
@@ -38,13 +43,16 @@ export function useStudentSessionRequests(studentId: string | undefined) {
     queryKey: ["session-requests", studentId],
     enabled: !!studentId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("session_requests")
         .select("*")
         .eq("student_id", studentId)
         .order("created_at", { ascending: false });
+      if (error) throw error;
       return (data ?? []) as SessionRequest[];
     },
+    // Fallback polling so the student's request list stays fresh.
+    refetchInterval: 15_000,
   });
 }
 

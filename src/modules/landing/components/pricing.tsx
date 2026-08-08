@@ -134,7 +134,7 @@ export function Pricing() {
         <Reveal className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
             Questions about pricing?{" "}
-            <span className="font-semibold text-foreground">Email us at hello@lingua.app</span>
+            <span className="font-semibold text-foreground">Email us at sugestkey@gmail.com</span>
           </p>
         </Reveal>
       </div>

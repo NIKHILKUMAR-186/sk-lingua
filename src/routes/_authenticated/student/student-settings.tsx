@@ -291,7 +291,7 @@ export function StudentSettingsPage() {
             <div>
               <h2 className="text-xl font-semibold mb-4">Appearance & locale</h2>
               <div className="space-y-4">
-                <div className="rounded-lg border border-border p-6">
+                {/* <div className="rounded-lg border border-border p-6">
                   <h3 className="text-lg font-semibold">Theme</h3>
                   <p className="text-sm text-muted-foreground mt-2">
                     Choose light, dark, or follow system preference.
@@ -310,7 +310,7 @@ export function StudentSettingsPage() {
                       <option value="dark">Dark</option>
                     </select>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="rounded-lg border border-border p-6">
                   <h3 className="text-lg font-semibold">Language</h3>
