@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +37,15 @@ export const Route = createFileRoute("/_authenticated/mentor/dashboard")({
 
 function MentorDashboard() {
   const { data: auth } = useAuth();
+  const navigate = useNavigate();
   const uid = auth?.user?.id;
+
+  // Redirect mentor_pending users to the waiting dashboard
+  useEffect(() => {
+    if (auth && (auth.roles ?? []).includes("mentor_pending")) {
+      navigate({ to: "/mentor/pending" });
+    }
+  }, [auth, navigate]);
 
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
     queryKey: ["mentor-sessions", uid],

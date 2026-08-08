@@ -89,6 +89,69 @@ function AdminMentorApplicationDetail() {
         .update({ status, reviewed_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
+
+      // ── APPROVAL: Automatically promote mentor_pending → mentor ──
+      if (status === "approved" && application?.user_id) {
+        // Remove mentor_pending role, add mentor role
+        const { error: deletePendingError } = await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", application.user_id)
+          .eq("role", "mentor_pending");
+        if (deletePendingError) throw deletePendingError;
+
+        const { error: addMentorError } = await supabase
+          .from("user_roles")
+          .insert([{ user_id: application.user_id, role: "mentor" }]);
+        if (addMentorError) throw addMentorError;
+
+        // Activate mentor profile
+        const { error: profileError } = await supabase
+          .from("mentor_profiles")
+          .update({ is_active: true })
+          .eq("user_id", application.user_id);
+        if (profileError) console.error("Mentor profile activation failed", profileError);
+
+        // Send congratulations notification
+        try {
+          await (supabase as any).rpc("insert_notification", {
+            p_user_id: application.user_id,
+            p_title: "Congratulations! 🎉",
+            p_body: "Your mentor account has been approved. You can now start teaching!",
+            p_category: "general",
+            p_kind: "mentor_application",
+            p_related_id: id,
+            p_link: "/mentor/dashboard",
+          });
+        } catch (notifErr) {
+          console.error("Approval notification failed", notifErr);
+        }
+      }
+
+      // ── REJECTION: Keep mentor_pending role, send rejection notification ──
+      if (status === "rejected" && application?.user_id) {
+        // Store rejection reason
+        const { error: rejectError } = await supabase
+          .from("mentor_applications")
+          .update({ admin_notes: rejectionReason || "Application requires changes." })
+          .eq("id", id);
+        if (rejectError) throw rejectError;
+
+        try {
+          await (supabase as any).rpc("insert_notification", {
+            p_user_id: application.user_id,
+            p_title: "Application requires changes",
+            p_body: rejectionReason || "Your mentor application was not approved. Please review and resubmit.",
+            p_category: "general",
+            p_kind: "mentor_application",
+            p_related_id: id,
+            p_link: "/mentor/pending",
+          });
+        } catch (notifErr) {
+          console.error("Rejection notification failed", notifErr);
+        }
+      }
+
       toast.success(`Application ${status}`);
       qc.invalidateQueries({ queryKey: ["admin-mentor-application", id] });
       qc.invalidateQueries({ queryKey: ["admin-mentor-applications"] });
@@ -166,6 +229,7 @@ function AdminMentorApplicationDetail() {
     approved: "default",
     rejected: "destructive",
     active: "default",
+    mentor_pending: "secondary",
   };
 
   const tabs = [

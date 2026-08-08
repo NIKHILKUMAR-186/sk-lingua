@@ -5,8 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { 
   hasRole, 
   hasAnyRole, 
-  getRoleDashboardRoute,
-  getOnboardingRoute 
+  getRoleDashboardRoute
 } from "@/lib/authorization";
 import { shouldRedirectToOnboarding } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
@@ -14,7 +13,7 @@ import { useNavigate } from "@tanstack/react-router";
 /**
  * Route Guard Types
  */
-export type AllowedRoles = "admin" | "mentor" | "student" | "all" | "authenticated";
+export type AllowedRoles = "admin" | "mentor" | "mentor_pending" | "student" | "all" | "authenticated";
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -121,6 +120,17 @@ export function AdminGuard({ children, fallback }: { children: React.ReactNode; 
 export function MentorGuard({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   return (
     <RouteGuard allowedRoles={["mentor"]} fallback={fallback}>
+      {children}
+    </RouteGuard>
+  );
+}
+
+/**
+ * Mentor Pending Route Guard
+ */
+export function MentorPendingGuard({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
+  return (
+    <RouteGuard allowedRoles={["mentor_pending"]} fallback={fallback}>
       {children}
     </RouteGuard>
   );

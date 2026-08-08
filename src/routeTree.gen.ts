@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BecomeAMentorRouteImport } from './routes/become-a-mentor'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedMentorApplicationRouteImport } from './routes/_au
 import { Route as AuthenticatedMentorAvailabilityRouteImport } from './routes/_authenticated/mentor/availability'
 import { Route as AuthenticatedMentorCalendarRouteImport } from './routes/_authenticated/mentor/calendar'
 import { Route as AuthenticatedMentorDashboardRouteImport } from './routes/_authenticated/mentor/dashboard'
+import { Route as AuthenticatedMentorPendingRouteImport } from './routes/_authenticated/mentor/pending'
 import { Route as AuthenticatedMentorProfileRouteImport } from './routes/_authenticated/mentor/profile'
 import { Route as AuthenticatedMentorRequestsRouteImport } from './routes/_authenticated/mentor/requests'
 import { Route as AuthenticatedMentorResourcesRouteImport } from './routes/_authenticated/mentor/resources'
@@ -80,6 +82,11 @@ const BecomeAMentorRoute = BecomeAMentorRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentorSignupRoute = MentorSignupRouteImport.update({
+  id: '/mentor-signup',
+  path: '/mentor-signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -201,6 +208,12 @@ const AuthenticatedMentorDashboardRoute =
   AuthenticatedMentorDashboardRouteImport.update({
     id: '/mentor/dashboard',
     path: '/mentor/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMentorPendingRoute =
+  AuthenticatedMentorPendingRouteImport.update({
+    id: '/mentor/pending',
+    path: '/mentor/pending',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMentorProfileRoute =
@@ -341,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/become-a-mentor': typeof BecomeAMentorRoute
   '/login': typeof LoginRoute
+  '/mentor-signup': typeof MentorSignupRoute
   '/signup': typeof SignupRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -362,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/mentor/availability': typeof AuthenticatedMentorAvailabilityRoute
   '/mentor/calendar': typeof AuthenticatedMentorCalendarRoute
   '/mentor/dashboard': typeof AuthenticatedMentorDashboardRoute
+  '/mentor/pending': typeof AuthenticatedMentorPendingRoute
   '/mentor/profile': typeof AuthenticatedMentorProfileRoute
   '/mentor/requests': typeof AuthenticatedMentorRequestsRoute
   '/mentor/resources': typeof AuthenticatedMentorResourcesRoute
@@ -390,6 +405,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/become-a-mentor': typeof BecomeAMentorRoute
   '/login': typeof LoginRoute
+  '/mentor-signup': typeof MentorSignupRoute
   '/signup': typeof SignupRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -411,6 +427,7 @@ export interface FileRoutesByTo {
   '/mentor/availability': typeof AuthenticatedMentorAvailabilityRoute
   '/mentor/calendar': typeof AuthenticatedMentorCalendarRoute
   '/mentor/dashboard': typeof AuthenticatedMentorDashboardRoute
+  '/mentor/pending': typeof AuthenticatedMentorPendingRoute
   '/mentor/profile': typeof AuthenticatedMentorProfileRoute
   '/mentor/requests': typeof AuthenticatedMentorRequestsRoute
   '/mentor/resources': typeof AuthenticatedMentorResourcesRoute
@@ -441,6 +458,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/become-a-mentor': typeof BecomeAMentorRoute
   '/login': typeof LoginRoute
+  '/mentor-signup': typeof MentorSignupRoute
   '/signup': typeof SignupRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -462,6 +480,7 @@ export interface FileRoutesById {
   '/_authenticated/mentor/availability': typeof AuthenticatedMentorAvailabilityRoute
   '/_authenticated/mentor/calendar': typeof AuthenticatedMentorCalendarRoute
   '/_authenticated/mentor/dashboard': typeof AuthenticatedMentorDashboardRoute
+  '/_authenticated/mentor/pending': typeof AuthenticatedMentorPendingRoute
   '/_authenticated/mentor/profile': typeof AuthenticatedMentorProfileRoute
   '/_authenticated/mentor/requests': typeof AuthenticatedMentorRequestsRoute
   '/_authenticated/mentor/resources': typeof AuthenticatedMentorResourcesRoute
@@ -492,6 +511,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-mentor'
     | '/login'
+    | '/mentor-signup'
     | '/signup'
     | '/notifications'
     | '/onboarding'
@@ -513,6 +533,7 @@ export interface FileRouteTypes {
     | '/mentor/availability'
     | '/mentor/calendar'
     | '/mentor/dashboard'
+    | '/mentor/pending'
     | '/mentor/profile'
     | '/mentor/requests'
     | '/mentor/resources'
@@ -541,6 +562,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-mentor'
     | '/login'
+    | '/mentor-signup'
     | '/signup'
     | '/notifications'
     | '/onboarding'
@@ -562,6 +584,7 @@ export interface FileRouteTypes {
     | '/mentor/availability'
     | '/mentor/calendar'
     | '/mentor/dashboard'
+    | '/mentor/pending'
     | '/mentor/profile'
     | '/mentor/requests'
     | '/mentor/resources'
@@ -591,6 +614,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-mentor'
     | '/login'
+    | '/mentor-signup'
     | '/signup'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
@@ -612,6 +636,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mentor/availability'
     | '/_authenticated/mentor/calendar'
     | '/_authenticated/mentor/dashboard'
+    | '/_authenticated/mentor/pending'
     | '/_authenticated/mentor/profile'
     | '/_authenticated/mentor/requests'
     | '/_authenticated/mentor/resources'
@@ -642,6 +667,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   BecomeAMentorRoute: typeof BecomeAMentorRoute
   LoginRoute: typeof LoginRoute
+  MentorSignupRoute: typeof MentorSignupRoute
   SignupRoute: typeof SignupRoute
   MentorApplyRoute: typeof MentorApplyRoute
 }
@@ -681,6 +707,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentor-signup': {
+      id: '/mentor-signup'
+      path: '/mentor-signup'
+      fullPath: '/mentor-signup'
+      preLoaderRoute: typeof MentorSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -828,6 +861,13 @@ declare module '@tanstack/react-router' {
       path: '/mentor/dashboard'
       fullPath: '/mentor/dashboard'
       preLoaderRoute: typeof AuthenticatedMentorDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mentor/pending': {
+      id: '/_authenticated/mentor/pending'
+      path: '/mentor/pending'
+      fullPath: '/mentor/pending'
+      preLoaderRoute: typeof AuthenticatedMentorPendingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/mentor/profile': {
@@ -1021,6 +1061,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMentorAvailabilityRoute: typeof AuthenticatedMentorAvailabilityRoute
   AuthenticatedMentorCalendarRoute: typeof AuthenticatedMentorCalendarRoute
   AuthenticatedMentorDashboardRoute: typeof AuthenticatedMentorDashboardRoute
+  AuthenticatedMentorPendingRoute: typeof AuthenticatedMentorPendingRoute
   AuthenticatedMentorProfileRoute: typeof AuthenticatedMentorProfileRoute
   AuthenticatedMentorRequestsRoute: typeof AuthenticatedMentorRequestsRoute
   AuthenticatedMentorResourcesRoute: typeof AuthenticatedMentorResourcesRoute
@@ -1067,6 +1108,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMentorAvailabilityRoute: AuthenticatedMentorAvailabilityRoute,
   AuthenticatedMentorCalendarRoute: AuthenticatedMentorCalendarRoute,
   AuthenticatedMentorDashboardRoute: AuthenticatedMentorDashboardRoute,
+  AuthenticatedMentorPendingRoute: AuthenticatedMentorPendingRoute,
   AuthenticatedMentorProfileRoute: AuthenticatedMentorProfileRoute,
   AuthenticatedMentorRequestsRoute: AuthenticatedMentorRequestsRoute,
   AuthenticatedMentorResourcesRoute: AuthenticatedMentorResourcesRoute,
@@ -1113,6 +1155,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   BecomeAMentorRoute: BecomeAMentorRoute,
   LoginRoute: LoginRoute,
+  MentorSignupRoute: MentorSignupRoute,
   SignupRoute: SignupRoute,
   MentorApplyRoute: MentorApplyRoute,
 }

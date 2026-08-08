@@ -92,11 +92,9 @@ export function useMentorApplication() {
         return;
       }
       const payload = { ...draft, user_id: userId };
-      const saved = (await upsertMyApplication(payload)) as any;
+      const saved = await upsertMyApplication(payload);
       // Ensure the returned row (with id) is reflected in local state
-      if (saved && Array.isArray(saved) && saved[0]?.id) {
-        setDraft((d: any) => ({ ...(d ?? {}), id: saved[0].id }));
-      } else if (saved && saved.id) {
+      if (saved?.id) {
         setDraft((d: any) => ({ ...(d ?? {}), id: saved.id }));
       }
       qc.invalidateQueries({ queryKey: ["mentor-application", userId] });
@@ -121,18 +119,15 @@ export function useMentorApplication() {
   }, [draft, userId, saveDraft]);
 
   async function replaceResume(file: File) {
-    // For guests, generate a temporary ID so they can upload resumes too
-    const effectiveUserId = userId || (() => {
-      const guestId = typeof window !== "undefined" ? window.localStorage.getItem("lingua-guest-id") : null;
-      if (guestId) return guestId;
-      const newGuestId = `guest-${crypto.randomUUID()}`;
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("lingua-guest-id", newGuestId);
-      }
-      return newGuestId;
-    })();
+    // Auth is REQUIRED for mentor application resume uploads. No guest /
+    // anonymous / temporary-ID flow is permitted. The storage bucket is
+    // private and its RLS policies require the caller to be authenticated
+    // with an auth.uid() that matches the owner folder.
+    if (!userId) {
+      throw new Error("You must be signed in to upload your resume.");
+    }
 
-    const upload = await uploadResume(file, `mentor/${effectiveUserId}/applications`);
+    const upload = await uploadResume(file, `mentor/${userId}/applications`);
     setDraft((d: any) => ({
       ...d,
       resume_url: upload.publicUrl,

@@ -24,19 +24,19 @@ const SLOTS = [
   "Night (9pm-12am)",
 ];
 const COUNTRIES = [
-  "United States",
-  "United Kingdom",
-  "Canada",
-  "Australia",
+  // "United States",
+  // "United Kingdom",
+  // "Canada",
+  // "Australia",
   "India",
-  "Germany",
-  "France",
-  "Spain",
-  "Brazil",
-  "Mexico",
-  "Japan",
-  "China",
-  "South Korea",
+  // "Germany",
+  // "France",
+  // "Spain",
+  // "Brazil",
+  // "Mexico",
+  // "Japan",
+  // "China",
+  // "South Korea",
   "Other",
 ];
 const QUALS = [
@@ -145,7 +145,19 @@ export function MentorApplicationForm() {
       await replaceResume(file);
       toast.success("Resume uploaded successfully");
     } catch (err: any) {
-      setResumeError(err?.message ?? "Failed to upload resume");
+      // Log the raw Supabase error to the console for debugging only.
+      console.error("Resume upload failed:", err);
+      // Show a user-friendly message; never expose raw RLS/Supabase strings.
+      const msg = err?.message ?? "";
+      if (/must be signed in|sign in|authenticated/i.test(msg)) {
+        setResumeError("Please sign in to upload your resume.");
+      } else if (/under 10 MB|too large|10 MB/i.test(msg)) {
+        setResumeError("Resume must be under 10 MB.");
+      } else if (/pdf/i.test(msg)) {
+        setResumeError("Only PDF files are allowed.");
+      } else {
+        setResumeError("Resume upload failed. Please try again. If the problem continues, contact support.");
+      }
     }
   }
 
@@ -185,10 +197,12 @@ export function MentorApplicationForm() {
     setSubmitting(true);
     try {
       // Persist the draft first so we have a stable row id to update.
-      const saved = (await saveDraft()) as any;
-      const applicationId = draft?.id ?? (Array.isArray(saved) ? saved?.[0]?.id : saved?.id);
+      const saved = await saveDraft();
+      // Get the application ID from the updated draft state or the saved response
+      const applicationId = draft?.id || (saved as any)?.id || (Array.isArray(saved) && saved[0]?.id);
       if (!applicationId) {
-        throw new Error("Could not determine application id after saving draft.");
+        toast.error("Failed to save application. Please try again.");
+        return;
       }
       const { supabase } = await import("@/integrations/supabase/client");
       const { error } = await supabase

@@ -51,26 +51,43 @@ export async function upsertMyApplication(payload: any) {
     .from("mentor_applications")
     .upsert(payload, { onConflict: "user_id" });
   if (error) throw error;
-  return data;
+  // Return the first item if it's an array, or the object itself
+  return Array.isArray(data) ? data[0] : data;
 }
 
+// Max resume size and accepted MIME types (strict PDF-only policy).
+const MAX_RESUME_SIZE = 10 * 1024 * 1024; // 10 MB
+const RESUME_BUCKET = "mentor-resumes";
+
 export async function uploadResume(file: File, folder: string) {
+  // Enforce size limit (10 MB) and PDF-only MIME before upload.
+  if (file.size > MAX_RESUME_SIZE) {
+    throw new Error("Resume must be under 10 MB.");
+  }
+  if (file.type !== "application/pdf") {
+    throw new Error("Only PDF files are allowed.");
+  }
+
   // Upload to the private mentor-resumes bucket so RLS policies apply correctly.
+  // Path follows the convention: {folder}/{uuid}-{file.name}
+  // The RLS owner-insert policy requires folder = `mentor/{auth.uid()}/applications`
+  // so that storage.foldername(path)[2] resolves to the caller's auth.uid().
   const path = `${folder}/${crypto.randomUUID()}-${file.name}`;
-  const { error } = await supabase.storage.from("mentor-resumes").upload(path, file, {
+  const { error } = await supabase.storage.from(RESUME_BUCKET).upload(path, file, {
     upsert: false,
-    contentType: file.type || "application/octet-stream",
+    cacheControl: "3600",
+    contentType: "application/pdf",
   });
   if (error) throw error;
 
-  const { data: publicUrlData } = supabase.storage
-    .from("mentor-resumes")
-    .getPublicUrl(path);
+  // The bucket is PRIVATE. Do NOT rely on getPublicUrl() (it returns a
+  // non-functional public URL for a private bucket). Store the storage path;
+  // access is via signed URLs through /api/signed-url.
   return {
     path,
-    publicUrl: publicUrlData.publicUrl,
+    publicUrl: "", // private bucket: no stable public URL; use signed URL
     fileName: file.name,
-    fileType: file.type || "application/octet-stream",
+    fileType: "application/pdf , image/png , image/jpeg",
     fileSize: file.size,
   };
 }

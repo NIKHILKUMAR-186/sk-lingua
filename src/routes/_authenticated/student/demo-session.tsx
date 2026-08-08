@@ -199,12 +199,12 @@ function DemoSessionPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="grid gap-6 lg:grid-cols-3"
+              className="w-full"
             >
-              {/* Left Column - Main Content */}
-              <div className="lg:col-span-2">
-                <Card className="border-2 shadow-xl">
-                  <CardContent className="p-6 md:p-8">
+              {/* <div className="flex justify item-centers-center lg:col-span-2 p-7"> */}
+<div className="min-h-screen bg-slate-50 w-full flex justify-center px-6 py-8">
+                <Card className="w-full rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+                  <CardContent className=" p-8 md:p-12 lg:p-16">
                     {step === "info" && (
                       <DemoInfoPage
                         onGetStarted={() => setStep("booking")}
@@ -357,7 +357,7 @@ function DemoSessionPage() {
                   </motion.div>
                 )}
 
-                {step === "info" && (
+                {/* {step === "info" && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -388,7 +388,7 @@ function DemoSessionPage() {
                       </CardContent>
                     </Card>
                   </motion.div>
-                )}
+                )} */}
               </div>
             </motion.div>
           </AnimatePresence>
