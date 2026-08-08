@@ -130,8 +130,10 @@ export function useMentorApplication() {
     const upload = await uploadResume(file, `mentor/${userId}/applications`);
     setDraft((d: any) => ({
       ...d,
-      resume_url: upload.publicUrl,
+      // resume_path is the source of truth for a private bucket. resume_url may
+      // hold an ephemeral signed URL but must never be treated as a public URL.
       resume_path: upload.path,
+      resume_url: upload.signedUrl ?? upload.publicUrl ?? null,
       resume_file_name: upload.fileName,
       resume_file_type: upload.fileType,
     }));

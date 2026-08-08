@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createSignedUrlForPath } from "@/lib/mentorApplications";
 
 export function ResumePreview({
   url,
@@ -18,16 +18,14 @@ export function ResumePreview({
       const key = path ?? url;
       if (!key) return;
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData?.session?.access_token ?? null;
-        const res = await fetch(`/api/signed-url?key=${encodeURIComponent(key)}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error ?? "failed");
-        if (mounted) setSigned(data.signedUrl ?? data.signed_url ?? null);
+        // Generate the signed URL directly via Supabase storage. This avoids
+        // the fragile /api/signed-url endpoint that could return HTML (404)
+        // and cause "Unexpected token '<'" when parsed as JSON.
+        const signedUrl = await createSignedUrlForPath(key);
+        if (mounted) setSigned(signedUrl);
       } catch (err) {
         console.error("Signed URL fetch failed", err);
+        if (mounted) setSigned(null);
       }
     }
     fetchSigned();

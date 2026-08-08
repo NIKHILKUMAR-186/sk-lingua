@@ -28,6 +28,10 @@ export function isMentor(userRoles: AppRole[] | undefined): boolean {
   return hasRole(userRoles, "mentor");
 }
 
+export function isMentorPending(userRoles: AppRole[] | undefined): boolean {
+  return hasRole(userRoles, "mentor_pending");
+}
+
 export function isStudent(userRoles: AppRole[] | undefined): boolean {
   return hasRole(userRoles, "student");
 }
@@ -48,6 +52,7 @@ export function getRoleDisplayName(role: AppRole): string {
   const names: Record<AppRole, string> = {
     admin: "Administrator",
     mentor: "Mentor",
+    mentor_pending: "Mentor (Pending)",
     student: "Student",
   };
   return names[role] || role;
@@ -56,5 +61,6 @@ export function getRoleDisplayName(role: AppRole): string {
 export function getRoleDashboardRoute(role: AppRole | null): string {
   if (role === "admin") return "/admin/dashboard";
   if (role === "mentor") return "/mentor/dashboard";
+  if (role === "mentor_pending") return "/mentor/pending";
   return "/student/dashboard";
 }

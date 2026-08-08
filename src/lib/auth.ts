@@ -23,7 +23,18 @@ export function getOnboardingRoute(): "/onboarding" {
 }
 
 export function shouldRedirectToOnboarding(roles: AppRole[], onboarded: boolean): boolean {
-  // mentor_pending users should NOT be redirected to student onboarding
-  if (roles.includes("mentor_pending")) return false;
+  // Mentors should NOT be redirected to student onboarding.
+  // Mentors are approved by admin and their profile is auto-created from application data.
+  if (roles.includes("mentor_pending") || roles.includes("mentor")) return false;
   return roles.length === 0 || !onboarded;
+}
+
+/**
+ * Format a profile's reference_no into a professional human-readable user ID,
+ * e.g. USER-000001. Returns null when reference_no is not yet available
+ * (e.g. before the migration has backfilled the column).
+ */
+export function formatUserReferenceNo(referenceNo: number | null | undefined): string | null {
+  if (referenceNo === null || referenceNo === undefined) return null;
+  return `USER-${String(referenceNo).padStart(6, "0")}`;
 }

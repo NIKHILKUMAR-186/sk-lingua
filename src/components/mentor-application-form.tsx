@@ -188,7 +188,7 @@ export function MentorApplicationForm() {
       toast.error(`Missing required fields: ${missing.join(", ")}`);
       // Jump to the first step that has a missing field for a better UX.
       const firstMissingKey = REQUIRED_FIELDS.find((f) => missing.includes(f.label))?.key;
-      if (firstMissingKey === "native_language") setStep(1);
+if (firstMissingKey === "native_language") setStep(1);
       else if (["teaching_languages", "years_of_experience", "current_occupation", "highest_qualification"].includes(firstMissingKey ?? "")) setStep(2);
       else if (firstMissingKey === "bio") setStep(4);
       else if (firstMissingKey === "resume") setStep(5);
@@ -201,7 +201,7 @@ export function MentorApplicationForm() {
       // Get the application ID from the updated draft state or the saved response
       const applicationId = draft?.id || (saved as any)?.id || (Array.isArray(saved) && saved[0]?.id);
       if (!applicationId) {
-        toast.error("Failed to save application. Please try again.");
+        toast.error("Failed to save application. The draft could not be saved. Please check your connection and try again.");
         return;
       }
       const { supabase } = await import("@/integrations/supabase/client");

@@ -137,7 +137,7 @@ function MentorAuthPage() {
       if (error) throw error;
       if (!data.user) throw new Error("Signup completed without returning a user.");
 
-      // If no session, this is an email-confirmation flow
+// If no session, this is an email-confirmation flow
       if (!data.session) {
         toast.success("Check your inbox to confirm your account.");
         return;
@@ -150,8 +150,15 @@ function MentorAuthPage() {
         return;
       }
 
-      // Insert mentor_pending role - NOT student
-      const { error: roleError } = await supabase
+      // The database trigger (handle_new_user) is the PRIMARY mechanism for
+      // assigning the mentor_pending role and mentor profile. These upserts
+      // below are a SAFETY NET for the email-confirmation path where signUp()
+      // returned session = null (role may not have been created yet if the
+      // trigger wasn't applied). They are idempotent and never downgrade.
+      // Insert mentor_pending role - NOT student.
+      // Cast to a loose client because the generated Supabase types are stale
+      // and omit the mentor_pending enum value added by the database migration.
+      const { error: roleError } = await (supabase as any)
         .from("user_roles")
         .upsert(
           [{ user_id: data.user.id, role: "mentor_pending" }],

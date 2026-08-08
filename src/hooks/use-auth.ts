@@ -24,6 +24,7 @@ export interface AuthSession {
     website_url: string | null;
     youtube_url: string | null;
     onboarded: boolean;
+    reference_no: number | null;
   } | null;
   role: AppRole | null;
   roles: AppRole[];

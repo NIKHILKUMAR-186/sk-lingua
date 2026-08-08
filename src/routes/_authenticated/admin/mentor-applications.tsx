@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +28,21 @@ function AdminMentorApplications() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // When navigating to /admin/mentor-applications/$id, this parent route is
+  // still matched. The parent MUST render the child route's content via
+  // <Outlet />, otherwise the detail page never appears. Detect whether the
+  // current path has an extra segment (the application UUID) and if so show
+  // the child route instead of the list.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isDetailRoute = /^\/admin\/mentor-applications\/[^/]+$/.test(pathname);
+  if (isDetailRoute) {
+    // The child route (mentor-applications/$id.tsx) renders its own
+    // <AdminLayout>, so the parent must NOT wrap the Outlet in another
+    // AdminLayout — that would produce nested admin guards and double
+    // sidebars. Just render the child content directly.
+    return <Outlet />;
+  }
 
   const { data: applications = [], isLoading } = useQuery({
     queryKey: ["admin-mentor-applications", statusFilter],
@@ -80,9 +95,7 @@ function AdminMentorApplications() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div>
           <h1 className="text-3xl font-display">Mentor Applications</h1>
-          <p className="text-sm text-muted-foreground">
-            Review and manage mentor applications
-          </p>
+          <p className="text-sm text-muted-foreground">Review and manage mentor applications</p>
         </div>
 
         {/* Stats */}
@@ -157,7 +170,9 @@ function AdminMentorApplications() {
         ) : filteredApplications.length === 0 ? (
           <Card>
             <CardContent className="p-10 text-center text-muted-foreground">
-              {search || statusFilter !== "all" ? "No applications match your filters" : "No applications yet"}
+              {search || statusFilter !== "all"
+                ? "No applications match your filters"
+                : "No applications yet"}
             </CardContent>
           </Card>
         ) : (
@@ -207,7 +222,7 @@ function AdminMentorApplications() {
                         </div>
                       </div>
                       <Button asChild variant="outline" size="sm">
-                        <Link to={`/admin/mentor-applications/${app.id}` as any}>
+                        <Link to="/admin/mentor-applications/$id" params={{ id: app.id }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Review
                         </Link>

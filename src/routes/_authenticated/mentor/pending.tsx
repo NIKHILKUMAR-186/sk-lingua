@@ -43,12 +43,63 @@ function MentorPendingDashboard() {
     },
   });
 
-  // If the user is now an approved mentor, redirect to the full dashboard
+// If the user is now an approved mentor, redirect to the full dashboard
   useEffect(() => {
-    if (auth && (auth.roles ?? []).includes("mentor")) {
+    const hasMentorRole = (auth?.roles ?? []).includes("mentor");
+    const isApplicationApproved = application?.status === "approved";
+    if (hasMentorRole || isApplicationApproved) {
       navigate({ to: "/mentor/dashboard" });
     }
-  }, [auth, navigate]);
+  }, [auth, application, navigate]);
+
+  // ── Self-heal for existing broken mentor accounts ──
+  // Some mentor signups made through the email-confirmation lifecycle were
+  // created WITHOUT a mentor_pending role (the old handle_new_user trigger
+  // never assigned roles). This is a migration path only; the database
+  // trigger is the primary mechanism for all future signups.
+  useEffect(() => {
+    const user = auth?.user;
+    if (!user) return;
+    const roles = auth.roles ?? [];
+    const hasMentorRole = roles.includes("mentor") || (roles as string[]).includes("mentor_pending");
+    if (hasMentorRole) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const intended = String(user.user_metadata?.intended_role ?? "").toLowerCase();
+        if (intended !== "mentor") return;
+        if (cancelled) return;
+
+        // Restore the mentor_pending role (idempotent, never downgrades).
+        // Cast to a loose client because the generated Supabase types are
+        // stale and omit the mentor_pending enum value.
+        await (supabase as any).from("user_roles").upsert(
+          [{ user_id: user.id, role: "mentor_pending" }],
+          { onConflict: "user_id,role" },
+        );
+        // Ensure a mentor profile exists.
+        await (supabase as any).from("mentor_profiles").upsert(
+          {
+            user_id: user.id,
+            headline: "",
+            bio: "",
+            languages_taught: [],
+            certifications: [],
+            hourly_rate: 0,
+            years_experience: 0,
+            is_active: false,
+          },
+          { onConflict: "user_id" },
+        );
+      } catch (err) {
+        console.error("Mentor signup self-heal failed", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [auth]);
 
   if (authLoading) {
     return (

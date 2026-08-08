@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import type { AuthSession } from "@/hooks/use-auth";
+import { formatUserReferenceNo } from "@/lib/auth";
 
 interface ProfileCardProps {
   auth: AuthSession | undefined;
@@ -63,6 +64,11 @@ export function ProfileCard({ auth, collapsed }: ProfileCardProps) {
               {auth?.profile?.full_name ?? "User"}
             </div>
             <div className="truncate text-xs text-muted-foreground">{auth?.user?.email ?? ""}</div>
+            {formatUserReferenceNo(auth?.profile?.reference_no) && (
+              <div className="truncate text-[11px] font-medium tabular-nums text-muted-foreground/70">
+                {formatUserReferenceNo(auth?.profile?.reference_no)}
+              </div>
+            )}
           </motion.div>
         )}
 

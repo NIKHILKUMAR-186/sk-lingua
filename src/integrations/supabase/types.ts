@@ -474,6 +474,7 @@ export type Database = {
           linkedin_url: string | null;
           native_language: string | null;
           onboarded: boolean;
+          reference_no: number;
           target_language: string | null;
           current_level: string | null;
           timezone: string | null;
@@ -496,6 +497,7 @@ export type Database = {
           linkedin_url?: string | null;
           native_language?: string | null;
           onboarded?: boolean;
+          reference_no?: number;
           target_language?: string | null;
           current_level?: string | null;
           timezone?: string | null;
@@ -518,6 +520,7 @@ export type Database = {
           linkedin_url?: string | null;
           native_language?: string | null;
           onboarded?: boolean;
+          reference_no?: number;
           target_language?: string | null;
           current_level?: string | null;
           timezone?: string | null;
