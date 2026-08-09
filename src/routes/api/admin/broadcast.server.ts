@@ -1,148 +1,107 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminAuth, createAdminAuthResponse } from "@/lib/admin-auth";
 
-export async function POST({ request }: { request: Request }) {
+// POST /api/admin/notifications/broadcast
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const {
-      title,
-      body: message,
-      link,
-      category,
-      kind,
-      priority,
-      target_type,
-      target_role,
-      target_state,
-      target_language,
-      target_plan_id,
-      target_user_ids,
-      expires_at,
-      scheduled_at,
-      actor_id,
-    } = body;
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
 
-    if (!title || !message || !target_type) {
-      return new Response(JSON.stringify({ error: "missing required fields" }), { status: 400 });
+    const body = await request.json();
+    const { title, message, targetRoles, targetUserIds } = body;
+
+    // Validate input
+    if (!title || !message) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing required fields: title, message" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (typeof title !== 'string' || typeof message !== 'string') {
+      return new Response(
+        JSON.stringify({ success: false, error: "Title and message must be strings" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (title.length > 200) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Title must be less than 200 characters" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (message.length > 2000) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Message must be less than 2000 characters" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const admin = supabaseAdmin as any;
-    const now = new Date().toISOString();
 
-    // Create broadcast record
-    const { data: broadcast, error: broadcastError } = await admin
-      .from("notification_broadcasts")
-      .insert([
-        {
-          title,
-          body: message,
-          link,
-          category: category || "general",
-          kind: kind || "broadcast",
-          priority: priority || "normal",
-          target_type,
-          target_role,
-          target_state,
-          target_language,
-          target_plan_id,
-          target_user_ids,
-          expires_at,
-          scheduled_at,
-          status: scheduled_at && new Date(scheduled_at) > new Date() ? "scheduled" : "sent",
-          sent_at: scheduled_at && new Date(scheduled_at) > new Date() ? null : now,
-          created_by: actor_id,
-        },
-      ])
-      .select()
-      .single();
+    // Determine target users
+    let targetUsers: string[] = [];
 
-    if (broadcastError) throw broadcastError;
-
-    // Query target users
-    let userIds: string[] = [];
-
-    if (target_type === "all") {
-      const { data: users } = await admin.auth.admin.listUsers();
-      userIds = users?.users?.map((u: any) => u.id) || [];
-    } else if (target_type === "students") {
-      const { data: roles } = await admin.from("user_roles").select("user_id").eq("role", "student");
-      userIds = roles?.map((r: any) => r.user_id) || [];
-    } else if (target_type === "mentors") {
-      const { data: roles } = await admin.from("user_roles").select("user_id").eq("role", "mentor");
-      userIds = roles?.map((r: any) => r.user_id) || [];
-    } else if (target_type === "individual" && target_user_ids) {
-      userIds = target_user_ids;
-    } else if (target_type === "state") {
-      const { data: profiles } = await admin
-        .from("profiles")
-        .select("id")
-        .eq("country", target_state);
-      userIds = profiles?.map((p: any) => p.id) || [];
-    } else if (target_type === "language") {
-      const { data: profiles } = await admin
-        .from("profiles")
-        .select("id")
-        .eq("native_language", target_language);
-      userIds = profiles?.map((p: any) => p.id) || [];
-    } else if (target_type === "plan") {
-      const { data: subscriptions } = await admin
-        .from("student_subscriptions")
+    if (targetUserIds && Array.isArray(targetUserIds)) {
+      // Specific users
+      targetUsers = targetUserIds;
+    } else if (targetRoles && Array.isArray(targetRoles)) {
+      // All users with specified roles
+      const { data: users, error: usersError } = await admin
+        .from("user_roles")
         .select("user_id")
-        .eq("plan_id", target_plan_id)
-        .eq("status", "active");
-      userIds = subscriptions?.map((s: any) => s.user_id) || [];
+        .in("role", targetRoles);
+
+      if (usersError) throw usersError;
+      targetUsers = users?.map((u: any) => u.user_id) || [];
+    } else {
+      // All users
+      const { data: profiles, error: profilesError } = await admin
+        .from("profiles")
+        .select("id");
+
+      if (profilesError) throw profilesError;
+      targetUsers = profiles?.map((p: any) => p.id) || [];
     }
 
-    // Insert notifications for each target user
-    const notifications = userIds.map((userId) => ({
+    // Create notifications for each target user
+    const notifications = targetUsers.map((userId: string) => ({
       user_id: userId,
-      title,
-      body: message,
-      link,
-      category: category || "general",
-      kind: kind || "broadcast",
-      priority: priority || "normal",
-      expires_at,
-      broadcast_id: broadcast.id,
-      target_role,
-      target_state,
-      target_language,
-      target_plan_id,
-      metadata: { broadcast_id: broadcast.id, target_type },
+      title: title.trim(),
+      message: message.trim(),
+      type: "broadcast",
+      created_at: new Date().toISOString(),
     }));
 
-    if (notifications.length > 0) {
-      const { error: notifError } = await admin.from("notifications").insert(notifications);
-      if (notifError) throw notifError;
+    if (notifications.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, message: "No users to notify" }),
+        { headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    // Update broadcast stats
-    await admin
-      .from("notification_broadcasts")
-      .update({
-        total_recipients: userIds.length,
-        total_delivered: userIds.length,
-      })
-      .eq("id", broadcast.id);
+    const { error: insertError } = await admin
+      .from("notifications")
+      .insert(notifications);
 
-    // Log audit
-    await admin.from("audit_logs").insert([
-      {
-        actor_id: actor_id,
-        scope: "notification_broadcasts",
-        action: "send",
-        target_entity: "notification_broadcast",
-        target_id: broadcast.id,
-        description: `Broadcast sent to ${userIds.length} users (${target_type})`,
-        metadata: { title, target_type, recipient_count: userIds.length },
-      },
-    ]);
+    if (insertError) throw insertError;
 
     return new Response(
-      JSON.stringify({ ok: true, broadcast_id: broadcast.id, recipients: userIds.length }),
-      { status: 200 },
+      JSON.stringify({ 
+        success: true, 
+        message: `Notification sent to ${notifications.length} users`,
+        count: notifications.length
+      }),
+      { headers: { "Content-Type": "application/json" } }
     );
   } catch (err: any) {
-    console.error(err);
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
+    console.error("Broadcast notification error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

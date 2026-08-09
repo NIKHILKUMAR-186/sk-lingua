@@ -1,49 +1,63 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminAuth, createAdminAuthResponse } from "@/lib/admin-auth";
 
-export async function POST({ request }: { request: Request }) {
+// POST /api/admin/mentors/toggle-status
+export async function POST(request: Request) {
   try {
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
+
     const body = await request.json();
-    const { userId, action, actorId } = body; // action: activate | suspend | reactivate
-    if (!userId || !action)
-      return new Response(JSON.stringify({ error: "missing fields" }), { status: 400 });
+    const { mentorId, isActive } = body;
+
+    // Validate input
+    if (!mentorId || typeof isActive !== 'boolean') {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing required fields: mentorId, isActive" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     const admin = supabaseAdmin as any;
-    const update: any = {};
-    let verificationStatus: string | null = null;
 
-    if (action === "activate" || action === "reactivate") {
-      update.is_active = true;
-      update.verification_status = "approved";
-      verificationStatus = "approved";
+    // Verify mentor exists
+    const { data: mentor, error: mentorError } = await admin
+      .from("mentor_profiles")
+      .select("*")
+      .eq("user_id", mentorId)
+      .single();
+
+    if (mentorError || !mentor) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Mentor not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
-    if (action === "suspend") {
-      update.is_active = false;
-      update.verification_status = "suspended";
-      verificationStatus = "suspended";
-    }
 
-    const { error } = await admin.from("mentor_profiles").update(update).eq("user_id", userId);
-    if (error) throw error;
+    // Update mentor status
+    const { error: updateError } = await admin
+      .from("mentor_profiles")
+      .update({ 
+        is_active: isActive,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", mentorId);
 
-    // Log to activation history
-    await admin.from("mentor_activation_history").insert([
-      {
-        user_id: userId,
-        action,
-        details: { user_id: userId, verification_status: verificationStatus },
-        performed_by: actorId ?? null,
-      },
-    ]);
+    if (updateError) throw updateError;
 
-    await admin
-      .from("audit_logs")
-      .insert([{ actor_id: actorId ?? null, scope: "mentor_profiles", action, details: { user_id: userId } }]);
-
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Mentor ${isActive ? 'activated' : 'suspended'} successfully` 
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (err: any) {
+    console.error("Toggle mentor status error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    console.error(err);
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
   }
 }

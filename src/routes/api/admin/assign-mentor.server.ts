@@ -1,94 +1,88 @@
-import { supabase } from "@/integrations/supabase/client";
-import { notifyMentorOfAssignment, notifyStudentOfMentorAssignment } from "@/lib/session-request-notifications";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminAuth, createAdminAuthResponse } from "@/lib/admin-auth";
 
-export async function POST(req: Request) {
+// POST /api/admin/bookings/assign
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const { request_id, mentor_id, assigned_by } = body;
-    if (!request_id || !mentor_id || !assigned_by)
-      return new Response("missing params", { status: 400 });
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
 
-    // Verify the request exists and is in a pending state
-    const { data: request, error: reqErr } = await (supabase as any)
-      .from("session_requests")
-      .select("*")
-      .eq("id", request_id)
-      .maybeSingle();
-    if (reqErr) throw reqErr;
-    if (!request)
-      return new Response(JSON.stringify({ error: "request not found" }), { status: 404 });
+    const body = await request.json();
+    const { sessionId, mentorId } = body;
 
-    // Verify the mentor exists and is active
-    const { data: mentorProfile, error: mentorErr } = await (supabase as any)
-      .from("mentor_profiles")
-      .select("user_id, is_active")
-      .eq("user_id", mentor_id)
-      .maybeSingle();
-    if (mentorErr) throw mentorErr;
-    if (!mentorProfile || !mentorProfile.is_active) {
-      return new Response(JSON.stringify({ error: "mentor not found or inactive" }), {
-        status: 400,
-      });
+    // Validate input
+    if (!sessionId || !mentorId) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing required fields: sessionId, mentorId" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    // Get mentor and student names for notifications
-    const { data: mentorProfileData } = await (supabase as any)
-      .from("profiles")
-      .select("full_name")
-      .eq("id", mentor_id)
-      .maybeSingle();
+    const admin = supabaseAdmin as any;
 
-    const { data: studentProfile } = await (supabase as any)
-      .from("profiles")
-      .select("full_name")
-      .eq("id", request.student_id)
-      .maybeSingle();
+    // Verify session exists
+    const { data: session, error: sessionError } = await admin
+      .from("sessions")
+      .select("*")
+      .eq("id", sessionId)
+      .single();
 
-    const mentorName = mentorProfileData?.full_name || "A mentor";
-    const studentName = studentProfile?.full_name || "Student";
+    if (sessionError || !session) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Session not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-    // Insert assignment_history
-    const { error: e1 } = await (supabase as any)
-      .from("assignment_history")
-      .insert([
-        { request_id, mentor_id, assigned_by, status: "assigned", reason: "admin_assignment" },
-      ]);
-    if (e1) throw e1;
+    // Verify mentor exists and is active
+    const { data: mentor, error: mentorError } = await admin
+      .from("mentor_profiles")
+      .select("*")
+      .eq("user_id", mentorId)
+      .eq("is_active", true)
+      .single();
 
-    // Update session_requests to set assigned_mentor and status with SLA timer
-    const now = new Date();
-    const slaDeadline = new Date(now.getTime() + 15 * 60 * 1000).toISOString(); // 15 min SLA
-    const { error: e2 } = await (supabase as any)
-      .from("session_requests")
+    if (mentorError || !mentor) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Mentor not found or not active" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Initialize assignment_history if not present
+    const assignmentHistory = session.assignment_history || [];
+    
+    // Add assignment event
+    assignmentHistory.push({
+      action: "assigned",
+      mentor_id: mentorId,
+      assigned_by: authResult.userId,
+      created_at: new Date().toISOString(),
+    });
+
+    // Update session
+    const { error: updateError } = await admin
+      .from("sessions")
       .update({
-        assigned_mentor: mentor_id,
+        mentor_id: mentorId,
         status: "pending_mentor_response",
-        sla_assigned_at: now.toISOString(),
-        sla_deadline: slaDeadline,
-        updated_at: now.toISOString(),
+        assignment_history: assignmentHistory,
+        updated_at: new Date().toISOString(),
       })
-      .eq("id", request_id);
-    if (e2) throw e2;
+      .eq("id", sessionId);
 
-    // Send notifications using the notification service
-    await notifyMentorOfAssignment({
-      requestId: request_id,
-      mentorId: mentor_id,
-      studentName: studentName,
-      topic: request.topic || "General",
-      scheduledTime: request.scheduled_time,
-      slaDeadline: slaDeadline,
-    });
+    if (updateError) throw updateError;
 
-    await notifyStudentOfMentorAssignment({
-      requestId: request_id,
-      studentId: request.student_id,
-      mentorName: mentorName,
-      topic: request.topic || "General",
-    });
-
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    return new Response(
+      JSON.stringify({ success: true, message: "Mentor assigned successfully" }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || String(err) }), { status: 500 });
+    console.error("Assign mentor error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

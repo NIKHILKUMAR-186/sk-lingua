@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Loader2, GraduationCap, ShieldCheck, Globe2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { GoogleButton } from "@/components/auth/google-button";
+import { signInWithGoogle } from "@/lib/google-auth";
+import {
+  resolveDestination,
+  waitForSessionRestored,
+  type AppRole,
+} from "@/lib/auth";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).default("signup").catch("signup"),
@@ -18,6 +25,39 @@ type MentorAuthMode = "login" | "signup";
 
 export const Route = createFileRoute("/mentor-signup")({
   validateSearch: searchSchema,
+  beforeLoad: async () => {
+    // Already authenticated mentor should not be forced through signup again.
+    const user = await waitForSessionRestored(4000, 250);
+    if (!user) return;
+
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+
+    const fetchedRoles = (roles ?? []).map((r) => r.role as AppRole);
+
+    // A confirmed mentor goes straight to their dashboard. A pending mentor goes
+    // to their application/pending flow. Admins go to admin. Students (non-mentors)
+    // should not be sent to the mentor signup page — send them to their proper area.
+    if (fetchedRoles.includes("mentor")) {
+      throw redirect({ to: "/mentor/dashboard" });
+    }
+    if (fetchedRoles.includes("mentor_pending")) {
+      throw redirect({ to: "/mentor/pending" });
+    }
+    if (fetchedRoles.includes("admin")) {
+      throw redirect({ to: "/admin/dashboard" });
+    }
+    // Any other authenticated user (e.g. student) → role-aware destination.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarded")
+      .eq("id", user.id)
+      .maybeSingle();
+    const destination = resolveDestination(fetchedRoles, Boolean(profile?.onboarded));
+    throw redirect({ to: destination });
+  },
   head: () => ({
     meta: [
       { title: "Mentor Signup — Lingua" },
@@ -346,6 +386,15 @@ function MentorAuthPage() {
                   </Button>
                 </form>
               )}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+              <GoogleButton onClick={() => signInWithGoogle("mentor")} loading={loading} />
 
               <div className="pt-2 text-center">
                 <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground">

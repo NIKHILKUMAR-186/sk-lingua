@@ -1,5 +1,16 @@
 export type AppRole = "student" | "mentor" | "admin" | "mentor_pending";
 
+export type AuthDestination =
+  | "/onboarding"
+  | "/admin/dashboard"
+  | "/mentor/dashboard"
+  | "/mentor/pending"
+  | "/student/dashboard";
+
+export type ProfileRow = {
+  onboarded: boolean;
+};
+
 export const appRolePriority: AppRole[] = ["admin", "mentor", "mentor_pending", "student"];
 
 export function getActiveRole(roles: AppRole[]): AppRole | null {
@@ -9,13 +20,20 @@ export function getActiveRole(roles: AppRole[]): AppRole | null {
   );
 }
 
-export function getDashboardRoute(
-  role: AppRole | null,
-): "/admin/dashboard" | "/mentor/dashboard" | "/mentor/pending" | "/student/dashboard" {
+export function getDashboardRoute(role: AppRole | null): AuthDestination {
   if (role === "admin") return "/admin/dashboard";
   if (role === "mentor") return "/mentor/dashboard";
   if (role === "mentor_pending") return "/mentor/pending";
   return "/student/dashboard";
+}
+
+export function resolveDestination(
+  roles: AppRole[],
+  onboarded: boolean,
+): AuthDestination {
+  return shouldRedirectToOnboarding(roles, onboarded)
+    ? getOnboardingRoute()
+    : getDashboardRoute(getActiveRole(roles));
 }
 
 export function getOnboardingRoute(): "/onboarding" {
@@ -37,4 +55,45 @@ export function shouldRedirectToOnboarding(roles: AppRole[], onboarded: boolean)
 export function formatUserReferenceNo(referenceNo: number | null | undefined): string | null {
   if (referenceNo === null || referenceNo === undefined) return null;
   return `USER-${String(referenceNo).padStart(6, "0")}`;
+}
+
+/**
+ * Waits for Supabase to restore/exchange an OAuth session without treating the
+ * in-progress restoration as a logged-out state.
+ *
+ * - First reads the persisted session from storage (fast path).
+ * - Confirms the session is still valid via getUser() (network round-trip).
+ * - Polls until a valid session is found or the fallback window expires.
+ *
+ * @param maxWaitMs maximum time to wait for session restoration (default 9000ms)
+ * @param intervalMs polling interval (default 250ms)
+ * @returns the active Supabase User, or null if none could be established in time
+ */
+export async function waitForSessionRestored(
+  maxWaitMs = 9000,
+  intervalMs = 250,
+): Promise<import("@supabase/supabase-js").User | null> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const start = Date.now();
+
+  while (Date.now() - start < maxWaitMs) {
+    // Fast path: read the persisted session out of storage.
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (!sessionError && session?.access_token) {
+      // Network round-trip to confirm the token is still valid server-side.
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (!userError && user) return user;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+
+  return null;
 }

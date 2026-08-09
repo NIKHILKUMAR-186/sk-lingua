@@ -1,135 +1,175 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminAuth, createAdminAuthResponse } from "@/lib/admin-auth";
 
-export async function POST({ request }: { request: Request }) {
+// GET /api/admin/interviews
+export async function GET(request: Request) {
   try {
-    const body = await request.json();
-    const { applicationId, scheduledTime, interviewerId, location, notes } = body;
-    if (!applicationId || !scheduledTime || !interviewerId)
-      return new Response(JSON.stringify({ error: "missing fields" }), { status: 400 });
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
 
     const admin = supabaseAdmin as any;
-    const { error } = await admin.from("mentor_application_interviews").insert([
-      {
-        application_id: applicationId,
-        scheduled_time: scheduledTime,
-        interviewer_id: interviewerId,
-        location,
-        notes,
-      },
-    ]);
+
+    // Get all interviews with related data
+    const { data: interviews, error } = await admin
+      .from("interviews")
+      .select("id, mentor_id, student_id, scheduled_at, status, created_at, updated_at")
+      .order("scheduled_at", { ascending: false });
+
     if (error) throw error;
 
-    await admin.from("audit_logs").insert([
-      {
-        actor_id: interviewerId,
-        scope: "mentor_application_interviews",
-        action: "schedule",
-        details: {
-          application_id: applicationId,
-          scheduled_time: scheduledTime,
-          location,
-          notes,
-        },
-      },
-    ]);
+    // Get mentor and student profiles
+    const mentorIds = [...new Set(interviews?.map((i: any) => i.mentor_id) || [])];
+    const studentIds = [...new Set(interviews?.map((i: any) => i.student_id) || [])];
+    const allUserIds = [...new Set([...mentorIds, ...studentIds])];
 
-    // notify applicant
-    const { data: app } = await admin
-      .from("mentor_applications")
-      .select("user_id,email")
-      .eq("id", applicationId)
-      .maybeSingle();
-    const userId = app?.user_id ?? null;
-    if (userId) {
-      await admin.from("notifications").insert([
-        {
-          user_id: userId,
-          type: "interview_scheduled",
-          payload: {
-            application_id: applicationId,
-            scheduled_time: scheduledTime,
-            location,
-            notes,
-          },
-        },
-      ]);
+    const { data: profiles, error: profilesError } = await admin
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", allUserIds);
+
+    if (profilesError) throw profilesError;
+
+    // Create user map
+    const userMap: Record<string, any> = {};
+    profiles?.forEach((p: any) => {
+      userMap[p.id] = p;
+    });
+
+    // Combine data
+    const interviewsWithUsers = interviews?.map((interview: any) => ({
+      ...interview,
+      mentor: userMap[interview.mentor_id] || { full_name: "Unknown", email: "unknown" },
+      student: userMap[interview.student_id] || { full_name: "Unknown", email: "unknown" },
+    })) || [];
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: interviewsWithUsers,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (err: any) {
+    console.error("Interviews error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+// POST /api/admin/interviews
+export async function POST(request: Request) {
+  try {
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
+
+    const body = await request.json();
+    const { mentorId, studentId, scheduledAt, status } = body;
+
+    // Validate input
+    if (!mentorId || !studentId || !scheduledAt) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing required fields: mentorId, studentId, scheduledAt" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err: any) {
-    console.error(err);
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
-  }
-}
-
-export async function PUT({ request }: { request: Request }) {
-  try {
-    const body = await request.json();
-    const { interviewId, scheduledTime, interviewerId, location, notes, status } = body;
-    if (!interviewId || !interviewerId)
-      return new Response(JSON.stringify({ error: "missing fields" }), { status: 400 });
-
-    const updates: any = {};
-    if (scheduledTime) updates.scheduled_time = scheduledTime;
-    if (location !== undefined) updates.location = location;
-    if (notes !== undefined) updates.notes = notes;
+    if (typeof scheduledAt !== 'string' || isNaN(Date.parse(scheduledAt))) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid scheduledAt date" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     const admin = supabaseAdmin as any;
-    const { error } = await admin
-      .from("mentor_application_interviews")
-      .update(updates)
-      .eq("id", interviewId);
-    if (error) throw error;
 
-    await admin.from("audit_logs").insert([
+    // Verify mentor exists and is active
+    const { data: mentor, error: mentorError } = await admin
+      .from("mentor_profiles")
+      .select("*")
+      .eq("user_id", mentorId)
+      .eq("is_active", true)
+      .single();
+
+    if (mentorError || !mentor) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Mentor not found or not active" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify student exists
+    const { data: student, error: studentError } = await admin
+      .from("profiles")
+      .select("*")
+      .eq("id", studentId)
+      .single();
+
+    if (studentError || !student) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Student not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create interview
+    const { data: interview, error: createError } = await admin
+      .from("interviews")
+      .insert({
+        mentor_id: mentorId,
+        student_id: studentId,
+        scheduled_at: scheduledAt,
+        status: status || "scheduled",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (createError) throw createError;
+
+    // Create notifications for both mentor and student
+    const notifications = [
       {
-        actor_id: interviewerId,
-        scope: "mentor_application_interviews",
-        action: "update",
-        details: { interview_id: interviewId, updates: updates },
+        user_id: mentorId,
+        title: "Interview Scheduled",
+        message: `An interview has been scheduled with student ${student.full_name || "Unknown"} on ${new Date(scheduledAt).toLocaleString()}.`,
+        type: "interview_scheduled",
+        created_at: new Date().toISOString(),
       },
-    ]);
+      {
+        user_id: studentId,
+        title: "Interview Scheduled",
+        message: `An interview has been scheduled with mentor ${mentor.headline || "Unknown"} on ${new Date(scheduledAt).toLocaleString()}.`,
+        type: "interview_scheduled",
+        created_at: new Date().toISOString(),
+      },
+    ];
 
-    return new Response(JSON.stringify({ ok: true }), {
+    const { error: notifError } = await admin
+      .from("notifications")
+      .insert(notifications);
+
+    if (notifError) console.error("Failed to create notifications:", notifError);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: "Interview scheduled successfully",
+        data: interview
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (err: any) {
+    console.error("Create interview error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    console.error(err);
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
-  }
-}
-
-export async function DELETE({ request }: { request: Request }) {
-  try {
-    const url = new URL(request.url);
-    const interviewId = url.searchParams.get("id");
-    const actorId = url.searchParams.get("actorId");
-    if (!interviewId || !actorId)
-      return new Response(JSON.stringify({ error: "missing params" }), { status: 400 });
-
-    const admin = supabaseAdmin as any;
-    const { error } = await admin
-      .from("mentor_application_interviews")
-      .delete()
-      .eq("id", interviewId);
-    if (error) throw error;
-
-    await admin.from("audit_logs").insert([
-      {
-        actor_id: actorId,
-        scope: "mentor_application_interviews",
-        action: "cancel",
-        details: { interview_id: interviewId },
-      },
-    ]);
-
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err: any) {
-    console.error(err);
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
   }
 }

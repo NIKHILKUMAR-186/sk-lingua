@@ -1,75 +1,137 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminAuth, createAdminAuthResponse } from "@/lib/admin-auth";
 
-export async function GET({ request }: { request: Request }) {
+// GET /api/admin/support-tickets
+export async function GET(request: Request) {
   try {
-    const url = new URL(request.url);
-    const status = url.searchParams.get("status");
-    const assigned_to = url.searchParams.get("assigned_to");
-    const search = url.searchParams.get("search");
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
 
     const admin = supabaseAdmin as any;
-    let query = admin.from("support_tickets").select("*", { count: "exact" });
 
-    if (status) query = query.eq("status", status);
-    if (assigned_to) query = query.eq("assigned_to", assigned_to);
-    if (search) {
-      query = query.or(`ticket_number.ilike.%${search}%,subject.ilike.%${search}%,description.ilike.%${search}%`);
-    }
+    // Get all support tickets with user info
+    const { data: tickets, error } = await admin
+      .from("support_tickets")
+      .select("id, user_id, subject, status, priority, created_at, updated_at")
+      .order("created_at", { ascending: false });
 
-    const { data, error, count } = await query.order("created_at", { ascending: false });
     if (error) throw error;
 
-    return new Response(JSON.stringify({ data, count }), {
+    // Get user profiles for tickets
+    const userIds = [...new Set(tickets?.map((t: any) => t.user_id) || [])];
+    const { data: profiles, error: profilesError } = await admin
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", userIds);
+
+    if (profilesError) throw profilesError;
+
+    // Create user map
+    const userMap: Record<string, any> = {};
+    profiles?.forEach((p: any) => {
+      userMap[p.id] = p;
+    });
+
+    // Combine data
+    const ticketsWithUsers = tickets?.map((ticket: any) => ({
+      ...ticket,
+      user: userMap[ticket.user_id] || { full_name: "Unknown", email: "unknown" },
+    })) || [];
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: ticketsWithUsers,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (err: any) {
+    console.error("Support tickets error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
   }
 }
 
-export async function POST({ request }: { request: Request }) {
+// POST /api/admin/support-tickets/reply
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { subject, description, category, priority, created_by, assigned_to } = body;
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
 
-    if (!subject || !description || !created_by) {
-      return new Response(JSON.stringify({ error: "missing required fields" }), { status: 400 });
+    const body = await request.json();
+    const { ticketId, message, status } = body;
+
+    // Validate input
+    if (!ticketId || !message) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing required fields: ticketId, message" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (typeof message !== 'string' || message.length > 5000) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Message must be a string less than 5000 characters" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const admin = supabaseAdmin as any;
-    const { data: ticket, error } = await admin
+
+    // Verify ticket exists
+    const { data: ticket, error: ticketError } = await admin
       .from("support_tickets")
-      .insert([
-        {
-          subject,
-          description,
-          category: category || "other",
-          priority: priority || "medium",
-          created_by,
-          assigned_to,
-        },
-      ])
-      .select()
+      .select("*")
+      .eq("id", ticketId)
       .single();
 
-    if (error) throw error;
+    if (ticketError || !ticket) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Ticket not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-    // Log audit
-    await admin.from("audit_logs").insert([
-      {
-        actor_id: created_by,
-        scope: "support_tickets",
-        action: "create",
-        target_entity: "support_ticket",
-        target_id: ticket.id,
-        description: `Ticket ${ticket.ticket_number} created: ${subject}`,
-      },
-    ]);
+    // Add reply to ticket
+    const { error: updateError } = await admin
+      .from("support_tickets")
+      .update({
+        last_message: message.trim(),
+        status: status || ticket.status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", ticketId);
 
-    return new Response(JSON.stringify(ticket), {
+    if (updateError) throw updateError;
+
+    // Create notification for user
+    const { error: notifError } = await admin
+      .from("notifications")
+      .insert({
+        user_id: ticket.user_id,
+        title: "Support Ticket Update",
+        message: `Your support ticket "${ticket.subject}" has been updated.`,
+        type: "support_reply",
+        created_at: new Date().toISOString(),
+      });
+
+    if (notifError) console.error("Failed to create notification:", notifError);
+
+    return new Response(
+      JSON.stringify({ success: true, message: "Reply sent successfully" }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (err: any) {
+    console.error("Support ticket reply error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
   }
 }

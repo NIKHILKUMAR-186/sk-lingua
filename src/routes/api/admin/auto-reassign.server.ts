@@ -1,84 +1,113 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminAuth, createAdminAuthResponse } from "@/lib/admin-auth";
 
-export async function POST() {
+// POST /api/admin/auto-reassign
+export async function POST(request: Request) {
   try {
-    const fifteenAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    // find requests pending_mentor_response older than 15 minutes
-    const { data: stale = [] } = await (supabase as any)
-      .from("session_requests")
-      .select("*")
-      .eq("status", "pending_mentor_response")
-      .lt("updated_at", fifteenAgo)
-      .limit(50);
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
 
-    let processed = 0;
+    const body = await request.json();
+    const { sessionId, reason } = body;
 
-    for (const req of stale) {
-      // Log timeout
-      await (supabase as any).from("assignment_history").insert([
-        {
-          request_id: req.id,
-          mentor_id: req.assigned_mentor,
-          status: "timeout",
-          reason: "mentor_no_response",
-        },
-      ]);
-
-      // Find active mentors who are not the previous one and are active
-      const { data: mentors } = await (supabase as any)
-        .from("mentor_profiles")
-        .select("user_id")
-        .eq("is_active", true)
-        .neq("user_id", req.assigned_mentor)
-        .limit(1);
-
-      const nextMentor = mentors?.[0]?.user_id;
-
-      if (!nextMentor) {
-        // Mark unassigned back to admin queue
-        await (supabase as any)
-          .from("session_requests")
-          .update({ assigned_mentor: null, status: "unassigned" })
-          .eq("id", req.id);
-        continue;
-      }
-
-      // Assign to next mentor
-      await (supabase as any).from("assignment_history").insert([
-        {
-          request_id: req.id,
-          mentor_id: nextMentor,
-          status: "assigned",
-          reason: "auto_reassign",
-        },
-      ]);
-      await (supabase as any)
-        .from("session_requests")
-        .update({
-          assigned_mentor: nextMentor,
-          status: "pending_mentor_response",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", req.id);
-
-      // Notify the new mentor
-      await (supabase as any).from("notifications").insert([
-        {
-          user_id: nextMentor,
-          title: "New session request assigned",
-          body: `A session request for "${req.topic || "language session"}" has been auto-assigned to you. Please respond.`,
-          link: "/mentor/requests",
-          category: "session",
-          kind: "session_assigned",
-          related_id: req.id,
-        },
-      ]);
-
-      processed++;
+    // Validate input
+    if (!sessionId) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing required field: sessionId" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    return new Response(JSON.stringify({ processed }), { status: 200 });
+    const admin = supabaseAdmin as any;
+
+    // Get session details
+    const { data: session, error: sessionError } = await admin
+      .from("sessions")
+      .select("*")
+      .eq("id", sessionId)
+      .single();
+
+    if (sessionError || !session) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Session not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get student's target language
+    const { data: studentProfile, error: studentError } = await admin
+      .from("profiles")
+      .select("target_language")
+      .eq("id", session.student_id)
+      .single();
+
+    if (studentError || !studentProfile) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Student profile not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Find available mentors who teach the target language (excluding current mentor)
+    const { data: availableMentors, error: mentorsError } = await admin
+      .from("mentor_profiles")
+      .select("user_id, languages_taught, is_active")
+      .eq("is_active", true)
+      .contains("languages_taught", [studentProfile.target_language])
+      .neq("user_id", session.mentor_id);
+
+    if (mentorsError) throw mentorsError;
+
+    if (!availableMentors || availableMentors.length === 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: "No other available mentors found for this language" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Simple matching: pick first available mentor
+    const matchedMentor = availableMentors[0];
+
+    // Initialize assignment_history if not present
+    const assignmentHistory = session.assignment_history || [];
+    
+    // Add reassignment event
+    assignmentHistory.push({
+      action: "reassigned",
+      mentor_id: matchedMentor.user_id,
+      previous_mentor_id: session.mentor_id,
+      reason: reason || "Admin reassignment",
+      reassigned_by: authResult.userId,
+      created_at: new Date().toISOString(),
+    });
+
+    // Update session with new mentor
+    const { error: updateError } = await admin
+      .from("sessions")
+      .update({
+        mentor_id: matchedMentor.user_id,
+        status: "pending_mentor_response",
+        assignment_history: assignmentHistory,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", sessionId);
+
+    if (updateError) throw updateError;
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: "Mentor reassigned successfully",
+        newMentorId: matchedMentor.user_id
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || String(err) }), { status: 500 });
+    console.error("Auto-reassign error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

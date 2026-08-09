@@ -64,13 +64,13 @@ function ProductPreview() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-sm font-semibold">María González</span>
+              <span className="truncate text-sm font-semibold">Nikhil Kumar</span>
               <span className="rounded-md bg-primary-soft px-1.5 py-0.5 text-[10px] font-semibold text-primary">
                 NATIVE
               </span>
             </div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Mic className="h-3 w-3" /> Spanish · Madrid
+              <Mic className="h-3 w-3" /> English professor, 5 years experience
             </div>
           </div>
           <div className="flex items-center gap-1 rounded-lg bg-warning/10 px-2 py-1 text-xs font-semibold text-warning-foreground">
@@ -88,7 +88,7 @@ function ProductPreview() {
               <div className="mt-0.5 text-sm font-semibold">Today, 30 min</div>
             </div>
             <div className="text-sm font-semibold">
-              $24<span className="text-xs font-normal text-muted-foreground">/session</span>
+              $49<span className="text-xs font-normal text-muted-foreground">/month</span>
             </div>
           </div>
 

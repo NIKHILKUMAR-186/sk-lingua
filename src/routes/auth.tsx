@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,8 +15,12 @@ import {
   getDashboardRoute,
   getOnboardingRoute,
   shouldRedirectToOnboarding,
+  resolveDestination,
+  waitForSessionRestored,
   type AppRole,
 } from "@/lib/auth";
+import { GoogleButton } from "@/components/auth/google-button";
+import { signInWithGoogle } from "@/lib/google-auth";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).default("login").catch("login"),
@@ -26,6 +30,26 @@ type AuthMode = "login" | "signup";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
+  beforeLoad: async () => {
+    // If the user is already authenticated (e.g. they landed on /auth after the
+    // Google OAuth callback finished, or they revisited while logged in), resolve
+    // their role-aware destination and skip the login page — prevents a /auth
+    // "stuck login" state and the OAuth redirect loop.
+    const user = await waitForSessionRestored(4000, 250);
+    if (!user) return;
+
+    const [{ data: roles }, { data: profile }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", user.id),
+      supabase.from("profiles").select("onboarded").eq("id", user.id).maybeSingle(),
+    ]);
+
+    const fetchedRoles = (roles ?? []).map((roleRow) => roleRow.role as AppRole);
+    const onboarded = Boolean(profile?.onboarded);
+    const destination = resolveDestination(fetchedRoles, onboarded);
+
+    // Mentors / mentor_pending / admins should never be sent to student onboarding.
+    throw redirect({ to: destination });
+  },
   head: () => ({
     meta: [
       { title: "Sign in — Lingua" },
@@ -276,6 +300,7 @@ function AuthPage() {
                       <Input
                         id="login-email"
                         type="email"
+                        placeholder="Enter your Email"
                         autoComplete="email"
                         required
                         value={email}
@@ -283,10 +308,11 @@ function AuthPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="login-password">Password</Label>
+                      <Label htmlFor="login-password" aria-placeholder="password">Password</Label>
                       <Input
                         id="login-password"
                         type="password"
+                        placeholder="Enter your password"
                         autoComplete="current-password"
                         required
                         value={password}
@@ -297,6 +323,15 @@ function AuthPage() {
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log in"}
                     </Button>
                   </form>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    </div>
+                  </div>
+                  <GoogleButton onClick={() => signInWithGoogle()} loading={loading} />
                 </TabsContent>
                 <TabsContent value="signup" className="space-y-4">
                   <div className="rounded-3xl border border-border bg-background p-4 text-sm text-muted-foreground">
@@ -339,6 +374,15 @@ function AuthPage() {
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
                     </Button>
                   </form>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    </div>
+                  </div>
+                  <GoogleButton onClick={() => signInWithGoogle("student")} loading={loading} />
                 </TabsContent>
               </Tabs>
               <CardDescription className="text-center text-xs">

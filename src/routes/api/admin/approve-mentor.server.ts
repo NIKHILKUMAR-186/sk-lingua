@@ -1,107 +1,108 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireAdminAuth, createAdminAuthResponse } from "@/lib/admin-auth";
 
-function generateTempPassword() {
-  return require("crypto").randomBytes(8).toString("hex");
-}
-
-export async function POST({ request }: { request: Request }) {
+// POST /api/admin/mentors/approve
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { applicationId, interviewerNotes } = body;
-    if (!applicationId)
-      return new Response(JSON.stringify({ error: "missing applicationId" }), { status: 400 });
+    const authResult = await requireAdminAuth(request);
+    const authError = createAdminAuthResponse(authResult);
+    if (authError) return authError;
 
-    // fetch application
+    const body = await request.json();
+    const { applicationId, action } = body;
+
+    // Validate input
+    if (!applicationId || !action) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Missing required fields: applicationId, action" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!["approve", "reject"].includes(action)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid action. Must be 'approve' or 'reject'" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const admin = supabaseAdmin as any;
-    const { data: app, error: appErr } = await admin
+
+    // Get the application
+    const { data: application, error: appError } = await admin
       .from("mentor_applications")
       .select("*")
       .eq("id", applicationId)
-      .maybeSingle();
-    if (appErr) throw appErr;
-    if (!app)
-      return new Response(JSON.stringify({ error: "application_not_found" }), { status: 404 });
+      .single();
 
-    // begin ops
-    const tempPassword = generateTempPassword();
-    let createdUserId = app.user_id ?? null;
-
-    if (!createdUserId) {
-      // create a Supabase user with temporary password
-      const createResult = await admin.auth.admin.createUser({
-        email: app.email,
-        password: tempPassword,
-        user_metadata: { full_name: app.full_name },
-        email_confirm: true,
-      });
-      if (createResult.error) throw createResult.error;
-      createdUserId = createResult.data.user?.id ?? null;
+    if (appError || !application) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Application not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    // upsert mentor_profile with verification status
-    const { error: mpErr } = await admin.from("mentor_profiles").upsert(
-      {
-        user_id: createdUserId,
-        headline: app.headline ?? null,
-        bio: app.experience ?? null,
-        is_active: true,
-        verification_status: "approved",
-        approval_date: new Date().toISOString(),
-      },
-      { onConflict: "user_id" },
-    );
-    if (mpErr) throw mpErr;
+    if (action === "approve") {
+      // Update application status
+      const { error: updateError } = await admin
+        .from("mentor_applications")
+        .update({ 
+          status: "approved",
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: authResult.userId,
+        })
+        .eq("id", applicationId);
 
-    // add mentor role
-    const { error: roleErr } = await admin
-      .from("user_roles")
-      .upsert([{ user_id: createdUserId, role: "mentor" }], { onConflict: "user_id,role" });
-    if (roleErr) throw roleErr;
+      if (updateError) throw updateError;
 
-    // update application status
-    const { error: updErr } = await admin
-      .from("mentor_applications")
-      .update({ status: "approved", user_id: createdUserId, approved_at: new Date().toISOString() })
-      .eq("id", applicationId);
-    if (updErr) throw updErr;
+      // Add mentor role to user
+      const { error: roleError } = await admin
+        .from("user_roles")
+        .insert({
+          user_id: application.user_id,
+          role: "mentor",
+        });
 
-    // status history
-    // status history
-    await admin.from("mentor_application_status_history").insert([
-      {
-        application_id: applicationId,
-        new_status: "approved",
-        changed_by: null,
-        notes: interviewerNotes ?? "Approved by admin",
-      },
-    ]);
+      if (roleError) throw roleError;
 
-    // audit log
-    await admin.from("audit_logs").insert([
-      {
-        actor_id: null,
-        scope: "mentor_applications",
-        action: "approve",
-        details: { application_id: applicationId },
-      },
-    ]);
+      // Create mentor profile if it doesn't exist
+      const { error: profileError } = await admin
+        .from("mentor_profiles")
+        .upsert({
+          user_id: application.user_id,
+          is_active: true,
+          created_at: new Date().toISOString(),
+        });
 
-    // notify applicant
-    if (createdUserId) {
-      await admin.from("notifications").insert([
-        {
-          user_id: createdUserId,
-          type: "application_approved",
-          payload: { application_id: applicationId, tempPassword },
-        },
-      ]);
+      if (profileError) throw profileError;
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Mentor approved successfully" }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    } else {
+      // Reject application
+      const { error: updateError } = await admin
+        .from("mentor_applications")
+        .update({ 
+          status: "rejected",
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: authResult.userId,
+        })
+        .eq("id", applicationId);
+
+      if (updateError) throw updateError;
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Application rejected" }),
+        { headers: { "Content-Type": "application/json" } }
+      );
     }
-
-    return new Response(JSON.stringify({ userId: createdUserId, tempPassword }), {
+  } catch (err: any) {
+    console.error("Approve mentor error:", err);
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    console.error(err);
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), { status: 500 });
   }
 }
