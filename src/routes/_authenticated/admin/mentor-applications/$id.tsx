@@ -1,3 +1,4 @@
+
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,6 +16,7 @@ import {
   fetchApplicationHistory,
   fetchApplicationInterviews,
   fetchMentorNotes,
+  approveMentorApplication,
   APPLICATION_STATUS_LABELS,
   type MentorApplication,
 } from "@/lib/mentorApplications";
@@ -280,6 +282,34 @@ function AdminMentorApplicationDetail() {
     if (!id) return;
     setProcessing(true);
     try {
+      // ── APPROVAL: single atomic backend operation ──
+      // Do NOT update application status separately. The RPC performs the
+      // entire workflow (validate admin, update application, promote role
+      // mentor_pending -> mentor, activate mentor profile, audit log,
+      // notification) in one transaction.
+      if (status === "approved") {
+        if (!auth?.user?.id) throw new Error("You must be signed in as an admin.");
+        const result = await approveMentorApplication(id, auth.user.id);
+        if (!result.success) {
+          throw new Error(result.error || result.message || "Approval failed");
+        }
+        if (result.alreadyApproved) {
+          toast.success(result.message || "Mentor is already approved.");
+        } else {
+          toast.success(result.message || "Application approved");
+        }
+
+        // Force the auth session to refresh so the new mentor role is picked up
+        // by the mentor's pending page redirect, and refresh role queries.
+        qc.invalidateQueries({ queryKey: ["auth-session"] });
+        setRejectionReason("");
+        qc.invalidateQueries({ queryKey: ["admin-mentor-application", id] });
+        qc.invalidateQueries({ queryKey: ["admin-mentor-applications"] });
+        qc.invalidateQueries({ queryKey: ["admin-application-history", id] });
+        return;
+      }
+
+      // ── NON-APPROVAL transitions (reject, under_review, interview, etc.) ──
       const { error } = await admin
         .from("mentor_applications")
         .update({ status })
@@ -295,26 +325,6 @@ function AdminMentorApplicationDetail() {
           notes: rejectionReason.trim() || null,
         },
       ]);
-
-      // ── APPROVAL: promote mentor_pending → mentor ──
-      if (status === "approved" && application?.user_id) {
-        // Use a SECURITY DEFINER DB function to bypass RLS on user_roles.
-        const { error: approveError } = await supabase.rpc("approve_mentor_role", {
-          _user_id: application.user_id,
-        });
-        if (approveError) throw approveError;
-
-        // Force the auth session to refresh so the new mentor role is picked up
-        // immediately by the pending page's redirect effect.
-        qc.invalidateQueries({ queryKey: ["auth-session"] });
-
-        await insertNotification({
-          userId: application.user_id,
-          title: "Congratulations! 🎉",
-          body: "Your mentor account has been approved. You can now start teaching!",
-          link: "/mentor/dashboard",
-        });
-      }
 
       // ── REJECTION / REQUEST CHANGES: send notification ──
       if ((status === "rejected" || status === "under_review") && application?.user_id) {

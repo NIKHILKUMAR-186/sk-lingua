@@ -439,6 +439,52 @@ export async function insertNotification(opts: {
   return true;
 }
 
+/**
+ * Approve a mentor application via the atomic, transactional RPC.
+ *
+ * This is the ONLY client entry point for mentor approval. It delegates the
+ * entire workflow (validate admin, update application, promote role
+ * mentor_pending -> mentor, activate mentor profile, audit log, notification)
+ * to the backend `approve_mentor_application(application_id, admin_id)`
+ * function. The frontend must NOT update the application status separately.
+ *
+ * @returns a normalized result object with `success`, `alreadyApproved`,
+ *   `message`, and optional `applicationId`/`mentorId`.
+ */
+export async function approveMentorApplication(
+  applicationId: string,
+  adminId: string,
+): Promise<{
+  success: boolean;
+  alreadyApproved?: boolean;
+  message?: string;
+  error?: string;
+  code?: string;
+  applicationId?: string;
+  mentorId?: string;
+}> {
+  const { data, error } = await (supabase as any).rpc("approve_mentor_application", {
+    _application_id: applicationId,
+    _admin_id: adminId,
+  });
+
+  if (error) {
+    return { success: false, error: error.message, code: error.code };
+  }
+
+  // The RPC returns a jsonb result object.
+  const result = data ?? {};
+  return {
+    success: Boolean(result.success),
+    alreadyApproved: Boolean(result.alreadyApproved),
+    message: result.message,
+    error: result.error,
+    code: result.code,
+    applicationId: result.applicationId,
+    mentorId: result.mentorId,
+  };
+}
+
 export async function fetchApplicationHistory(applicationId: string) {
   const { data, error } = await client
     .from("mentor_application_status_history")

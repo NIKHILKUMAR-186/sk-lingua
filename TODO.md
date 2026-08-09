@@ -1,18 +1,27 @@
-# Google OAuth Redirect Loop Fix — Task Tracking
-
-## Root Cause
-`src/routes/_authenticated/route.tsx` `beforeLoad` polls `getUser()` for only 3000ms and
-`throw redirect({ to: "/auth" })` if the session isn't ready yet. During Google OAuth the
-session/exchange can legitimately take longer (especially for new users where profile/role
-rows are also created), so the guard treats a valid in-progress auth as "logged out" and
-bounces the user back to the login page, producing the redirect loop. `/auth` has no
-authenticated-user guard, so the user sticks on login.
+# Mentor Approval Fix — Implementation Progress
 
 ## Steps
-- [x] 0. Trace full OAuth flow (google-button, auth, signup, callback, supabase client, guards, auth.ts, migrations)
-- [x] 1. Add shared session-restoration + destination helpers to `src/lib/auth.ts`
-- [x] 2. Fix `src/routes/_authenticated/route.tsx` — proper session-restoration wait (getSession first, ~9s fallback), no premature `/auth` redirect
-- [x] 3. Fix `src/routes/auth.tsx` — add authenticated-user `beforeLoad` guard (role-aware redirect away from `/auth`)
-- [x] 4. Fix `src/routes/mentor-signup.tsx` — add same session-aware guard
-- [x] 5. Fix `src/routes/auth.callback.tsx` — idempotent upserts + defensive logging
-- [x] 6. Type-check (`tsc`) and fix any route/type errors — only pre-existing `src/lib/validation.ts` errors remain (unrelated/out of scope)
+
+- [x] Plan approved by user
+- [x] **Step 1**: Create SQL migration with atomic `approve_mentor_application` RPC
+  - [x] Fix `hourly_rate` reference (remove from `app_data`, preserve existing `mentor_profiles.hourly_rate`)
+  - [x] Single atomic RPC: validate admin, validate application, promote role, activate profile, audit log, notification
+  - [x] Idempotent: safe "already approved" if duplicate
+  - [x] Transaction safety: all-or-nothing
+- [x] **Step 2**: Add `approveMentorApplication` helper in `mentorApplications.ts`
+- [x] **Step 3**: Update frontend `$id.tsx` to use single RPC call
+  - [x] Remove old broken two-step approval path (application status update + separate RPC)
+  - [x] Call `approveMentorApplication(id, adminId)` for approval
+  - [x] Handle `alreadyApproved` idempotency
+  - [x] Show loading state, handle errors, refresh queries
+- [x] **Step 4**: Verify the fix
+  - [x] Remove old broken two-step approval path
+  - [x] Clean up unused old `approve_mentor_role` function reference
+  - [x] TypeScript check passes for modified files (only pre-existing errors in `validation.ts` remain)
+
+## Dev-mode Rate Limit Toggle
+
+- [x] Add env toggle to control rate limiting during development
+  - [x] `.env`: `RATE_LIMIT_ENABLED=false` (server runtime) and `VITE_RATE_LIMIT_ENABLED=false` (Vite client build-time)
+  - [x] `src/lib/rate-limit-config.ts` correctly parses `"true"`/`"false"` strings via `=== "true"`
+  - [x] `shouldRateLimit()` / `RATE_LIMIT_ENABLED` is the single source of truth; set to `true` in production to enable
