@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     // Get all mentor profiles
     const { data: mentorProfiles, error: profilesError } = await admin
       .from("mentor_profiles")
-      .select("user_id, headline, rating_avg, total_reviews, is_active, languages_taught")
+      .select("user_id, headline, rating_avg, total_reviews, is_active, languages_taught, hourly_rate")
       .eq("is_active", true);
 
     if (profilesError) throw profilesError;
@@ -60,32 +60,27 @@ export async function GET(request: Request) {
       ratingPerMentor[review.mentor_id].count++;
     });
 
-    // Get revenue per mentor (from payment_orders linked to sessions)
-    const { data: sessionsWithPayments, error: paymentError } = await admin
-      .from("sessions")
-      .select("mentor_id, payment_order_id")
-      .not("payment_order_id", "is", null);
-
-    if (paymentError) throw paymentError;
-
-    // Get payment amounts
-    const { data: payments, error: paymentsError } = await admin
-      .from("payment_orders")
-      .select("id, final_amount, payment_status")
-      .eq("payment_status", "completed");
-
-    if (paymentsError) throw paymentsError;
-
-    const paymentMap: Record<string, number> = {};
-    payments?.forEach((p: any) => {
-      paymentMap[p.id] = parseFloat(p.final_amount) || 0;
-    });
-
+    // ---- Revenue attribution -------------------------------------------------
+    // NOTE: There is no `payment_order_id` column on `sessions`, and
+    // `payment_orders` are recorded against the STUDENT (user_id) with a
+    // `related_id` pointing to a demo booking or subscription — there is no
+    // direct mentor → payment FK in the schema. Querying `sessions.payment_order_id`
+    // therefore throws a PostgREST "column does not exist" error and breaks the
+    // whole endpoint.
+    //
+    // Safest non-crashing estimate: a mentor's gross revenue proxy =
+    // completed sessions × the mentor's hourly_rate (from mentor_profiles).
+    // This never queries a non-existent column and keeps the response contract
+    // (including `revenue`) intact. If a more accurate source is added later
+    // (e.g. a session_rate / payout column), swap this block for it.
     const revenuePerMentor: Record<string, number> = {};
-    sessionsWithPayments?.forEach((session: any) => {
-      if (session.mentor_id && session.payment_order_id) {
-        revenuePerMentor[session.mentor_id] = (revenuePerMentor[session.mentor_id] || 0) + (paymentMap[session.payment_order_id] || 0);
-      }
+    completedSessions?.forEach((session: any) => {
+      if (!session.mentor_id) return;
+      const rate = Number(
+        mentorProfiles?.find((m: any) => m.user_id === session.mentor_id)?.hourly_rate ?? 0,
+      );
+      revenuePerMentor[session.mentor_id] =
+        (revenuePerMentor[session.mentor_id] || 0) + (Number.isFinite(rate) ? rate : 0);
     });
 
     // Get acceptance rate per mentor
@@ -140,23 +135,35 @@ export async function GET(request: Request) {
       };
     });
 
+    type TopMentor = {
+      userId: string;
+      headline: string | null;
+      ratingAvg: number;
+      totalReviews: number;
+      sessionsCompleted: number;
+      revenue: number;
+      acceptanceRate: number;
+    };
+
     // Sort by metric
     switch (metric) {
       case "rating":
-        rankedMentors.sort((a, b) => b.ratingAvg - a.ratingAvg);
+        rankedMentors.sort((a: TopMentor, b: TopMentor) => b.ratingAvg - a.ratingAvg);
         break;
       case "reviews":
-        rankedMentors.sort((a, b) => b.totalReviews - a.totalReviews);
+        rankedMentors.sort((a: TopMentor, b: TopMentor) => b.totalReviews - a.totalReviews);
         break;
       case "revenue":
-        rankedMentors.sort((a, b) => b.revenue - a.revenue);
+        rankedMentors.sort((a: TopMentor, b: TopMentor) => b.revenue - a.revenue);
         break;
       case "acceptance_rate":
-        rankedMentors.sort((a, b) => b.acceptanceRate - a.acceptanceRate);
+        rankedMentors.sort((a: TopMentor, b: TopMentor) => b.acceptanceRate - a.acceptanceRate);
         break;
       case "sessions_completed":
       default:
-        rankedMentors.sort((a, b) => b.sessionsCompleted - a.sessionsCompleted);
+        rankedMentors.sort(
+          (a: TopMentor, b: TopMentor) => b.sessionsCompleted - a.sessionsCompleted,
+        );
     }
 
     return new Response(

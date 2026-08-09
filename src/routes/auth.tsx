@@ -193,10 +193,10 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-hero-gradient/10 px-4 py-10">
+    <div className="min-h-screen bg-hero-gradient/10 px-4 py-10 ">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.3fr_1fr]">
         <section className="rounded-[2rem] bg-hero-gradient from-slate-950 via-slate-900 to-slate-800 p-12 text-white shadow-2xl shadow-slate-950/20">
-          <div className="max-w-xl">
+          <div className="max-w-xl ">
             <div className="mb-6 inline-flex items-center gap-2 h-11 w-18 rounded-full text-m uppercase tracking-[0.24em] text-white/80">
               <img src="/logo.png" alt="LINGUA" className="h-15 w-20" />
               <p className="bg-gradient">LINGUA</p>
@@ -227,7 +227,7 @@ function AuthPage() {
         <div className="space-y-6">
           {/* ── Two clearly separated options ── */}
           <div className="grid gap-4">
-            <Card className="border-primary/30 bg-primary/5">
+            {/* <Card className="border-primary/30 bg-primary/5">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
@@ -249,9 +249,9 @@ function AuthPage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <Card className="border-electric/30 bg-electric/5">
+            <Card className="border-electric/30 bg-electric/5 shadow-xl">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
@@ -273,8 +273,8 @@ function AuthPage() {
             </Card>
           </div>
 
-          <Card>
-            <CardHeader className="space-y-2">
+          <Card className="shadow-2xl">
+            <CardHeader className="space-y-2 ">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-18 items-center justify-center rounded-2xl text-gradient text-white">
                   <img src="/logo.png" alt="LINGUA" className="h-15 w-20" />
@@ -287,7 +287,19 @@ function AuthPage() {
                 </div>
               </div>
             </CardHeader>
+                  {/* <div className="rounded-3xl border border-border bg-background p-4 text-sm text-muted-foreground">
+                    Create a Student account and start learning with verified mentors.
+                  </div> */}
             <CardContent className="space-y-4">
+              <GoogleButton onClick={() => signInWithGoogle()} loading={loading} />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
               <Tabs value={formMode} onValueChange={(value) => setFormMode(value as AuthMode)}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Log in</TabsTrigger>
@@ -308,7 +320,9 @@ function AuthPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="login-password" aria-placeholder="password">Password</Label>
+                      <Label htmlFor="login-password" aria-placeholder="password">
+                        Password
+                      </Label>
                       <Input
                         id="login-password"
                         type="password"
@@ -323,25 +337,15 @@ function AuthPage() {
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log in"}
                     </Button>
                   </form>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                    </div>
-                  </div>
-                  <GoogleButton onClick={() => signInWithGoogle()} loading={loading} />
+                      {/* <GoogleButton onClick={() => signInWithGoogle("student")} loading={loading} /> */}
                 </TabsContent>
                 <TabsContent value="signup" className="space-y-4">
-                  <div className="rounded-3xl border border-border bg-background p-4 text-sm text-muted-foreground">
-                    Create a Student account and start learning with verified mentors.
-                  </div>
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div>
                       <Label htmlFor="signup-name">Full name</Label>
                       <Input
                         id="signup-name"
+                        placeholder = "Enter your Name"
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
@@ -353,6 +357,7 @@ function AuthPage() {
                         id="signup-email"
                         type="email"
                         autoComplete="email"
+                        placeholder = "Enter your Email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -363,6 +368,7 @@ function AuthPage() {
                       <Input
                         id="signup-password"
                         type="password"
+                        placeholder = "Create New password"
                         autoComplete="new-password"
                         minLength={6}
                         required
@@ -370,19 +376,21 @@ function AuthPage() {
                         onChange={(e) => setPassword(e.target.value)}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    {/* group relative w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-[15px] font-medium text-slate-800 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none disabled:active:scale-100 */}
+                    <Button type="submit" className="w-full shadow-sm order border-slate-200 hover:border-slate-100 hover:bg-mentor/30 hover:text-slate-900 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" disabled={loading}>
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
                     </Button>
                   </form>
                   <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
+                    {/* <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                    </div>
+                    </div> */}
+                    {/* <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or continue with
+                      </span>
+                    </div> */}
                   </div>
-                  <GoogleButton onClick={() => signInWithGoogle("student")} loading={loading} />
                 </TabsContent>
               </Tabs>
               <CardDescription className="text-center text-xs">
@@ -390,7 +398,7 @@ function AuthPage() {
               </CardDescription>
             </CardContent>
           </Card>
-          <div className="rounded-3xl border border-border bg-background p-6 shadow-sm shadow-slate-900/5">
+          <div className="rounded-3xl border border-border bg-background p-6 shadow-xl shadow-slate-900/5">
             <h2 className="text-base font-semibold">Why Lingua?</h2>
             <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
               <li>• Personalized onboarding for learners and mentors.</li>
@@ -405,7 +413,8 @@ function AuthPage() {
 }
 
 function getSignupErrorMessage(error: unknown): string {
-  if (!error || typeof error !== "object") return "We could not create your account. Please try again.";
+  if (!error || typeof error !== "object")
+    return "We could not create your account. Please try again.";
   const value = error as Record<string, unknown>;
   const code = String(value.code ?? "").toLowerCase();
   const message = String(value.message ?? "").toLowerCase();
@@ -418,7 +427,11 @@ function getSignupErrorMessage(error: unknown): string {
     return "Choose a stronger password with at least 6 characters.";
   if (message.includes("email confirmation") || message.includes("confirm your email"))
     return "Check your email to confirm your account.";
-  if (code === "42501" || message.includes("row-level security") || message.includes("permission denied"))
+  if (
+    code === "42501" ||
+    message.includes("row-level security") ||
+    message.includes("permission denied")
+  )
     return "Your account was created, but permission to finish your profile was denied.";
   if (message.includes("network") || message.includes("failed to fetch"))
     return "We could not connect to the server. Check your connection and try again.";
