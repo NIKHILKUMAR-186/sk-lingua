@@ -120,7 +120,7 @@ function AdminDashboard() {
       icon: Users,
       color: "text-primary",
       bg: "bg-primary/5",
-      link: "/admin/analytics",
+      link: "/admin/students",
     },
     {
       title: "Demo Queue",
@@ -247,6 +247,12 @@ function AdminDashboard() {
               <CardDescription>Common admin tasks</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3">
+              <Button asChild variant="outline" className="justify-start">
+                <Link to="/admin/students">
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage students
+                </Link>
+              </Button>
               <Button asChild variant="outline" className="justify-start">
                 <Link to="/admin/booking-queue">
                   <Inbox className="mr-2 h-4 w-4" />

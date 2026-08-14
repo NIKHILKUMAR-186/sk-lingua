@@ -6,12 +6,20 @@ import {
   getStudentSubscription,
   getStudentSubscriptionHistory,
   getSubscriptionPlans,
+  listAllPlansForAdmin,
+  createSubscriptionPlan,
+  updateSubscriptionPlan,
+  setPlanActive,
   purchaseSubscription,
   renewSubscription,
   cancelSubscription,
   canBookSession,
 } from "@/lib/subscriptions";
-import type { SubscriptionPlan, StudentSubscription } from "@/lib/subscriptions";
+import type {
+  SubscriptionPlan,
+  SubscriptionPlanInput,
+  StudentSubscription,
+} from "@/lib/subscriptions";
 
 export function useSubscriptionPlans() {
   return useQuery<SubscriptionPlan[]>({
@@ -37,6 +45,8 @@ export function useStudentSubscription(userId: string | null) {
     staleTime: 1000 * 60, // 1 minute
   });
 }
+
+export const useCurrentStudentSubscription = useStudentSubscription;
 
 export function useStudentSubscriptionHistory(userId: string | null) {
   return useQuery<StudentSubscription[]>({
@@ -116,6 +126,72 @@ export function useCancelSubscription() {
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to cancel subscription");
+    },
+  });
+}
+
+// ------------------------------------------------------------------
+// ADMIN plan management hooks
+// ------------------------------------------------------------------
+
+// List ALL plans (active + inactive) for the admin management screen.
+export function useAdminPlans() {
+  return useQuery<SubscriptionPlan[]>({
+    queryKey: ["admin-subscription-plans"],
+    queryFn: listAllPlansForAdmin,
+    staleTime: 1000 * 60,
+  });
+}
+
+// Create a new plan (admin only).
+export function useCreatePlan() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: SubscriptionPlanInput) => createSubscriptionPlan(input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-subscription-plans"] });
+      qc.invalidateQueries({ queryKey: ["subscription-plans"] });
+      toast.success("Plan created successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to create plan");
+    },
+  });
+}
+
+// Edit an existing plan (admin only).
+export function useUpdatePlan() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ planId, input }: { planId: string; input: Partial<SubscriptionPlanInput> }) =>
+      updateSubscriptionPlan(planId, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-subscription-plans"] });
+      qc.invalidateQueries({ queryKey: ["subscription-plans"] });
+      toast.success("Plan updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update plan");
+    },
+  });
+}
+
+// Activate / deactivate a plan (admin only).
+export function useSetPlanActive() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ planId, isActive }: { planId: string; isActive: boolean }) =>
+      setPlanActive(planId, isActive),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["admin-subscription-plans"] });
+      qc.invalidateQueries({ queryKey: ["subscription-plans"] });
+      toast.success(`Plan ${data.is_active ? "activated" : "deactivated"}`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update plan status");
     },
   });
 }

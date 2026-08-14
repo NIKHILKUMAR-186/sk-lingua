@@ -13,6 +13,27 @@ export interface SubscriptionPlan {
   features: Json;
   recommended: boolean;
   is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Input shape for creating a new subscription plan (admin only).
+ * billing_cycle defaults to "monthly" when omitted so the NOT NULL
+ * database column is always satisfied.
+ */
+export interface SubscriptionPlanInput {
+  name: string;
+  description?: string | null;
+  price: number;
+  currency?: string;
+  billing_cycle?: string;
+  num_sessions: number;
+  validity_days?: number | null;
+  recommended?: boolean;
+  is_active?: boolean;
+  sort_order?: number;
 }
 
 export interface StudentSubscription {
@@ -24,11 +45,16 @@ export interface StudentSubscription {
   total_session_slots: number;
   used_session_slots: number;
   bonus_slots: number;
+  price_at_purchase: number | null;
+  currency_at_purchase: string | null;
+  validity_days_at_purchase: number | null;
+  payment_order_id: string | null;
   purchased_at: string;
   activated_at: string | null;
   expires_at: string | null;
   renewed_at: string | null;
   cancelled_at: string | null;
+  cancellation_reason?: string | null;
   plan?: SubscriptionPlan;
 }
 
@@ -38,10 +64,92 @@ export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
     .from("subscription_plans")
     .select("*")
     .eq("is_active", true)
-    .order("sort_order");
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
   return data ?? [];
+}
+
+// ------------------------------------------------------------------
+// ADMIN plan management (write access is enforced by Supabase RLS:
+// only users with the 'admin' role in user_roles can INSERT/UPDATE).
+// ------------------------------------------------------------------
+
+// List ALL plans for the admin UI (active + inactive), deterministic order.
+export async function listAllPlansForAdmin(): Promise<SubscriptionPlan[]> {
+  const { data, error } = await supabase
+    .from("subscription_plans")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+// Create a new subscription plan (admin only).
+export async function createSubscriptionPlan(
+  input: SubscriptionPlanInput,
+): Promise<SubscriptionPlan> {
+  const { data, error } = await supabase
+    .from("subscription_plans")
+    .insert({
+      name: input.name,
+      description: input.description ?? null,
+      price: input.price,
+      currency: input.currency ?? "INR",
+      billing_cycle: input.billing_cycle ?? "monthly",
+      num_sessions: input.num_sessions,
+      validity_days: input.validity_days ?? null,
+      is_active: input.is_active ?? true,
+      sort_order: input.sort_order ?? 0,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Update an existing subscription plan (admin only).
+export async function updateSubscriptionPlan(
+  planId: string,
+  input: Partial<SubscriptionPlanInput>,
+): Promise<SubscriptionPlan> {
+  const { data, error } = await supabase
+    .from("subscription_plans")
+    .update({
+      name: input.name,
+      description: input.description,
+      price: input.price,
+      currency: input.currency,
+      billing_cycle: input.billing_cycle,
+      num_sessions: input.num_sessions,
+      validity_days: input.validity_days,
+      is_active: input.is_active,
+      sort_order: input.sort_order,
+    })
+    .eq("id", planId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Toggle a plan between active / inactive (admin only).
+// Deactivated plans remain in the database for historical references.
+export async function setPlanActive(planId: string, isActive: boolean): Promise<SubscriptionPlan> {
+  const { data, error } = await supabase
+    .from("subscription_plans")
+    .update({ is_active: isActive })
+    .eq("id", planId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
 // Get single plan
@@ -68,20 +176,38 @@ export async function getDemoPlan(): Promise<SubscriptionPlan | null> {
   return data ?? null;
 }
 
-// Get current subscription for student
-export async function getStudentSubscription(userId: string): Promise<StudentSubscription | null> {
+// Get current active subscription for student (authoritative, checks status & expiration)
+export async function getCurrentStudentSubscription(userId: string): Promise<StudentSubscription | null> {
   const { data, error } = await (supabase.from("student_subscriptions" as any) as any)
     .select("*, plan:subscription_plans(*)")
     .eq("user_id", userId)
     .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) throw error;
-  return data ?? null;
+  if (!data) return null;
+
+  // Check client-side / runtime timestamp expiration derived check
+  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    // Subscription timestamp has expired
+    return {
+      ...data,
+      status: "expired",
+    };
+  }
+
+  return data;
 }
 
+// Alias for getStudentSubscription
+export const getStudentSubscription = getCurrentStudentSubscription;
+
 // Get current subscription for student (including expired/cancelled)
-export async function getStudentSubscriptionAnyStatus(userId: string): Promise<StudentSubscription | null> {
+export async function getStudentSubscriptionAnyStatus(
+  userId: string,
+): Promise<StudentSubscription | null> {
   const { data, error } = await (supabase.from("student_subscriptions" as any) as any)
     .select("*, plan:subscription_plans(*)")
     .eq("user_id", userId)
@@ -106,20 +232,38 @@ export async function getStudentSubscriptionHistory(
   return data ?? [];
 }
 
-// Purchase subscription
+// Purchase subscription (Idempotent + Plan Snapshotting)
 export async function purchaseSubscription(
   userId: string,
   planId: string,
   paymentOrderId: string,
 ): Promise<StudentSubscription> {
+  // 1. Idempotency Check: if a subscription for this payment order already exists, return it
+  if (paymentOrderId) {
+    const { data: existing } = await (supabase.from("student_subscriptions" as any) as any)
+      .select("*, plan:subscription_plans(*)")
+      .eq("payment_order_id", paymentOrderId)
+      .maybeSingle();
+
+    if (existing) {
+      return existing;
+    }
+  }
+
+  // 2. Fetch plan template
   const plan = await getSubscriptionPlan(planId);
   if (!plan) throw new Error("Plan not found");
+
+  if (!plan.is_active) {
+    throw new Error("This subscription plan is not active");
+  }
 
   const now = new Date();
   const expiresAt = plan.validity_days
     ? new Date(now.getTime() + plan.validity_days * 24 * 60 * 60 * 1000)
     : null;
 
+  // 3. Insert new subscription with snapshotted values
   const { data, error } = await (supabase.from("student_subscriptions" as any) as any)
     .insert({
       user_id: userId,
@@ -128,14 +272,30 @@ export async function purchaseSubscription(
       current_session_slots: plan.num_sessions,
       total_session_slots: plan.num_sessions,
       used_session_slots: 0,
+      bonus_slots: 0,
+      price_at_purchase: plan.price,
+      currency_at_purchase: plan.currency || "INR",
+      validity_days_at_purchase: plan.validity_days,
+      payment_order_id: paymentOrderId,
+      purchased_at: now.toISOString(),
       activated_at: now.toISOString(),
       expires_at: expiresAt?.toISOString() ?? null,
       metadata: { payment_order_id: paymentOrderId },
     })
-    .select()
+    .select("*, plan:subscription_plans(*)")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    // If concurrent insert occurred with same payment_order_id, fetch existing
+    if (error.code === "23505" && paymentOrderId) {
+      const { data: existing } = await (supabase.from("student_subscriptions" as any) as any)
+        .select("*, plan:subscription_plans(*)")
+        .eq("payment_order_id", paymentOrderId)
+        .single();
+      if (existing) return existing;
+    }
+    throw error;
+  }
 
   // Record in subscription history
   await recordSubscriptionEvent(userId, data.id, planId, "purchased");

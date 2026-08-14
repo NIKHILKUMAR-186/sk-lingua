@@ -590,6 +590,11 @@ export type Database = {
           current_session_slots: number;
           total_session_slots: number;
           used_session_slots: number;
+          bonus_slots: number;
+          price_at_purchase: number | null;
+          currency_at_purchase: string | null;
+          validity_days_at_purchase: number | null;
+          payment_order_id: string | null;
           purchased_at: string;
           activated_at: string | null;
           expires_at: string | null;
@@ -608,6 +613,11 @@ export type Database = {
           current_session_slots: number;
           total_session_slots: number;
           used_session_slots?: number;
+          bonus_slots?: number;
+          price_at_purchase?: number | null;
+          currency_at_purchase?: string | null;
+          validity_days_at_purchase?: number | null;
+          payment_order_id?: string | null;
           purchased_at?: string;
           activated_at?: string | null;
           expires_at?: string | null;
@@ -626,6 +636,11 @@ export type Database = {
           current_session_slots?: number;
           total_session_slots?: number;
           used_session_slots?: number;
+          bonus_slots?: number;
+          price_at_purchase?: number | null;
+          currency_at_purchase?: string | null;
+          validity_days_at_purchase?: number | null;
+          payment_order_id?: string | null;
           purchased_at?: string;
           activated_at?: string | null;
           expires_at?: string | null;

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscriptionPlans } from "@/hooks/use-subscriptions";
+import { purchaseSubscription } from "@/lib/subscriptions";
 import { useCreatePaymentOrder, useCompletePayment } from "@/hooks/use-payments";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,7 @@ function CheckoutPage() {
       const paymentOrder = await createPayment.mutateAsync({
         userId,
         order_type: "subscription",
+        related_id: plan!.id,
         amount: plan!.price,
         tax_amount: taxAmount,
         final_amount: finalAmount,
@@ -101,7 +103,7 @@ function CheckoutPage() {
 
       // Simulate payment processing
       // In production, this would integrate with Razorpay, Stripe, etc.
-      await simulatePaymentProcessing(paymentOrder.id);
+      await simulatePaymentProcessing(paymentOrder.id, plan!.id);
     } catch (error) {
       console.error("Checkout failed:", error);
       setError(error instanceof Error ? error.message : "Payment processing failed");
@@ -110,7 +112,7 @@ function CheckoutPage() {
     }
   }
 
-  async function simulatePaymentProcessing(orderId: string) {
+  async function simulatePaymentProcessing(orderId: string, planId: string) {
     // Simulate payment gateway response
     const transactionId = `TXN_${Date.now()}`;
     const gatewayOrderId = `RZP_${Date.now()}`;
@@ -127,6 +129,9 @@ function CheckoutPage() {
           timestamp: new Date().toISOString(),
         },
       });
+
+      // Automatically create / activate subscription with snapshotted plan values & payment order reference
+      await purchaseSubscription(userId, planId, orderId);
 
       setStep("confirmation");
     } catch (error) {

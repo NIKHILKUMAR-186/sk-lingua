@@ -168,7 +168,7 @@ function StudentSessions() {
               related_id: request.id,
               metadata: {
                 request_id: request.id,
-                student_id: auth.user.id,
+                student_id: auth?.user?.id || "",
                 topic: reqTopic,
                 language: reqLanguage,
                 scheduled_time: scheduled,

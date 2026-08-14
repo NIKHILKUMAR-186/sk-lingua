@@ -201,7 +201,7 @@ export function sanitizeString(value: string): string {
     .replace(/&/g, "&")
     .replace(/</g, "<")
     .replace(/>/g, ">")
-    .replace(/"/g, """)
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
 

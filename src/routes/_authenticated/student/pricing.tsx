@@ -5,8 +5,9 @@ import { useSubscriptionPlans } from "@/hooks/use-subscriptions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, ArrowRight, Zap } from "lucide-react";
+import { CheckCircle2, ArrowRight, Zap, AlertCircle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import { CardSkeleton } from "@/components/skeleton-loader";
 
 export const Route = createFileRoute("/_authenticated/student/pricing")({
   component: PricingPage,
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/student/pricing")({
 function PricingPage() {
   const { data: auth } = useAuth();
   const navigate = useNavigate();
-  const { data: plans = [], isLoading } = useSubscriptionPlans();
+  const { data: plans = [], isLoading, isError, refetch } = useSubscriptionPlans();
 
   if (!auth?.user) {
     return (
@@ -73,7 +74,29 @@ function PricingPage() {
 
         {/* Plans Grid */}
         {isLoading ? (
-          <div className="text-center text-muted-foreground">Loading plans...</div>
+          <div className="grid gap-6 md:grid-cols-5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <CardSkeleton key={i} rows={5} />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed p-12 text-center">
+            <AlertCircle className="h-8 w-8 text-destructive" />
+            <p className="font-medium">Could not load plans.</p>
+            <p className="text-sm text-muted-foreground">
+              Please try again. If this persists, check your connection.
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        ) : subscriptionPlans.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed p-12 text-center">
+            <div className="text-4xl">📅</div>
+            <p className="font-medium">No plans are currently available.</p>
+            <p className="text-sm text-muted-foreground">Please check back soon.</p>
+          </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-5">
             {subscriptionPlans.map((plan, i) => (

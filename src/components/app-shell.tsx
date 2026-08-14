@@ -70,6 +70,7 @@ const ADMIN_ITEMS = [
   { title: "Notification Broadcasts", to: "/admin/notification-broadcasts", icon: Bell },
   { title: "Audit Logs", to: "/admin/audit-logs", icon: History },
   { title: "Subscription Plans", to: "/admin/subscription-plans", icon: Crown },
+  { title: "Students", to: "/admin/students", icon: Users },
 ] as const;
 
 const ACCOUNT_ITEMS = [

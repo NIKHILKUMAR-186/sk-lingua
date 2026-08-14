@@ -199,11 +199,10 @@ export async function getAllRecentAdjustments(
 export async function getAdminDashboardStats() {
   const [studentsResult, adjustmentsResult] = await Promise.all([
     // Get all active subscriptions
-    supabase.rpc("get_all_student_subscriptions"),
+    (supabase.rpc as any)("get_all_student_subscriptions"),
     
     // Get recent adjustments
-    supabase
-      .from("subscription_slot_adjustments")
+    (supabase.from("subscription_slot_adjustments" as any) as any)
       .select("*")
       .order("created_at", { ascending: false })
       .limit(10),
@@ -212,18 +211,18 @@ export async function getAdminDashboardStats() {
   if (studentsResult.error) throw studentsResult.error;
   if (adjustmentsResult.error) throw adjustmentsResult.error;
 
-  const students = studentsResult.data ?? [];
-  const recentAdjustments = adjustmentsResult.data ?? [];
+  const students = Array.isArray(studentsResult.data) ? studentsResult.data : [];
+  const recentAdjustments = Array.isArray(adjustmentsResult.data) ? adjustmentsResult.data : [];
 
   const stats = {
     totalActiveSubscriptions: students.length,
     totalExpired: 0, // Would need a separate query
     totalSessionsRemaining: students.reduce(
-      (sum, s) => sum + (s.available_slots || 0),
+      (sum: number, s: any) => sum + (s.available_slots || 0),
       0,
     ),
-    studentsNearExpiry: students.filter((s) => s.is_near_expiry).length,
-    studentsWithZeroSlots: students.filter((s) => s.is_zero_slots).length,
+    studentsNearExpiry: students.filter((s: any) => s.is_near_expiry).length,
+    studentsWithZeroSlots: students.filter((s: any) => s.is_zero_slots).length,
     recentAdjustments,
   };
 
@@ -266,7 +265,7 @@ export async function extendSubscriptionExpiry(
   if (updateError) throw updateError;
 
   // Create adjustment record
-  const { data: adjustment, error: adjustmentError } = await supabase.rpc(
+  const { data: adjustment, error: adjustmentError } = await (supabase.rpc as any)(
     "create_slot_adjustment",
     {
       p_student_id: subscription.user_id,
@@ -288,7 +287,7 @@ export async function extendSubscriptionExpiry(
 
   if (adjustmentError) throw adjustmentError;
 
-  return adjustment as SubscriptionSlotAdjustment;
+  return adjustment as unknown as SubscriptionSlotAdjustment;
 }
 
 /**
@@ -339,7 +338,7 @@ export async function replaceSubscriptionPlan(
   if (updateError) throw updateError;
 
   // Create adjustment record
-  const { data: adjustment, error: adjustmentError } = await supabase.rpc(
+  const { data: adjustment, error: adjustmentError } = await (supabase.rpc as any)(
     "create_slot_adjustment",
     {
       p_student_id: subscription.user_id,
@@ -354,7 +353,7 @@ export async function replaceSubscriptionPlan(
       p_metadata: {
         old_plan_id: subscription.plan_id,
         new_plan_id: newPlanId,
-        old_plan_name: subscription.plan?.name || "Unknown",
+        old_plan_name: (subscription as any).plan?.name || "Unknown",
         new_plan_name: newPlan.name,
       },
     },
@@ -362,5 +361,5 @@ export async function replaceSubscriptionPlan(
 
   if (adjustmentError) throw adjustmentError;
 
-  return adjustment as SubscriptionSlotAdjustment;
+  return adjustment as unknown as SubscriptionSlotAdjustment;
 }
