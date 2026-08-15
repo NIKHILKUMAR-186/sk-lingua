@@ -34,28 +34,12 @@ export interface StudentSubscriptionLite {
   plan?: PlanLite | null;
 }
 
-export interface StudentSearchResult {
-  id: string;
-  full_name: string;
-  email: string;
-  reference_no: number | null;
-  avatar_url: string | null;
-  phone_number: string | null;
-  native_language: string | null;
-  state: string | null;
-  country: string | null;
-  subscription: StudentSubscriptionLite | null;
-}
-
 export interface StudentProfileInfo {
   id: string;
   full_name: string | null;
   email: string | null;
   reference_no: number | null;
   avatar_url: string | null;
-  phone_number: string | null;
-  native_language: string | null;
-  state: string | null;
   country: string | null;
   bio: string | null;
   onboarded: boolean | null;
@@ -157,27 +141,6 @@ async function apiFetch<T = any>(url: string, init?: RequestInit): Promise<ApiRe
 // ------------------------------------------------------------------
 // Service functions
 // ------------------------------------------------------------------
-
-export async function searchStudents(q: string): Promise<StudentSearchResult[]> {
-  const json = await apiFetch<StudentSearchResult[]>(
-    `/api/admin/student-subscriptions/search?q=${encodeURIComponent(q)}`,
-  );
-  return json.data ?? [];
-}
-
-/**
- * Fetch the full student roster (optionally filtered by a search term).
- * When `q` is empty/null every student is returned — this is the key
- * difference from `searchStudents`, which returns [] for an empty query.
- */
-export async function listAllStudents(q?: string): Promise<StudentSearchResult[]> {
-  const params = new URLSearchParams();
-  if (q && q.trim()) params.set("q", q.trim());
-  const json = await apiFetch<StudentSearchResult[]>(
-    `/api/admin/students/list?${params.toString()}`,
-  );
-  return json.data ?? [];
-}
 
 /**
  * Persist lightweight profile edits made from the admin student detail view.

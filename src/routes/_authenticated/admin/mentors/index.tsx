@@ -38,7 +38,6 @@ interface MentorRow {
     email: string | null;
     avatar_url: string | null;
   } | null;
-  role: string;
 }
 
 function AdminMentors() {
@@ -49,12 +48,61 @@ function AdminMentors() {
   const { data: mentors = [], isLoading, error, refetch } = useQuery({
     queryKey: ["admin-mentors", query],
     queryFn: async () => {
-      const res = await fetch(`/api/admin/mentors/list?q=${encodeURIComponent(query)}`, {
-        headers: await getAuthHeaders(),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json?.error || "Failed to load mentors");
-      return (json.data ?? []) as MentorRow[];
+      const q = query.trim();
+      let profileQuery = supabase
+        .from("profiles")
+        .select(
+          "id, full_name, email, avatar_url, country",
+        )
+        .order("full_name", { ascending: true })
+        .limit(200);
+
+      if (q) {
+        profileQuery = profileQuery.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
+      }
+
+      const { data: profiles, error: profilesError } = await profileQuery;
+      if (profilesError) throw profilesError;
+
+      const userIds = (profiles ?? []).map((p) => p.id);
+
+      let mentorRows: any[] = [];
+      if (userIds.length > 0) {
+        const { data: mRows, error: mError } = await supabase
+          .from("mentor_profiles")
+          .select("*")
+          .in("user_id", userIds);
+        if (mError) throw mError;
+        mentorRows = mRows ?? [];
+      }
+
+      const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+      const mentorMap = new Map((mentorRows ?? []).map((m) => [m.user_id, m]));
+
+      const data: MentorRow[] = (profiles ?? [])
+        .filter((p) => mentorMap.has(p.id))
+        .map((p) => {
+          const m = mentorMap.get(p.id)!;
+          return {
+            user_id: p.id,
+            headline: m.headline,
+            bio: m.bio,
+            rating_avg: m.rating_avg,
+            total_reviews: m.total_reviews,
+            total_students: m.total_students,
+            total_sessions: m.total_sessions,
+            years_experience: m.years_experience,
+            is_verified: m.is_verified,
+            is_active: m.is_active,
+            user: {
+              full_name: p.full_name,
+              email: p.email,
+              avatar_url: p.avatar_url,
+            },
+          };
+        });
+
+      return data;
     },
     staleTime: 1000 * 30,
   });
@@ -230,15 +278,4 @@ function AdminMentors() {
       </div>
     </AdminLayout>
   );
-}
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
 }

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  listAllStudents,
   getStudentDetail,
   addSessions,
   removeSessions,
@@ -12,27 +11,12 @@ import {
   createSubscription,
   replacePlan,
   fetchPlans,
-  type StudentSearchResult,
   type StudentDetail,
   type StudentSubscriptionLite,
   type PlanLite,
 } from "../services/student-control.service";
 
 const adminKey = ["admin", "students"];
-
-/**
- * Fetch the full student roster (optionally filtered by a search term).
- * Unlike useStudentSearch, this always returns the full list when the
- * query is empty — so the /admin/students page renders students by default.
- */
-export function useStudents(query?: string) {
-  const q = (query ?? "").trim();
-  return useQuery({
-    queryKey: [...adminKey, "list", q],
-    queryFn: () => listAllStudents(q),
-    staleTime: 1000 * 30,
-  }) as UseQueryResult<StudentSearchResult[]>;
-}
 
 export function useStudentDetail(studentId: string | null, subscriptionId?: string | null) {
   return useQuery({

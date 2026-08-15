@@ -74,9 +74,6 @@ function StudentDetailContent() {
 
   // Profile edit state
   const [editName, setEditName] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editLanguage, setEditLanguage] = useState("");
-  const [editState, setEditState] = useState("");
   const [editCountry, setEditCountry] = useState("");
   const [editBio, setEditBio] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -92,9 +89,6 @@ function StudentDetailContent() {
   const [hasInitialised, setHasInitialised] = useState(false);
   if (!hasInitialised && student) {
     setEditName(student.full_name ?? "");
-    setEditPhone(student.phone_number ?? "");
-    setEditLanguage(student.native_language ?? "");
-    setEditState(student.state ?? "");
     setEditCountry(student.country ?? "");
     setEditBio(student.bio ?? "");
     setHasInitialised(true);
@@ -118,13 +112,15 @@ function StudentDetailContent() {
         studentId,
         updates: {
           full_name: editName || undefined,
-          phone_number: editPhone || undefined,
-          native_language: editLanguage || undefined,
-          state: editState || undefined,
           country: editCountry || undefined,
           bio: editBio || undefined,
         },
       });
+      toast.success("Profile updated");
+      qc.invalidateQueries({ queryKey: ["admin-students"] });
+      detail.refetch?.();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update profile");
     } finally {
       setIsSaving(false);
     }
@@ -183,27 +179,6 @@ function StudentDetailContent() {
             <div className="space-y-1.5">
               <Label htmlFor="email">Email (read-only)</Label>
               <Input id="email" type="email" value={student.email ?? ""} disabled />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="phone_number">Phone</Label>
-              <Input
-                id="phone_number"
-                value={editPhone}
-                onChange={(e) => setEditPhone(e.target.value)}
-                placeholder="+1 555 000 0000"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="native_language">Native Language</Label>
-              <Input
-                id="native_language"
-                value={editLanguage}
-                onChange={(e) => setEditLanguage(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="state">State</Label>
-              <Input id="state" value={editState} onChange={(e) => setEditState(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="country">Country</Label>

@@ -33,12 +33,9 @@ interface MentorDetail {
     full_name: string | null;
     email: string | null;
     avatar_url: string | null;
-    phone_number: string | null;
-    state: string | null;
     country: string | null;
     created_at: string | null;
   } | null;
-  roles: string[];
 }
 
 function AdminMentorDetail() {
@@ -47,15 +44,46 @@ function AdminMentorDetail() {
   const qc = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: mentor, isLoading } = useQuery({
+  const { data: mentor, isLoading, refetch } = useQuery({
     queryKey: ["admin-mentor-detail", mentorId],
     queryFn: async () => {
-      const res = await fetch(`/api/admin/mentors/${encodeURIComponent(mentorId)}`, {
-        headers: await getAuthHeaders(),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json?.error || "Failed to load mentor");
-      return json.data as MentorDetail;
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, avatar_url, country, created_at")
+        .eq("id", mentorId)
+        .single();
+
+      if (profileError || !profile) throw new Error("Mentor not found");
+
+      const { data: mentorProfile, error: mentorError } = await supabase
+        .from("mentor_profiles")
+        .select("*")
+        .eq("user_id", mentorId)
+        .single();
+
+      if (mentorError || !mentorProfile) throw new Error("Mentor profile not found");
+
+      return {
+        user_id: profile.id,
+        headline: mentorProfile.headline,
+        bio: mentorProfile.bio,
+        years_experience: mentorProfile.years_experience,
+        teaching_style: mentorProfile.teaching_style,
+        availability_preview: mentorProfile.availability_preview,
+        is_verified: mentorProfile.is_verified,
+        is_active: mentorProfile.is_active,
+        rating_avg: mentorProfile.rating_avg,
+        total_reviews: mentorProfile.total_reviews,
+        total_students: mentorProfile.total_students,
+        total_sessions: mentorProfile.total_sessions,
+        user: {
+          full_name: profile.full_name,
+          email: profile.email,
+          avatar_url: profile.avatar_url,
+          country: profile.country,
+          created_at: profile.created_at,
+        },
+      } as MentorDetail;
     },
     staleTime: 1000 * 30,
   });
@@ -107,10 +135,9 @@ function AdminMentorDetail() {
   async function saveProfile() {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/mentors/${encodeURIComponent(mentorId)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...(await getAuthHeaders()) },
-        body: JSON.stringify({
+      const { error } = await supabase
+        .from("mentor_profiles")
+        .update({
           headline,
           bio,
           years_experience: Number(yearsExperience) || 0,
@@ -118,10 +145,10 @@ function AdminMentorDetail() {
           availability_preview: availabilityPreview,
           is_verified: isVerified,
           is_active: isActive,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json?.error || "Failed to update mentor");
+        })
+        .eq("user_id", mentorId);
+
+      if (error) throw error;
       toast.success("Mentor updated successfully");
       qc.invalidateQueries({ queryKey: ["admin-mentors"] });
       qc.invalidateQueries({ queryKey: ["admin-mentor-detail", mentorId] });
@@ -134,13 +161,12 @@ function AdminMentorDetail() {
 
   async function toggleStatus() {
     try {
-      const res = await fetch(`/api/admin/mentors/${encodeURIComponent(mentorId)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...(await getAuthHeaders()) },
-        body: JSON.stringify({ is_active: !isActive }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json?.error || "Failed to update status");
+      const { error } = await supabase
+        .from("mentor_profiles")
+        .update({ is_active: !isActive })
+        .eq("user_id", mentorId);
+
+      if (error) throw error;
       setIsActive(!isActive);
       toast.success(isActive ? "Mentor deactivated" : "Mentor activated");
       qc.invalidateQueries({ queryKey: ["admin-mentors"] });
@@ -159,7 +185,7 @@ function AdminMentorDetail() {
           <div>
             <h1 className="text-2xl font-display">{mentor.user?.full_name || "Mentor"}</h1>
             <p className="text-sm text-muted-foreground">
-              {mentor.user?.email} {mentor.user?.state ? `· ${mentor.user.state}` : ""}
+              {mentor.user?.email}
             </p>
           </div>
         </div>
@@ -260,22 +286,10 @@ function AdminMentorDetail() {
               <Badge variant={mentor.is_active ? "default" : "secondary"}>
                 {mentor.is_active ? "Active" : "Inactive"}
               </Badge>
-              <Badge variant="outline">{mentor.roles?.join(", ") || "mentor"}</Badge>
             </div>
           </CardContent>
         </Card>
       </div>
     </AdminLayout>
   );
-}
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
 }

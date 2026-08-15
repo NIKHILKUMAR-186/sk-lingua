@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     const { data: student, error: studentError } = await admin
       .from("profiles")
       .select(
-        "id, full_name, email, reference_no, avatar_url, phone_number, native_language, state, country, bio, onboarded, created_at"
+        "id, full_name, email, reference_no, avatar_url, country, bio, onboarded, created_at"
       )
       .eq("id", studentId)
       .single();
