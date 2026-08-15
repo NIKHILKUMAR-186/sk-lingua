@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { getDashboardRoute } from "@/lib/auth";
 
 const NAV_LINKS = [
-  { label: "Method", hash: "method" },
+  { label: "Home", hash: "" },
   { label: "How it works", hash: "how" },
   { label: "Mentors", hash: "mentors" },
   { label: "Pricing", hash: "pricing" },

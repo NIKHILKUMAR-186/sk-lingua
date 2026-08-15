@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { LANGUAGES } from "@/lib/languages";
 import { useState, useMemo } from "react";
 
 export interface SearchFilters {
   query: string;
-  language: string;
   minPrice: number;
   maxPrice: number;
   minRating: number;
@@ -19,7 +17,6 @@ export interface SearchFilters {
 
 const defaultFilters: SearchFilters = {
   query: "",
-  language: "",
   minPrice: 0,
   maxPrice: 200,
   minRating: 0,
@@ -47,9 +44,6 @@ export function useSearch() {
         .eq("is_active", true);
 
       // Apply filters
-      if (filters.language) {
-        query = query.contains("languages_taught", [filters.language]);
-      }
       if (filters.minPrice > 0) {
         query = query.gte("hourly_rate", filters.minPrice);
       }

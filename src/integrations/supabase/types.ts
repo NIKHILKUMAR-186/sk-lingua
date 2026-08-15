@@ -46,6 +46,7 @@ export type Database = {
           is_available: boolean;
           created_at: string;
           updated_at: string;
+          timezone: string | null;
         };
         Insert: {
           id?: string;
@@ -57,6 +58,7 @@ export type Database = {
           is_available?: boolean;
           created_at?: string;
           updated_at?: string;
+          timezone?: string | null;
         };
         Update: {
           id?: string;
@@ -1078,6 +1080,7 @@ export type Database = {
           status: Database["public"]["Enums"]["session_status"];
           student_id: string;
           student_message: string | null;
+          subscription_id: string | null;
           updated_at: string;
           video_call_link: string | null;
         };
@@ -1092,6 +1095,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["session_status"];
           student_id: string;
           student_message?: string | null;
+          subscription_id?: string | null;
           updated_at?: string;
           video_call_link?: string | null;
         };
@@ -1106,6 +1110,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["session_status"];
           student_id?: string;
           student_message?: string | null;
+          subscription_id?: string | null;
           updated_at?: string;
           video_call_link?: string | null;
         };
@@ -1337,6 +1342,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_booking_atomic: {
+        Args: {
+          p_mentor_id: string;
+          p_scheduled_start: string;
+          p_duration_mins?: number;
+        };
+        Returns: Database["public"]["Tables"]["sessions"]["Row"];
+      };
       get_user_role: {
         Args: { _user_id: string };
         Returns: Database["public"]["Enums"]["app_role"];
@@ -1351,7 +1364,16 @@ export type Database = {
     };
     Enums: {
       app_role: "student" | "mentor" | "admin";
-      session_status: "pending" | "accepted" | "rejected" | "completed" | "cancelled";
+      session_status:
+        | "pending"
+        | "accepted"
+        | "rejected"
+        | "completed"
+        | "cancelled"
+        | "confirmed"
+        | "in_progress"
+        | "pending_admin_assignment"
+        | "pending_mentor_response";
       homework_status: "Assigned" | "In Progress" | "Submitted" | "Reviewed" | "Completed" | "Late";
     };
     CompositeTypes: {
@@ -1475,7 +1497,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "mentor", "admin"],
-      session_status: ["pending", "accepted", "rejected", "completed", "cancelled"],
+      session_status: [
+        "pending",
+        "accepted",
+        "rejected",
+        "completed",
+        "cancelled",
+        "confirmed",
+        "in_progress",
+        "pending_admin_assignment",
+        "pending_mentor_response",
+      ],
     },
   },
 } as const;

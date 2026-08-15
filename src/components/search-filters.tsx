@@ -6,7 +6,6 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Search, RotateCcw, Star, DollarSign } from "lucide-react";
-import { LANGUAGES } from "@/lib/languages";
 import type { SearchFilters } from "@/hooks/use-search";
 import { useState } from "react";
 
@@ -59,18 +58,6 @@ export function SearchFiltersPanel({
           />
         </div>
         <div className="flex gap-2">
-          <select
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-            value={filters.language}
-            onChange={(e) => onFilterChange("language", e.target.value)}
-          >
-            <option value="">Any language</option>
-            {LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.emoji} {l.name}
-              </option>
-            ))}
-          </select>
           <select
             className="h-10 rounded-md border border-input bg-background px-3 text-sm"
             value={filters.sortBy}
@@ -234,18 +221,6 @@ export function SearchFiltersPanel({
 
       {/* Active filter badges */}
       <div className="flex flex-wrap gap-2">
-        {filters.language && (
-          <Badge variant="secondary" className="gap-1">
-            {LANGUAGES.find((l) => l.code === filters.language)?.emoji}{" "}
-            {LANGUAGES.find((l) => l.code === filters.language)?.name}
-            <button
-              onClick={() => onFilterChange("language", "")}
-              className="ml-1 hover:text-foreground"
-            >
-              &times;
-            </button>
-          </Badge>
-        )}
         {filters.minRating > 0 && (
           <Badge variant="secondary">
             <Star className="mr-0.5 h-3 w-3" /> {filters.minRating}+

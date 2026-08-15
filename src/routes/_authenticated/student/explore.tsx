@@ -6,7 +6,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Star, Shield, Video, Clock, Users } from "lucide-react";
 import { useSearch } from "@/hooks/use-search";
 import { SearchFiltersPanel } from "@/components/search-filters";
-import { LANGUAGES } from "@/lib/languages";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/student/explore")({
@@ -110,17 +109,6 @@ function Explore() {
                       <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
                         {m.headline || m.bio}
                       </p>
-
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {m.languages_taught?.slice(0, 3).map((code: string) => {
-                          const l = LANGUAGES.find((x) => x.code === code);
-                          return (
-                            <Badge key={code} variant="secondary" className="text-xs">
-                              {l?.emoji} {l?.name ?? code}
-                            </Badge>
-                          );
-                        })}
-                      </div>
 
                       <div className="mt-4 flex items-center justify-between border-t pt-3">
                         <div className="flex items-center gap-1 text-sm">

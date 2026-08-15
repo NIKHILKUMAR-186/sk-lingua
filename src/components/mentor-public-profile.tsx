@@ -22,22 +22,15 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type MentorProfile = Tables<"mentor_profiles">;
 type Profile = Tables<"profiles">;
-type Gig = Tables<"gigs">;
 
 interface MentorPublicProfileProps {
   mentor: MentorProfile;
   profile: Profile | null;
-  gigs: Gig[];
-  onSelectGig: (id: string) => void;
-  selectedGigId: string | null;
 }
 
 export function MentorPublicProfile({
   mentor,
   profile,
-  gigs,
-  onSelectGig,
-  selectedGigId,
 }: MentorPublicProfileProps) {
   const joinedDate = mentor.joined_date
     ? new Date(mentor.joined_date)
@@ -118,14 +111,16 @@ export function MentorPublicProfile({
 
           {/* Languages */}
           <div className="mt-4 flex flex-wrap gap-1.5">
-            {mentor.languages_taught?.map((code) => {
-              const l = LANGUAGES.find((x) => x.code === code);
-              return (
-                <Badge key={code} variant="secondary">
-                  {l?.emoji} {l?.name || code}
-                </Badge>
-              );
-            })}
+            {mentor.languages_taught
+              ?.filter((code) => code === "en")
+              .map((code) => {
+                const l = LANGUAGES.find((x) => x.code === code);
+                return (
+                  <Badge key={code} variant="secondary">
+                    {l?.emoji} {l?.name || code}
+                  </Badge>
+                );
+              })}
           </div>
         </CardContent>
       </Card>
@@ -282,75 +277,6 @@ export function MentorPublicProfile({
           </CardContent>
         </Card>
       )}
-
-      {/* Available Gigs */}
-      <Card>
-        <CardContent className="p-5">
-          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" /> Available services
-          </h2>
-          {gigs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No gigs available yet.</p>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {gigs.map((gig) => (
-                <button
-                  key={gig.id}
-                  onClick={() => onSelectGig(gig.id)}
-                  className={`w-full rounded-xl border p-4 text-left transition-all ${
-                    selectedGigId === gig.id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:border-primary/50 hover:shadow-soft"
-                  }`}
-                >
-                  {gig.cover_image && (
-                    <div className="h-24 w-full overflow-hidden rounded-lg mb-3 bg-muted">
-                      <img src={gig.cover_image} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  )}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="font-medium text-sm">{gig.title}</div>
-                    <div className="text-lg font-bold text-primary shrink-0">
-                      ${Number(gig.price).toFixed(0)}
-                    </div>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{gig.duration_mins} min</span>
-                    {gig.level && (
-                      <>
-                        <span>•</span>
-                        <span className="capitalize">{gig.level}</span>
-                      </>
-                    )}
-                  </div>
-                  {gig.description && (
-                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
-                      {gig.description}
-                    </p>
-                  )}
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {gig.homework_included && (
-                      <Badge variant="outline" className="text-[10px]">
-                        Homework
-                      </Badge>
-                    )}
-                    {gig.recording_included && (
-                      <Badge variant="outline" className="text-[10px]">
-                        Recording
-                      </Badge>
-                    )}
-                    {gig.certificate_included && (
-                      <Badge variant="outline" className="text-[10px]">
-                        Certificate
-                      </Badge>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </motion.div>
   );
 }

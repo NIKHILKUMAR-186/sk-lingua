@@ -1,4 +1,3 @@
-
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
@@ -40,9 +39,11 @@ import {
   Briefcase,
   Languages,
   ServerCrash,
+  CalendarDays,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState, type ComponentType } from "react";
+import { AdminMentorAvailability } from "@/components/admin-mentor-availability";
 
 // The generated Supabase types are stale for the mentor recruitment tables
 // (status_history, interviews, notes) and the mentor_pending role. Use a
@@ -79,6 +80,7 @@ const STATUS_COLORS: Record<string, StatusVariant> = {
 
 const TABS = [
   { id: "details", label: "Details", icon: FileText },
+  { id: "availability", label: "Availability", icon: CalendarDays },
   { id: "resume", label: "Resume", icon: FileText },
   { id: "history", label: "History", icon: Clock },
   { id: "notes", label: "Notes", icon: MessageSquare },
@@ -310,10 +312,7 @@ function AdminMentorApplicationDetail() {
       }
 
       // ── NON-APPROVAL transitions (reject, under_review, interview, etc.) ──
-      const { error } = await admin
-        .from("mentor_applications")
-        .update({ status })
-        .eq("id", id);
+      const { error } = await admin.from("mentor_applications").update({ status }).eq("id", id);
       if (error) throw error;
 
       // Record status history
@@ -1026,6 +1025,14 @@ function AdminMentorApplicationDetail() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Availability Tab */}
+        {activeTab === "availability" && (
+          <AdminMentorAvailability
+            mentorId={application.user_id ?? ""}
+            mentorName={application.full_name}
+          />
         )}
 
         {/* Notes Tab */}

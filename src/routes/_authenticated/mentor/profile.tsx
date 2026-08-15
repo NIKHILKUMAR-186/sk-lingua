@@ -8,7 +8,6 @@ import { uploadStorageFile } from "@/lib/storage";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MentorAvailability } from "@/components/mentor-availability";
-import { GigManager } from "@/components/gig-manager";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 
@@ -170,16 +169,15 @@ function MentorProfileEdit() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="text-3xl font-display">Mentor profile & gigs</h1>
+          <h1 className="text-3xl font-display">My Profile</h1>
           <p className="text-muted-foreground">
-            Manage your professional profile, teaching services, and availability.
+            Manage your professional profile and availability.
           </p>
         </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="gigs">Gigs & services</TabsTrigger>
             <TabsTrigger value="availability">Availability</TabsTrigger>
           </TabsList>
 
@@ -196,8 +194,6 @@ function MentorProfileEdit() {
               uploadingCover={uploadingCover}
             />
           </TabsContent>
-
-          <TabsContent value="gigs">{uid && <GigManager mentorId={uid} />}</TabsContent>
 
           <TabsContent value="availability">
             <MentorAvailability />

@@ -55,7 +55,8 @@ const MENTOR_ITEMS = [
   { title: "Dashboard", to: "/mentor/dashboard", icon: LayoutDashboard },
   { title: "Calendar & requests", to: "/mentor/calendar", icon: CalendarDays },
   { title: "Incoming Requests", to: "/mentor/requests", icon: Inbox },
-  { title: "My profile & gigs", to: "/mentor/profile", icon: Compass },
+  { title: "My Profile", to: "/mentor/profile", icon: Compass },
+  { title: "Availability", to: "/mentor/availability", icon: Clock },
   { title: "Sessions", to: "/mentor/sessions", icon: CalendarDays },
   { title: "Resources", to: "/mentor/resources", icon: BookOpenText },
 ] as const;

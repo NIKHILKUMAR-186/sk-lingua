@@ -17,8 +17,6 @@ import {
   FileText,
   Clock3,
   TrendingUp,
-  Award,
-  PackageOpen,
   ShieldAlert,
 } from "lucide-react";
 import { getProfileCompletionPercent } from "@/lib/profile";
@@ -67,20 +65,6 @@ function MentorDashboard() {
       (await supabase.from("mentor_profiles").select("*").eq("user_id", uid!).maybeSingle()).data,
   });
 
-  const { data: gigs = [], isLoading: gigsLoading } = useQuery({
-    queryKey: ["mentor-gigs", uid],
-    enabled: !!uid,
-    queryFn: async () =>
-      (
-        await supabase
-          .from("gigs")
-          .select("*")
-          .eq("mentor_id", uid!)
-          .eq("is_archived", false)
-          .order("created_at", { ascending: false })
-      ).data ?? [],
-  });
-
   const { data: reviews = [], isLoading: reviewsLoading } = useQuery({
     queryKey: ["mentor-reviews", uid],
     enabled: !!uid,
@@ -110,7 +94,9 @@ function MentorDashboard() {
   });
 
   const pending = sessions.filter((s) => s.status === "pending");
-  const upcoming = sessions.filter((s) => s.status === "accepted");
+  const upcoming = sessions.filter(
+    (s) => s.status === "accepted" || s.status === "confirmed",
+  );
   const completed = sessions.filter((s) => s.status === "completed");
   const today = new Date();
   const todaySessions = sessions.filter((s) => {
@@ -124,10 +110,9 @@ function MentorDashboard() {
   const studentsTaught = new Set(completed.map((s) => s.student_id).filter(Boolean)).size;
   const homeworkShared = resources.filter((r) => r.session_id).length;
   const earnings = completed.length * Number(mp?.hourly_rate ?? 0) * 0.9;
-  const topGig = gigs.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))[0];
 
   const isLoading =
-    sessionsLoading || mpLoading || gigsLoading || reviewsLoading || resourcesLoading;
+    sessionsLoading || mpLoading || reviewsLoading || resourcesLoading;
 
   // Guard: only approved mentors can access the dashboard
   const isApprovedMentor = (auth?.roles ?? []).includes("mentor");
@@ -243,42 +228,6 @@ function MentorDashboard() {
             </CardContent>
           </Card>
 
-          {/* Top gig */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top gig</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <CardSkeleton rows={2} />
-              ) : topGig ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Award className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <div className="font-semibold">{topGig.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        ${Number(topGig.price).toFixed(0)}/session • {topGig.duration_mins} min
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/mentor/profile">Manage gigs</Link>
-                  </Button>
-                </div>
-              ) : (
-                <EmptyState
-                  icon={PackageOpen}
-                  title="No gigs yet"
-                  description="Create your first gig to start receiving bookings."
-                  actionLabel="Create gig"
-                  onAction={() => (window.location.href = "/mentor/profile")}
-                />
-              )}
-            </CardContent>
-          </Card>
         </div>
 
         {/* Second grid */}

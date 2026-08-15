@@ -47,7 +47,7 @@ export function RouteGuard({
     // Check role authorization
     if (allowedRoles.length > 0 && !allowedRoles.includes("all")) {
       const hasAccess = allowedRoles.some(role => {
-        if (role === "authenticated") return true;
+        if (role === "all" || role === "authenticated") return true;
         return hasRole(auth.roles, role);
       });
 
@@ -87,7 +87,7 @@ export function RouteGuard({
   // Check role authorization (render-time check for safety)
   if (allowedRoles.length > 0 && !allowedRoles.includes("all")) {
     const hasAccess = allowedRoles.some(role => {
-      if (role === "authenticated") return true;
+      if (role === "all" || role === "authenticated") return true;
       return hasRole(auth.roles, role);
     });
 

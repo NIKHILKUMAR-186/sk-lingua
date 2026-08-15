@@ -69,17 +69,11 @@ export function useMentorSchedule(mentorId?: string) {
     queryKey: ["mentor-schedule", mentorId],
     enabled: !!mentorId,
     queryFn: async () => {
-      console.log("🔍 [useMentorSchedule] mentorId:", mentorId);
       const { data: slots, error } = await supabase
         .from("availability_slots")
         .select("*")
         .eq("mentor_id", mentorId!)
         .eq("is_available", true);
-      console.log("🔍 [useMentorSchedule] rows:", slots?.length ?? 0, "error:", error);
-      console.log(
-        "🔍 [useMentorSchedule] day_of_week values:",
-        (slots ?? []).map((s: any) => s.day_of_week),
-      );
       return slots ?? [];
     },
   });
@@ -212,11 +206,6 @@ export function calculateAvailableDates(
   const current = new Date(monthStart);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  console.group("📅 [calculateAvailableDates]");
-  console.log("Total slots:", slots.length);
-  console.log("Month:", monthStart.toLocaleString("default", { month: "long", year: "numeric" }));
-
   while (current <= monthEnd) {
     const dayIndex = current.getDay();
     const dayKey = DAY_KEYS[(dayIndex + 6) % 7];
@@ -226,15 +215,5 @@ export function calculateAvailableDates(
     }
     current.setDate(current.getDate() + 1);
   }
-
-  console.log("Available dates count:", available.length);
-  if (available.length > 0) {
-    console.log(
-      "Sample:",
-      available.slice(0, 5).map((d) => d.toDateString()),
-    );
-  }
-  console.groupEnd();
-
   return available;
 }

@@ -9,17 +9,17 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { MentorPublicProfile } from "@/components/mentor-public-profile";
 import { BookingCalendar } from "@/components/booking-calendar";
-import { BookingSummary } from "@/components/booking-summary";
+import {
+  SessionConfirmCard,
+  BookingSuccessCard,
+} from "@/components/session-confirm-card";
 import { MentorRatingSummary } from "@/components/review/MentorRatingSummary";
 import { useMentorRatingSummary } from "@/hooks/use-reviews";
-import {
-  useAvailableSlots,
-  useBookingRequest,
-  calculateAvailableDates,
-  type BookingSummary as BookingSummaryType,
-} from "@/hooks/use-booking";
-import { DashboardSkeleton } from "@/components/skeleton-loader";
+import { useAvailableSlots, calculateAvailableDates } from "@/hooks/use-booking";
+import { useConfirmBooking } from "@/hooks/use-student-booking";
+import { useStudentSubscription } from "@/hooks/use-subscriptions";
 import { format } from "date-fns";
+import { DashboardSkeleton } from "@/components/skeleton-loader";
 
 export const Route = createFileRoute("/_authenticated/student/mentor/$id")({
   component: MentorProfile,
@@ -31,46 +31,29 @@ function MentorProfile() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  // Fetch mentor data
   const { data: mentor, isLoading } = useQuery({
     queryKey: ["mentor-full", id],
     queryFn: async () => {
-      const [{ data: mp }, { data: profile }, { data: gigs }] = await Promise.all([
+      const [{ data: mp }, { data: profile }] = await Promise.all([
         supabase.from("mentor_profiles").select("*").eq("user_id", id).maybeSingle(),
         supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
-        supabase
-          .from("gigs")
-          .select("*")
-          .eq("mentor_id", id)
-          .eq("is_active", true)
-          .eq("is_archived", false)
-          .order("featured", { ascending: false }),
       ]);
-      return { mp, profile, gigs: gigs ?? [] };
+      return { mp, profile };
     },
   });
 
-  // Reviews with new MentorRatingSummary
   const {
     reviews: summaryReviews,
     stats: summaryStats,
     isLoading: summaryLoading,
   } = useMentorRatingSummary(id);
 
-  // Booking state
-  const [selectedGig, setSelectedGig] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+  const [booked, setBooked] = useState<{ scheduled_time: string } | null>(null);
 
-  // Get duration from selected gig
-  const durationMins = useMemo(() => {
-    if (!selectedGig || !mentor?.gigs) return 30;
-    const gig = mentor.gigs.find((g) => g.id === selectedGig);
-    return gig?.duration_mins || 30;
-  }, [selectedGig, mentor?.gigs]);
+  const slotDurationMins = 30;
 
-  // Availability & slots
   const { data: availSlots = [] } = useQuery({
     queryKey: ["availability-slots", id],
     enabled: !!id,
@@ -84,9 +67,8 @@ function MentorProfile() {
       ).data ?? [],
   });
 
-  const { slotOptions, groupedSlots } = useAvailableSlots(id, selectedDate, durationMins);
+  const { slotOptions, groupedSlots } = useAvailableSlots(id, selectedDate, slotDurationMins);
 
-  // Available dates for calendar
   const availableDates = useMemo(() => {
     if (!availSlots.length) return [];
     const start = new Date();
@@ -95,14 +77,11 @@ function MentorProfile() {
     return calculateAvailableDates(availSlots, start, end);
   }, [availSlots]);
 
-  // Booking mutation
-  const bookingRequest = useBookingRequest(id);
-
-  function handleSelectGig(gigId: string) {
-    setSelectedGig(gigId === selectedGig ? null : gigId);
-    setSelectedDate("");
-    setSelectedSlot(null);
-  }
+  const confirmBooking = useConfirmBooking();
+  const { data: subscription } = useStudentSubscription(auth?.user?.id ?? null);
+  const usableBefore =
+    (subscription?.current_session_slots ?? 0) + (subscription?.bonus_slots ?? 0);
+  const usableAfter = Math.max(0, usableBefore - 1);
 
   function handleSelectDate(date: string) {
     setSelectedDate(date);
@@ -114,32 +93,22 @@ function MentorProfile() {
   }
 
   async function handleConfirmBooking() {
-    if (!auth?.user || !selectedGig || !selectedSlot || !mentor?.mp || !mentor?.gigs) return;
-
-    const gig = mentor.gigs.find((g) => g.id === selectedGig);
-    if (!gig) return;
-
-    const summary: BookingSummaryType = {
-      mentorName: mentor.profile?.full_name || "Mentor",
-      gigTitle: gig.title,
-      gigPrice: gig.price,
-      gigDuration: gig.duration_mins,
-      date: selectedDate,
-      slotLabel: slotOptions.find((s) => s.value === selectedSlot)?.label || "",
-      total: gig.price,
-      mentorId: id,
-      gigId: gig.id,
-      scheduledTime: selectedSlot,
-      studentMessage: message,
-    };
+    if (!selectedSlot) return;
 
     try {
-      await bookingRequest.mutateAsync(summary);
-      toast.success("Booking request sent!");
+      const booking = await confirmBooking.mutateAsync({
+        mentorId: id,
+        scheduledStart: selectedSlot,
+        durationMins: slotDurationMins,
+      });
+      setBooked(booking ?? { scheduled_time: selectedSlot });
+      setSelectedSlot(null);
       qc.invalidateQueries({ queryKey: ["sessions-date"] });
-      navigate({ to: "/student/sessions" });
+      toast.success("Session booked!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Booking failed");
+      toast.error(
+        e instanceof Error ? e.message : "Unable to book this session. Please try again.",
+      );
     }
   }
 
@@ -166,7 +135,6 @@ function MentorProfile() {
     );
   }
 
-  const hasSelectedGig = !!selectedGig;
   const hasSelectedDate = !!selectedDate;
   const hasSelectedSlot = !!selectedSlot;
 
@@ -183,17 +151,12 @@ function MentorProfile() {
         </Button>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-          {/* Left column: Mentor profile */}
           <div className="space-y-6">
             <MentorPublicProfile
               mentor={mentor.mp}
               profile={mentor.profile}
-              gigs={mentor.gigs}
-              onSelectGig={handleSelectGig}
-              selectedGigId={selectedGig}
             />
 
-            {/* Reviews - Using new MentorRatingSummary */}
             <MentorRatingSummary
               stats={summaryStats}
               reviews={summaryReviews}
@@ -201,29 +164,8 @@ function MentorProfile() {
             />
           </div>
 
-          {/* Right column: Booking flow */}
           <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
-            {/* Step indicator */}
             <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-              <div className="flex items-center gap-2 text-sm">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                    hasSelectedGig
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted-foreground/20 text-muted-foreground"
-                  }`}
-                >
-                  1
-                </span>
-                <span
-                  className={
-                    hasSelectedGig ? "text-foreground font-medium" : "text-muted-foreground"
-                  }
-                >
-                  Gig
-                </span>
-              </div>
-              <div className="h-px flex-1 bg-border mx-2" />
               <div className="flex items-center gap-2 text-sm">
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
@@ -232,14 +174,14 @@ function MentorProfile() {
                       : "bg-muted-foreground/20 text-muted-foreground"
                   }`}
                 >
-                  2
+                  1
                 </span>
                 <span
                   className={
                     hasSelectedDate ? "text-foreground font-medium" : "text-muted-foreground"
                   }
                 >
-                  Date
+                  Select Date
                 </span>
               </div>
               <div className="h-px flex-1 bg-border mx-2" />
@@ -251,7 +193,7 @@ function MentorProfile() {
                       : "bg-muted-foreground/20 text-muted-foreground"
                   }`}
                 >
-                  3
+                  2
                 </span>
                 <span
                   className={
@@ -263,41 +205,37 @@ function MentorProfile() {
               </div>
             </div>
 
-            {/* Booking Calendar */}
-            {hasSelectedGig && (
-              <BookingCalendar
-                slots={availSlots as any}
-                availableDates={availableDates}
-                selectedDate={selectedDate}
-                onSelectDate={handleSelectDate}
-                groupedSlots={groupedSlots}
-                selectedSlot={selectedSlot}
-                onSelectSlot={handleSelectSlot}
-              />
-            )}
+            <BookingCalendar
+              slots={availSlots as any}
+              availableDates={availableDates}
+              selectedDate={selectedDate}
+              onSelectDate={handleSelectDate}
+              groupedSlots={groupedSlots}
+              selectedSlot={selectedSlot}
+              onSelectSlot={handleSelectSlot}
+            />
 
-            {/* Booking Summary */}
-            {hasSelectedGig && hasSelectedSlot && mentor?.gigs && (
-              <BookingSummary
-                summary={{
-                  mentorName: mentor.profile?.full_name || "Mentor",
-                  gigTitle: mentor.gigs.find((g) => g.id === selectedGig)?.title || "",
-                  gigPrice: mentor.gigs.find((g) => g.id === selectedGig)?.price || 0,
-                  gigDuration: durationMins,
-                  date: selectedDate,
-                  slotLabel: slotOptions.find((s) => s.value === selectedSlot)?.label || "",
-                  total: mentor.gigs.find((g) => g.id === selectedGig)?.price || 0,
-                  mentorId: id,
-                  gigId: selectedGig,
-                  scheduledTime: selectedSlot,
-                  studentMessage: message,
-                }}
-                message={message}
-                onMessageChange={setMessage}
-                onConfirm={handleConfirmBooking}
-                isPending={bookingRequest.isPending}
+            {booked ? (
+              <BookingSuccessCard
+                mentorName={mentor.profile?.full_name || "Mentor"}
+                dateLabel={format(new Date(booked.scheduled_time), "d MMM yyyy")}
+                slotLabel={format(new Date(booked.scheduled_time), "h:mm a")}
+                sessionsRemaining={usableAfter}
+                onViewSessions={() => navigate({ to: "/student/sessions" })}
               />
-            )}
+            ) : hasSelectedSlot ? (
+              <SessionConfirmCard
+                mentorName={mentor.profile?.full_name || "Mentor"}
+                date={selectedDate}
+                slotLabel={slotOptions.find((s) => s.value === selectedSlot)?.label || ""}
+                durationMins={slotDurationMins}
+                sessionsBefore={usableBefore}
+                sessionsAfter={usableAfter}
+                isPending={confirmBooking.isPending}
+                onConfirm={handleConfirmBooking}
+                onCancel={() => setSelectedSlot(null)}
+              />
+            ) : null}
           </div>
         </div>
       </div>

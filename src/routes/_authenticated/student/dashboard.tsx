@@ -90,7 +90,7 @@ const { data: subscription, isLoading: subLoading } = useStudentSubscription(use
         .from("sessions")
         .select("*")
         .eq("student_id", userId!)
-        .in("status", ["pending", "accepted"])
+        .in("status", ["pending", "accepted", "confirmed"])
         .order("scheduled_time")
         .limit(3);
       return data ?? [];

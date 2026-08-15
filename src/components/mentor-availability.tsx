@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Clock, Copy, Plus, Trash2 } from "lucide-react";
+import { Clock, Copy, Plus, Trash2, Globe } from "lucide-react";
 
 export function MentorAvailability() {
   const { data: auth } = useAuth();
@@ -19,6 +19,12 @@ export function MentorAvailability() {
   const [newStart, setNewStart] = useState("09:00");
   const [newEnd, setNewEnd] = useState("10:00");
   const [newLabel, setNewLabel] = useState("");
+  const [newTimezone, setNewTimezone] = useState(() => {
+    if (typeof Intl !== "undefined" && Intl.DateTimeFormat) {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+    return "Asia/Kolkata";
+  });
   const [dayIndex, setDayIndex] = useState(0);
   // Optimistic toggle state: immediately reflect toggle changes before API responds
   const [optimisticToggles, setOptimisticToggles] = useState<Record<string, boolean | undefined>>(
@@ -35,6 +41,19 @@ export function MentorAvailability() {
     });
     return result;
   }, [slots]);
+
+  const firstTimezone = useMemo(() => {
+    const seen = new Set<string>();
+    for (const s of slots ?? []) {
+      if (s.timezone) {
+        if (!seen.has(s.timezone)) {
+          seen.add(s.timezone);
+          return s.timezone;
+        }
+      }
+    }
+    return newTimezone;
+  }, [slots, newTimezone]);
 
   // Compute if a day is effectively enabled (considering optimistic toggles)
   function getDayEnabled(dayKey: string): boolean {
@@ -83,6 +102,7 @@ export function MentorAvailability() {
         end_time: newEnd,
         is_available: true,
         label: newLabel || null,
+        timezone: newTimezone || null,
       });
       setNewLabel("");
       toast.success("Slot added");
@@ -111,6 +131,7 @@ export function MentorAvailability() {
           end_time: "10:00",
           is_available: true,
           label: null,
+          timezone: newTimezone || null,
         });
         toast.success(
           `${DAY_LABELS[DAY_KEYS.indexOf(dayKey as (typeof DAY_KEYS)[number])]} enabled with default slot`,
@@ -172,12 +193,28 @@ export function MentorAvailability() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
             <span>Weekly availability</span>
-            <Badge variant="secondary" className="text-xs">
-              {totalSlots} slot{totalSlots !== 1 ? "s" : ""} configured
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                <Globe className="h-3 w-3" />
+                {firstTimezone}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                {totalSlots} slot{totalSlots !== 1 ? "s" : ""} configured
+              </Badge>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Timezone selector */}
+          <div className="mb-4">
+            <Label className="text-xs text-muted-foreground">Timezone</Label>
+            <Input
+              value={newTimezone}
+              onChange={(e) => setNewTimezone(e.target.value)}
+              className="w-64"
+              placeholder="Asia/Kolkata"
+            />
+          </div>
           {/* All 7 days overview with toggles */}
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 mb-6">
             {DAY_LABELS.map((label, i) => {

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { CalendarDays, Clock, DollarSign, Video, Shield, Loader2 } from "lucide-react";
+import { CalendarDays, Clock, Video, Shield, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import type { BookingSummary as BookingSummaryType } from "@/hooks/use-booking";
 
@@ -43,7 +43,7 @@ export function BookingSummary({
               <span className="text-sm font-medium">{summary.mentorName}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Gig</span>
+              <span className="text-sm text-muted-foreground">Session</span>
               <span className="text-sm font-medium">{summary.gigTitle}</span>
             </div>
             <Separator />
@@ -66,13 +66,6 @@ export function BookingSummary({
                 <Clock className="h-4 w-4" /> Duration
               </span>
               <span className="text-sm font-medium">{summary.gigDuration} minutes</span>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground flex items-center gap-1">
-                <DollarSign className="h-4 w-4" /> Price
-              </span>
-              <span className="text-lg font-bold text-primary">${summary.gigPrice.toFixed(0)}</span>
             </div>
           </div>
 

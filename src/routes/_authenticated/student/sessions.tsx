@@ -233,8 +233,12 @@ function StudentSessions() {
   }
 
   // Combine regular sessions and demo sessions for display
-  const regularUpcoming = sessions.filter((s) => ["pending", "accepted"].includes(s.status));
-  const regularPast = sessions.filter((s) => ["completed", "rejected", "cancelled"].includes(s.status));
+  const regularUpcoming = sessions.filter((s) =>
+    ["pending", "accepted", "confirmed"].includes(s.status),
+  );
+  const regularPast = sessions.filter((s) =>
+    ["completed", "rejected", "cancelled"].includes(s.status),
+  );
 
   // Demo sessions: confirmed = upcoming, completed/cancelled/no_show = past
   const demoUpcoming = demoBookings.filter((d) =>

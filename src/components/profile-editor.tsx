@@ -60,7 +60,7 @@ export function ProfileEditor({
 
   const renderLanguageToggle = (value: string[], field: keyof ProfileEditorValues) => (
     <div className="mt-2 flex flex-wrap gap-2">
-      {LANGUAGES.map((language) => {
+      {LANGUAGES.filter((language) => language.code === "en").map((language) => {
         const selected = value.includes(language.code);
         return (
           <button
@@ -178,7 +178,8 @@ export function ProfileEditor({
                   value={values.native_language}
                   onChange={(e) => update("native_language", e.target.value)}
                 >
-                  {LANGUAGES.map((language) => (
+                  {/* English is the only active language for LINGUA today. */}
+                {LANGUAGES.filter((language) => language.code === "en").map((language) => (
                     <option key={language.code} value={language.code}>
                       {language.emoji} {language.name}
                     </option>

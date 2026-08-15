@@ -1,80 +1,41 @@
-import React, { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { MentorLayout } from "@/components/layouts";
+import { MentorAvailability } from "@/components/mentor-availability";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/_authenticated/mentor/availability")({
-  component: MentorAvailability,
+  component: MentorAvailabilityPage,
 });
 
-function MentorAvailability() {
-  const [loading, setLoading] = useState(false);
-  const [availability, setAvailability] = useState<any>({
-    working_days: [],
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  });
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const client = supabase as any;
-      const { data } = await client.from("mentor_availability").select("*").maybeSingle();
-      if (!mounted) return;
-      if (data) setAvailability(data);
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  async function save() {
-    setLoading(true);
-    try {
-      const payload = { ...availability };
-      const client = supabase as any;
-      await client.from("mentor_availability").upsert(payload, { onConflict: "user_id" });
-      toast.success("Availability saved");
-    } catch (err: any) {
-      toast.error(err?.message ?? String(err));
-    } finally {
-      setLoading(false);
-    }
-  }
-
+/**
+ * Mentor Availability page.
+ *
+ * Backed by the single, canonical P4 availability engine:
+ *   mentor -> availability_slots (Supabase JS client + RLS).
+ *
+ * This page deliberately does NOT use the legacy `mentor_availability`
+ * (working_days) table, nor any `/api/mentor/availability` endpoint, so the
+ * mentor write path stays consistent with mentor-profile editing and avoids a
+ * second backend architecture / unresolvable-endpoint 404.
+ */
+function MentorAvailabilityPage() {
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-2xl font-semibold">Availability</h1>
-        <div className="mt-4">
-          <label className="block text-sm mb-2">Timezone</label>
-          <Input
-            value={availability.timezone || ""}
-            onChange={(e: any) => setAvailability((s: any) => ({ ...s, timezone: e.target.value }))}
-          />
-        </div>
-        <div className="mt-4">
-          <label className="block text-sm mb-2">Working days (comma separated e.g. mon,tue)</label>
-          <Input
-            value={(availability.working_days || []).join(",")}
-            onChange={(e: any) =>
-              setAvailability((s: any) => ({
-                ...s,
-                working_days: e.target.value
-                  .split(",")
-                  .map((x: string) => x.trim())
-                  .filter(Boolean),
-              }))
-            }
-          />
-        </div>
-        <div className="mt-6">
-          <Button onClick={save} disabled={loading}>
-            {loading ? "Saving…" : "Save availability"}
-          </Button>
-        </div>
+    <MentorLayout>
+      <div className="mx-auto max-w-5xl">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <h1 className="text-3xl font-display">Availability</h1>
+          <p className="text-muted-foreground">
+            Set the weekly time slots when you are available for sessions. These
+            slots define when students can book you.
+          </p>
+        </motion.div>
+
+        <MentorAvailability />
       </div>
-    </div>
+    </MentorLayout>
   );
 }
