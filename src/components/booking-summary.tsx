@@ -44,7 +44,7 @@ export function BookingSummary({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Session</span>
-              <span className="text-sm font-medium">{summary.gigTitle}</span>
+              <span className="text-sm font-medium">{summary.sessionType}</span>
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -65,7 +65,7 @@ export function BookingSummary({
               <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <Clock className="h-4 w-4" /> Duration
               </span>
-              <span className="text-sm font-medium">{summary.gigDuration} minutes</span>
+              <span className="text-sm font-medium">{summary.durationMins} minutes</span>
             </div>
           </div>
 
@@ -82,17 +82,17 @@ export function BookingSummary({
           <Button className="w-full" size="lg" onClick={onConfirm} disabled={isPending}>
             {isPending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending request...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking...
               </>
             ) : (
               <>
-                <Video className="mr-2 h-4 w-4" /> Request session
+                <Video className="mr-2 h-4 w-4" /> Confirm Booking
               </>
             )}
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Your session will be confirmed once the mentor accepts your request.
+            Your session will be confirmed immediately.
           </p>
         </CardContent>
       </Card>

@@ -235,3 +235,56 @@ export async function notifyAdminTodayDemo(
   const { error } = await supabase.from("notifications").insert(notifications as any);
   if (error) console.error("Failed to send admin today-demo reminder", error);
 }
+
+// Mentor: assigned to demo session
+export async function notifyMentorDemoAssigned(
+  mentorId: string,
+  bookingId: string,
+  studentName: string,
+  bookingDate: string,
+  bookingTime: string,
+) {
+  await sendDemoNotification({
+    user_id: mentorId,
+    category: "demo_booking",
+    kind: "demo_assignment",
+    title: "New Demo Session Request",
+    body: `You have been assigned a demo session with ${studentName} on ${new Date(bookingDate).toDateString()} at ${bookingTime}. Please accept or reject.`,
+    related_id: bookingId,
+    link: "/mentor/demo-requests",
+    metadata: { booking_id: bookingId, type: "demo_assigned", student_name: studentName },
+  });
+}
+
+// Mentor: demo assignment accepted
+export async function notifyMentorDemoAccepted(
+  mentorId: string,
+  bookingId: string,
+) {
+  await sendDemoNotification({
+    user_id: mentorId,
+    category: "demo_booking",
+    kind: "demo_accepted",
+    title: "Demo Session Accepted",
+    body: "You have accepted the demo session. Please prepare for the session.",
+    related_id: bookingId,
+    link: "/mentor/sessions",
+    metadata: { booking_id: bookingId, type: "demo_accepted" },
+  });
+}
+
+// Mentor: demo assignment rejected
+export async function notifyMentorDemoRejected(
+  mentorId: string,
+  bookingId: string,
+) {
+  await sendDemoNotification({
+    user_id: mentorId,
+    category: "demo_booking",
+    kind: "demo_rejected",
+    title: "Demo Session Rejected",
+    body: "You have rejected the demo session. No further action is required.",
+    related_id: bookingId,
+    metadata: { booking_id: bookingId, type: "demo_rejected" },
+  });
+}

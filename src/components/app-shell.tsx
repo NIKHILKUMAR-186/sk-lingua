@@ -31,6 +31,7 @@ import {
   Users,
   Inbox,
   BarChart3,
+  Sparkles,
 } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -38,23 +39,14 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { SidebarItem } from "@/components/sidebar-item";
 import { ProfileCard } from "@/components/profile-card";
-
-const STUDENT_ITEMS = [
-  { title: "Dashboard", to: "/student/dashboard", icon: LayoutDashboard },
-  { title: "Discover Mentors", to: "/student/explore", icon: Compass },
-  { title: "Sessions", to: "/student/sessions", icon: CalendarDays },
-  { title: "Resources", to: "/student/resources", icon: BookOpenText },
-  { title: "Analytics & Streaks", to: "/student/streak", icon: Flame },
-  { title: "Demo Session", to: "/student/demo-session", icon: Clock },
-  { title: "Pricing Plans", to: "/student/pricing", icon: Crown },
-  { title: "My Subscriptions", to: "/student/subscriptions", icon: Crown },
-  { title: "History", to: "/student/history", icon: History },
-] as const;
+import { useStudentLearningState } from "@/hooks/use-student-learning-state";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { isStudent } from "@/lib/authorization";
 
 const MENTOR_ITEMS = [
   { title: "Dashboard", to: "/mentor/dashboard", icon: LayoutDashboard },
   { title: "Calendar & requests", to: "/mentor/calendar", icon: CalendarDays },
-  { title: "Incoming Requests", to: "/mentor/requests", icon: Inbox },
+  { title: "Demo Requests", to: "/mentor/demo-requests", icon: Clock },
   { title: "My Profile", to: "/mentor/profile", icon: Compass },
   { title: "Availability", to: "/mentor/availability", icon: Clock },
   { title: "Sessions", to: "/mentor/sessions", icon: CalendarDays },
@@ -66,12 +58,13 @@ const ADMIN_ITEMS = [
   { title: "Analytics", to: "/admin/analytics", icon: BarChart3 },
   { title: "Booking Queue", to: "/admin/booking-queue", icon: Inbox },
   { title: "Mentor Applications", to: "/admin/mentor-applications", icon: Users },
+  { title: "Mentors", to: "/admin/mentors", icon: Users },
+  { title: "Students", to: "/admin/students", icon: Users },
   { title: "Demo Queue", to: "/admin/demo-queue", icon: Clock },
   { title: "Support Tickets", to: "/admin/support-tickets", icon: MessageSquare },
   { title: "Notification Broadcasts", to: "/admin/notification-broadcasts", icon: Bell },
   { title: "Audit Logs", to: "/admin/audit-logs", icon: History },
   { title: "Subscription Plans", to: "/admin/subscription-plans", icon: Crown },
-  { title: "Students", to: "/admin/students", icon: Users },
 ] as const;
 
 const ACCOUNT_ITEMS = [
@@ -92,8 +85,33 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
   const { state: sidebarState } = useSidebar();
   const collapsed = sidebarState === "collapsed";
 
+  // ── Dynamic student nav items (P1 lifecycle-aware) ─────────────────
+  const isStudentVariant = variant === "student";
+  const studentLearning = isStudentVariant ? useStudentLearningState() : null;
+
+  const studentItems = isStudentVariant
+    ? [
+        { title: "Dashboard", to: "/student/dashboard", icon: LayoutDashboard },
+        { title: "Discover Mentors", to: "/student/explore", icon: Compass },
+        {
+          title: studentLearning!.primaryCta.label,
+          to: studentLearning!.primaryCta.to,
+          icon: studentLearning!.primaryCta.label === "Book a Trial" ? Clock : LayoutDashboard,
+        },
+        { title: "Sessions", to: "/student/sessions", icon: CalendarDays },
+        { title: "Resources", to: "/student/resources", icon: BookOpenText },
+        { title: "Pricing Plans", to: "/student/pricing", icon: Crown },
+        { title: "My Subscriptions", to: "/student/subscriptions", icon: Crown },
+        { title: "History", to: "/student/history", icon: History },
+      ]
+    : [];
+
   const items =
-    variant === "student" ? STUDENT_ITEMS : variant === "mentor" ? MENTOR_ITEMS : ADMIN_ITEMS;
+    variant === "student"
+      ? studentItems
+      : variant === "mentor"
+        ? MENTOR_ITEMS
+        : ADMIN_ITEMS;
 
   const { data: unread = 0 } = useQuery({
     queryKey: ["notifications-unread", auth?.user?.id],
@@ -295,6 +313,24 @@ export function AppShell({
           <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-lg">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
             <div className="flex-1" />
+            {variant === "student" && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to="/student/streak"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                      aria-label="View analytics & streaks"
+                    >
+                      <Flame className="h-4 w-4" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="end">
+                    <p className="text-xs">Activity & Streaks</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </header>
           <main className="flex-1 p-6">{children}</main>
         </SidebarInset>

@@ -12,7 +12,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { GoogleButton } from "@/components/auth/google-button";
 import { signInWithGoogle } from "@/lib/google-auth";
 import {
-  resolveDestination,
+  getDashboardRoute,
+  getActiveRole,
   waitForSessionRestored,
   type AppRole,
 } from "@/lib/auth";
@@ -50,12 +51,7 @@ export const Route = createFileRoute("/mentor-signup")({
       throw redirect({ to: "/admin/dashboard" });
     }
     // Any other authenticated user (e.g. student) → role-aware destination.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("onboarded")
-      .eq("id", user.id)
-      .maybeSingle();
-    const destination = resolveDestination(fetchedRoles, Boolean(profile?.onboarded));
+    const destination = getDashboardRoute(getActiveRole(fetchedRoles));
     throw redirect({ to: destination });
   },
   head: () => ({
@@ -407,13 +403,13 @@ function MentorAuthPage() {
             <h2 className="text-base font-semibold">Why become a Lingua mentor?</h2>
             <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" /> Set your own rates
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" /> Keep 90% of earnings
+                <CheckCircle2 className="h-4 w-4 text-green-500" /> Set your own schedule
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500" /> Teach students worldwide
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500" /> Grow your teaching portfolio
               </li>
             </ul>
           </div>

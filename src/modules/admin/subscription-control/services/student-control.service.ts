@@ -334,7 +334,6 @@ export function statusLabel(status: string): "ACTIVE" | "INACTIVE" {
 
 export function displayCurrency(sub: StudentSubscriptionLite | null): string {
   const price = sub?.price_at_purchase;
-  const currency = sub?.currency_at_purchase || "INR";
   if (price === null || price === undefined || price === 0) return "—";
-  return `${currency} ${Number(price).toLocaleString("en-IN")}`;
+  return `₹${Number(price).toLocaleString("en-IN")}`;
 }

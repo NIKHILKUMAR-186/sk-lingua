@@ -26,6 +26,7 @@ import { EmptyState } from "@/components/empty-state";
 import { StatCardSkeleton, CardSkeleton, ListSkeleton } from "@/components/skeleton-loader";
 import { useStudentSubscription, useRemainingSlots } from "@/hooks/use-subscriptions";
 import { useUpcomingDemoBooking, useHasUsedDemoSession } from "@/hooks/use-demo-bookings";
+import { useStudentLearningState } from "@/hooks/use-student-learning-state";
 import { DemoCtaCard } from "@/components/demo-cta-card";
 import { Progress } from "@/components/ui/progress";
 
@@ -238,6 +239,76 @@ const recentSessions = upcoming.slice(0, 2);
           )}
         </motion.div>
 
+        {/* P1: Lifecycle-aware primary CTA */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          {(() => {
+            const ls = useStudentLearningState();
+            if (ls.trialCompleted) {
+              return (
+                <Card className="border-emerald-500/20 bg-gradient-to-r from-emerald-50/50 to-transparent">
+                  <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">Trial Completed ✓</p>
+                        <p className="text-xs text-muted-foreground">
+                          {ls.activeSubscription
+                            ? `${ls.remainingSessions} sessions remaining`
+                            : "Continue your learning with a plan."}
+                        </p>
+                      </div>
+                    </div>
+                    <Button asChild size="sm" className="shrink-0">
+                      <Link to={ls.primaryCta.to}>{ls.primaryCta.label}</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            }
+            // TRIAL_REQUIRED
+            return (
+              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="h-6 w-6 text-primary shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">Start your learning journey</p>
+                      <p className="text-xs text-muted-foreground">
+                        Book a free trial session with a mentor.
+                      </p>
+                    </div>
+                  </div>
+                  <Button asChild size="sm" className="shrink-0">
+                    <Link to={ls.primaryCta.to}>{ls.primaryCta.label}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })()}
+        </motion.div>
+
+        {/* P1: Non-blocking profile completion prompt */}
+        {profileCompletion < 100 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-dashed bg-muted/20">
+              <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <Target className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Profile {profileCompletion}% complete</p>
+                    <p className="text-xs text-muted-foreground">
+                      Complete your profile to get the most out of Lingua.
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" asChild className="shrink-0">
+                  <Link to="/student/student-settings">Complete profile</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Subscription Status */}
         {!subLoading && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -440,10 +511,10 @@ const recentSessions = upcoming.slice(0, 2);
                       className="flex items-center justify-between rounded-lg p-2 border hover:bg-muted transition-colors"
                     >
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-medium">{m.headline ?? "Mentor"}</div>
-                        <div className="text-xs text-muted-foreground">
-                          ${Number(m.hourly_rate).toFixed(0)}/hr
-                        </div>
+                      <div className="truncate text-sm font-medium">{m.headline ?? "Mentor"}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {m.years_experience ? `${m.years_experience} years exp.` : "Mentor"}
+                      </div>
                       </div>
                       <span className="text-xs flex items-center gap-1">
                         <Star className="h-3 w-3 fill-warning text-warning" />

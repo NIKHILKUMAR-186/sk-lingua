@@ -7,7 +7,6 @@ import {
   hasAnyRole, 
   getRoleDashboardRoute
 } from "@/lib/authorization";
-import { shouldRedirectToOnboarding } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
 
 /**
@@ -18,18 +17,16 @@ export type AllowedRoles = "admin" | "mentor" | "mentor_pending" | "student" | "
 interface RouteGuardProps {
   children: React.ReactNode;
   allowedRoles?: AllowedRoles[];
-  requireOnboarded?: boolean;
   fallback?: React.ReactNode;
 }
 
 /**
  * Generic Route Guard Component
- * Protects routes based on user roles and onboarding status
+ * Protects routes based on user roles
  */
 export function RouteGuard({
   children,
   allowedRoles = ["all"],
-  requireOnboarded = true,
   fallback,
 }: RouteGuardProps) {
   const navigate = useNavigate();
@@ -58,13 +55,7 @@ export function RouteGuard({
         return;
       }
     }
-
-    // Check onboarding status
-    if (requireOnboarded && shouldRedirectToOnboarding(auth.roles, auth.profile?.onboarded ?? false)) {
-      navigate({ to: "/onboarding" });
-      return;
-    }
-  }, [auth, isLoading, error, allowedRoles, requireOnboarded, navigate]);
+  }, [auth, isLoading, error, allowedRoles, navigate]);
 
   // Loading state
   if (isLoading) {

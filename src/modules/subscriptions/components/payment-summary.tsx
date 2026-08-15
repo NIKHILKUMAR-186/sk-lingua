@@ -21,6 +21,8 @@ export function PaymentSummary({
   description,
   items,
 }: PaymentSummaryProps) {
+  const showTaxLine = taxAmount > 0;
+
   return (
     <Card className="border-2 border-primary/20">
       <CardHeader>
@@ -42,22 +44,27 @@ export function PaymentSummary({
         )}
 
         <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-medium">₹{baseAmount.toFixed(2)}</span>
-          </div>
+          {showTaxLine && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="font-medium">₹{baseAmount.toFixed(2)}</span>
+            </div>
+          )}
 
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Tax (18% GST)</span>
-            <span className="font-medium">₹{taxAmount.toFixed(2)}</span>
-          </div>
+          {showTaxLine && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Tax (18% GST)</span>
+              <span className="font-medium">₹{taxAmount.toFixed(2)}</span>
+            </div>
+          )}
 
-          <Separator className="my-3" />
+          {showTaxLine && <Separator className="my-2" />}
 
           <div className="flex justify-between">
             <span className="text-lg font-semibold">Total</span>
             <span className="text-2xl font-bold text-primary">₹{finalAmount.toFixed(2)}</span>
           </div>
+          {!showTaxLine && <p className="text-xs text-muted-foreground">GST included</p>}
         </div>
 
         <div className="space-y-2 pt-4">

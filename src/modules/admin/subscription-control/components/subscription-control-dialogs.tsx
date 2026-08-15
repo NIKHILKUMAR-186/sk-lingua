@@ -501,7 +501,7 @@ export function CreateSubscriptionDialog({
                     <div className="font-medium">{plan.name}</div>
                     <div className="text-sm text-muted-foreground">
                       {plan.price !== null
-                        ? `${plan.currency || "INR"} ${Number(plan.price).toLocaleString("en-IN")}`
+                        ? `₹${Number(plan.price).toLocaleString("en-IN")}`
                         : "Free"}
                       {" · "}
                       {plan.num_sessions} Sessions
@@ -608,7 +608,7 @@ export function ChangePlanDialog({
                     <div className="font-medium">{plan.name}</div>
                     <div className="text-sm text-muted-foreground">
                       {plan.price !== null
-                        ? `${plan.currency || "INR"} ${Number(plan.price).toLocaleString("en-IN")}`
+                        ? `₹${Number(plan.price).toLocaleString("en-IN")}`
                         : "Free"}
                       {" · "}
                       {plan.num_sessions} Sessions

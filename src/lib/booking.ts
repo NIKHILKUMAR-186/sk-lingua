@@ -192,3 +192,25 @@ export async function insertBookingHistory(payload: {
 
   if (error) throw error;
 }
+
+/**
+ * P5 completion is driven server-side: marking a session 'completed' fires
+ * trg_log_session_completion (consume credit + ledger) and
+ * trg_on_session_completed (streak + notifications); the sessions UPDATE
+ * policy restricts the transition to mentor/admin. Map the resulting DB
+ * errors to safe, user-facing messages (never leak raw stack details).
+ */
+export function mapCompletionError(message: string | null | undefined): string {
+  const msg = (message ?? "").toLowerCase();
+  if (
+    msg.includes("permission denied") ||
+    msg.includes("row-level security") ||
+    msg.includes("policy")
+  ) {
+    return "You can only complete sessions that are assigned to you.";
+  }
+  if (msg.includes("already")) {
+    return "This session is already completed.";
+  }
+  return "Unable to complete this session. Please try again.";
+}

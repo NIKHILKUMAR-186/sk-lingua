@@ -146,7 +146,7 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
             <SelectContent>
-              {LANGUAGES.map((languageOption) => (
+              {LANGUAGES.filter((l) => l.code === "en").map((languageOption) => (
                 <SelectItem key={languageOption.code} value={languageOption.code}>
                   {languageOption.emoji} {languageOption.name}
                 </SelectItem>

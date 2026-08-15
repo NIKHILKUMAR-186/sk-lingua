@@ -92,7 +92,7 @@ export async function fetchSessionWorkspace(sessionId: string, userId: string) {
   ] = await Promise.all([
     supabase
       .from("sessions")
-      .select("*, mentor:mentor_id(*), student:student_id(*), gig:gig_id(*)")
+      .select("*, mentor:mentor_id(*), student:student_id(*)")
       .eq("id", sessionId)
       .maybeSingle(),
     supabase

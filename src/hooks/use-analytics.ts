@@ -17,7 +17,7 @@ export function useStudentAnalytics(userId?: string) {
       ] = await Promise.all([
         client
           .from("sessions")
-          .select("id,scheduled_time,duration_mins,status,gig_id")
+          .select("id,scheduled_time,duration_mins,status")
           .eq("student_id", userId!),
         client.from("resources").select("id,student_id,created_at").eq("student_id", userId!),
         client.from("xp_history").select("points").eq("user_id", userId!),

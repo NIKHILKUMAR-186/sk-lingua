@@ -79,9 +79,11 @@ function MentorProfile() {
 
   const confirmBooking = useConfirmBooking();
   const { data: subscription } = useStudentSubscription(auth?.user?.id ?? null);
-  const usableBefore =
+    const usableBefore =
     (subscription?.current_session_slots ?? 0) + (subscription?.bonus_slots ?? 0);
-  const usableAfter = Math.max(0, usableBefore - 1);
+  // P5: booking only RESERVES the slot — the credit is consumed at
+  // completion (trg_log_session_completion). The balance is unchanged by booking.
+  const usableAfter = usableBefore;
 
   function handleSelectDate(date: string) {
     setSelectedDate(date);

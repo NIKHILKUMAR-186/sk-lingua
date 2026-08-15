@@ -55,8 +55,8 @@ export function MentorCta() {
                     +18%
                   </span>
                 </div>
-                <div className="mt-3 text-4xl font-display tracking-tight">$1,240</div>
-                <div className="mt-1 text-xs text-white/50">from 22 sessions</div>
+                <div className="mt-3 text-4xl font-display tracking-tight">22</div>
+                <div className="mt-1 text-xs text-white/50">sessions this month</div>
                 <div className="mt-5 flex h-16 items-end gap-1.5">
                   {[35, 50, 42, 68, 55, 82, 74, 95, 88, 100].map((h, i) => (
                     <span

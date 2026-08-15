@@ -21,8 +21,9 @@ import { format } from "date-fns";
 
 /**
  * P5 — Confirm Session card.
- * No Gig / Service / price. Shows the exact slot and the session balance
- * change (before → after) so the student knows exactly one session is spent.
+ * No Gig / Service / price. Shows the exact slot. The balance shown is
+ * unchanged at booking — a session credit is consumed only when the
+ * session is later marked 'completed'.
  */
 export function SessionConfirmCard({
   mentorName,
@@ -102,8 +103,9 @@ export function SessionConfirmCard({
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               {sessionsAfter}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              One session will be deducted from your subscription.
+                        <p className="mt-1 text-xs text-muted-foreground">
+              Balance unchanged when booking. One session credit is consumed
+              when this session is completed.
             </p>
           </div>
 
@@ -130,8 +132,9 @@ export function SessionConfirmCard({
               )}
             </Button>
           </div>
-          <p className="text-center text-xs text-muted-foreground">
-            Clicking once books your session and deducts one session.
+                    <p className="text-center text-xs text-muted-foreground">
+            Confirming reserves this slot. Your session credit is consumed
+            after the session is completed.
           </p>
         </CardContent>
       </Card>

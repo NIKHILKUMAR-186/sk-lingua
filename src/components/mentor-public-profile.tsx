@@ -103,9 +103,9 @@ export function MentorPublicProfile({
             </div>
             <div className="text-right">
               <div className="text-3xl font-display font-bold text-primary">
-                ${Number(mentor.hourly_rate || 0).toFixed(0)}
+                {mentor.years_experience || 0}
               </div>
-              <div className="text-xs text-muted-foreground">per hour</div>
+              <div className="text-xs text-muted-foreground">years experience</div>
             </div>
           </div>
 

@@ -116,10 +116,6 @@ export function useCreatePaymentOrder() {
       userId: string;
       order_type: "demo_session" | "subscription" | "renewal";
       related_id?: string;
-      amount: number;
-      tax_amount?: number;
-      discount_amount?: number;
-      final_amount: number;
       customer_email?: string;
       customer_phone?: string;
       billing_address?: any;

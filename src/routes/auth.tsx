@@ -11,11 +11,8 @@ import { toast } from "sonner";
 import { Loader2, GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  getActiveRole,
   getDashboardRoute,
-  getOnboardingRoute,
-  shouldRedirectToOnboarding,
-  resolveDestination,
+  getActiveRole,
   waitForSessionRestored,
   type AppRole,
 } from "@/lib/auth";
@@ -31,23 +28,16 @@ type AuthMode = "login" | "signup";
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   beforeLoad: async () => {
-    // If the user is already authenticated (e.g. they landed on /auth after the
-    // Google OAuth callback finished, or they revisited while logged in), resolve
-    // their role-aware destination and skip the login page — prevents a /auth
-    // "stuck login" state and the OAuth redirect loop.
     const user = await waitForSessionRestored(4000, 250);
     if (!user) return;
 
-    const [{ data: roles }, { data: profile }] = await Promise.all([
+    const [{ data: roles }] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", user.id),
-      supabase.from("profiles").select("onboarded").eq("id", user.id).maybeSingle(),
     ]);
 
     const fetchedRoles = (roles ?? []).map((roleRow) => roleRow.role as AppRole);
-    const onboarded = Boolean(profile?.onboarded);
-    const destination = resolveDestination(fetchedRoles, onboarded);
+    const destination = getDashboardRoute(getActiveRole(fetchedRoles));
 
-    // Mentors / mentor_pending / admins should never be sent to student onboarding.
     throw redirect({ to: destination });
   },
   head: () => ({
@@ -76,26 +66,19 @@ function AuthPage() {
 
   async function goToDashboardFor(userId: string) {
     await qc.invalidateQueries();
-    const [{ data: roles, error: rolesError }, { data: profile, error: profileError }] =
-      await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", userId),
-        supabase.from("profiles").select("onboarded").eq("id", userId).maybeSingle(),
-      ]);
+    const { data: roles, error: rolesError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
 
-    if (rolesError || profileError) {
-      console.error("Redirect lookup failed", { rolesError, profileError });
+    if (rolesError) {
+      console.error("Redirect lookup failed", rolesError);
     }
 
     const fetchedRoles = (roles ?? []).map((r) => r.role as AppRole);
-    const onboarded = Boolean(profile?.onboarded);
+    const destination = getDashboardRoute(getActiveRole(fetchedRoles));
 
-    if (shouldRedirectToOnboarding(fetchedRoles, onboarded)) {
-      navigate({ to: getOnboardingRoute() });
-      return;
-    }
-
-    const activeRole = getActiveRole(fetchedRoles);
-    navigate({ to: getDashboardRoute(activeRole) });
+    navigate({ to: destination });
   }
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -148,7 +131,7 @@ function AuthPage() {
 
     setLoading(true);
     try {
-      const emailRedirectTo = `${window.location.origin}/onboarding`;
+      const emailRedirectTo = `${window.location.origin}/student/demo-session`;
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -169,7 +152,7 @@ function AuthPage() {
       const hasSession = await waitForSession();
       if (!hasSession) {
         toast.success("Check your inbox to confirm your account.");
-        navigate({ to: "/onboarding" });
+        navigate({ to: "/student/demo-session" });
         return;
       }
 
@@ -183,7 +166,7 @@ function AuthPage() {
       if (roleError) throw roleError;
 
       toast.success("Account created!");
-      navigate({ to: "/onboarding" });
+      navigate({ to: "/student/demo-session" });
     } catch (error) {
       console.error("Signup failed", error);
       toast.error(getSignupErrorMessage(error));
@@ -401,7 +384,6 @@ function AuthPage() {
           <div className="rounded-3xl border border-border bg-background p-6 shadow-xl shadow-slate-900/5">
             <h2 className="text-base font-semibold">Why Lingua?</h2>
             <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <li>• Personalized onboarding for learners and mentors.</li>
               <li>• Smooth session booking and mentor discovery.</li>
               <li>• Separate student and mentor accounts.</li>
             </ul>

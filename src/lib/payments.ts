@@ -130,41 +130,52 @@ export async function cancelDemoBooking(id: string): Promise<DemoSessionBooking>
 }
 
 // Create payment order
+// IMPORTANT: This now calls the backend API which validates the canonical
+// price from the database. The client MUST NOT send the amount directly.
 export async function createPaymentOrder(
   userId: string,
   data: {
     order_type: "demo_session" | "subscription" | "renewal";
     related_id?: string;
-    amount: number;
+    amount?: number;
     tax_amount?: number;
     discount_amount?: number;
-    final_amount: number;
+    final_amount?: number;
     customer_email?: string;
     customer_phone?: string;
     billing_address?: any;
   },
 ): Promise<PaymentOrder> {
-  const { data: order, error } = await supabase
-    .from("payment_orders")
-    .insert({
-      user_id: userId,
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  if (!token) {
+    throw new Error("Unauthorized: no session token");
+  }
+
+  const res = await fetch("/api/payments/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
       order_type: data.order_type,
       related_id: data.related_id,
-      amount: data.amount,
-      tax_amount: data.tax_amount ?? 0,
-      discount_amount: data.discount_amount ?? 0,
-      final_amount: data.final_amount,
-      currency: "INR",
-      payment_status: "pending",
       customer_email: data.customer_email,
       customer_phone: data.customer_phone,
       billing_address: data.billing_address,
-    })
-    .select()
-    .single();
+    }),
+  });
 
-  if (error) throw error;
-  return order;
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json?.error || "Failed to create payment order");
+  }
+
+  return json.data as PaymentOrder;
 }
 
 // Get payment order
@@ -268,9 +279,11 @@ async function recordPaymentHistory(
 }
 
 // Calculate payment summary
-export function calculatePaymentSummary(baseAmount: number, taxRate: number = 0.18) {
-  const taxAmount = baseAmount * taxRate;
-  const finalAmount = baseAmount + taxAmount;
+// IMPORTANT: Plan prices already include GST. The displayed price IS the final
+// customer payable amount. Do NOT add tax on top.
+export function calculatePaymentSummary(baseAmount: number, _taxRate: number = 0) {
+  const taxAmount = 0;
+  const finalAmount = Math.round(baseAmount * 100) / 100;
 
   return {
     baseAmount: Math.round(baseAmount * 100) / 100,

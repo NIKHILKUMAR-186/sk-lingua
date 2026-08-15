@@ -90,15 +90,10 @@ function DemoSessionPage() {
   async function handlePaymentSubmit(data: any) {
     setLoading(true);
     try {
-      const { taxAmount, finalAmount } = calculatePaymentSummary(demoPrice);
-
       const paymentOrder = await createPayment.mutateAsync({
         userId,
         order_type: "demo_session",
         related_id: bookingData?.id,
-        amount: demoPrice,
-        tax_amount: taxAmount,
-        final_amount: finalAmount,
         customer_email: data.customer_email,
         customer_phone: data.customer_phone,
         billing_address: data.billing_address,
@@ -351,7 +346,6 @@ function DemoSessionPage() {
                       description="Your 30-minute demo session"
                       items={[
                         { label: "Demo Session (30 min)", value: `₹${demoPrice}` },
-                        { label: "Tax (18% GST)", value: `₹${taxAmount.toFixed(2)}` },
                       ]}
                     />
                   </motion.div>

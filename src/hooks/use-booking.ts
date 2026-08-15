@@ -17,14 +17,12 @@ export interface SlotOption {
 
 export interface BookingSummary {
   mentorName: string;
-  gigTitle: string;
-  gigPrice: number;
-  gigDuration: number;
+  sessionType: string;
   date: string;
   slotLabel: string;
   total: number;
   mentorId: string;
-  gigId: string;
+  durationMins: number;
   scheduledTime: string;
   studentMessage: string;
 }
@@ -172,9 +170,8 @@ export function useBookingRequest(mentorId?: string) {
       const { error } = await supabase.from("sessions").insert({
         student_id: auth.user.id,
         mentor_id: summary.mentorId,
-        gig_id: summary.gigId,
         scheduled_time: summary.scheduledTime,
-        duration_mins: summary.gigDuration,
+        duration_mins: summary.durationMins,
         student_message: summary.studentMessage,
       });
       if (error) throw error;
@@ -183,11 +180,10 @@ export function useBookingRequest(mentorId?: string) {
       await supabase.from("notifications").insert({
         user_id: summary.mentorId,
         title: "New booking request",
-        body: `${auth.profile?.full_name || "A student"} booked "${summary.gigTitle}" on ${summary.date} at ${summary.slotLabel}`,
+        body: `${auth.profile?.full_name || "A student"} booked a session on ${summary.date} at ${summary.slotLabel}`,
         category: "booking",
         kind: "booking_request",
-        related_id: summary.gigId,
-        metadata: { mentor_id: summary.mentorId, gig_id: summary.gigId },
+        metadata: { mentor_id: summary.mentorId },
       });
     },
     onSuccess: () => {

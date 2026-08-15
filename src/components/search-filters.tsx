@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Search, RotateCcw, Star, DollarSign } from "lucide-react";
+import { Search, RotateCcw, Star } from "lucide-react";
 import type { SearchFilters } from "@/hooks/use-search";
 import { useState } from "react";
 
@@ -88,28 +88,6 @@ export function SearchFiltersPanel({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {/* Price range */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" /> Price range
-                </Label>
-                <div className="flex items-center gap-2 text-sm">
-                  <span>${filters.minPrice}</span>
-                  <Slider
-                    min={0}
-                    max={200}
-                    step={5}
-                    value={[filters.minPrice, filters.maxPrice]}
-                    onValueChange={([min, max]) => {
-                      onFilterChange("minPrice", min);
-                      onFilterChange("maxPrice", max);
-                    }}
-                    className="flex-1"
-                  />
-                  <span>${filters.maxPrice}</span>
-                </div>
-              </div>
-
               {/* Rating */}
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground flex items-center gap-1">

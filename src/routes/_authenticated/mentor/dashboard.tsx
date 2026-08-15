@@ -11,7 +11,6 @@ import {
   Calendar,
   Video,
   Star,
-  DollarSign,
   ArrowRight,
   Users,
   FileText,
@@ -109,7 +108,6 @@ function MentorDashboard() {
   });
   const studentsTaught = new Set(completed.map((s) => s.student_id).filter(Boolean)).size;
   const homeworkShared = resources.filter((r) => r.session_id).length;
-  const earnings = completed.length * Number(mp?.hourly_rate ?? 0) * 0.9;
 
   const isLoading =
     sessionsLoading || mpLoading || reviewsLoading || resourcesLoading;
@@ -169,11 +167,6 @@ function MentorDashboard() {
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
               >
                 <Stat icon={Star} label="Rating" value={Number(mp?.rating_avg ?? 0).toFixed(1)} />
-              </motion.div>
-              <motion.div
-                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              >
-                <Stat icon={DollarSign} label="Earnings" value={`$${earnings.toFixed(0)}`} />
               </motion.div>
               <motion.div
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}

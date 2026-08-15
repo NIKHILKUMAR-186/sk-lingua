@@ -442,7 +442,6 @@ function StudentSessions() {
                       onChange={(e: any) => setReqLanguage(e.target.value)}
                     >
                       <option value="en">English</option>
-                      <option value="hi">Hindi</option>
                     </select>
                   </div>
                 </div>

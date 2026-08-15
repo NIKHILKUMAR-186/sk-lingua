@@ -47,18 +47,9 @@ function MentorCalendar() {
         .in("id", ids);
       const byId = new Map((profs ?? []).map((p) => [p.id, p]));
 
-      // Also fetch gig names
-      const gigIds: string[] = [];
-      data.forEach((d) => {
-        if (d.gig_id) gigIds.push(d.gig_id);
-      });
-      const { data: gigs } = await supabase.from("gigs").select("id, title").in("id", gigIds);
-      const gigMap = new Map((gigs ?? []).map((g) => [g.id, g]));
-
       return data.map((d) => ({
         ...d,
         student: byId.get(d.student_id),
-        gig: d.gig_id ? gigMap.get(d.gig_id) : null,
       }));
     },
   });

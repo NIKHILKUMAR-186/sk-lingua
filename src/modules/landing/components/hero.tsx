@@ -88,7 +88,7 @@ function ProductPreview() {
               <div className="mt-0.5 text-sm font-semibold">Today, 30 min</div>
             </div>
             <div className="text-sm font-semibold">
-              $49<span className="text-xs font-normal text-muted-foreground">/month</span>
+              ₹49<span className="text-xs font-normal text-muted-foreground">/month</span>
             </div>
           </div>
 

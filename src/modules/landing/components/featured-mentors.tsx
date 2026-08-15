@@ -156,9 +156,8 @@ export function FeaturedMentors() {
                     <div className="mt-5 flex items-center justify-between border-t border-border/70 pt-4">
                       <div>
                         <span className="text-lg font-semibold">
-                          ${Number(m.hourly_rate ?? 20).toFixed(0)}
+                          {m.years_experience || 0} years exp.
                         </span>
-                        <span className="text-xs text-muted-foreground">/hr</span>
                       </div>
                       <Button asChild size="sm" variant="ghost" className="group/btn">
                         <Link to="/auth" search={{ mode: "signup" } as never}>

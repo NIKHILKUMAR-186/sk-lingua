@@ -340,3 +340,163 @@ export function useDemoFeedback(bookingId: string | null) {
     staleTime: 1000 * 60, // 1 minute
   });
 }
+
+// ============================================================
+// DEMO ASSIGNMENT HOOKS
+// ============================================================
+
+// Admin: assign mentor to demo
+export function useAssignMentorToDemo() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { bookingId: string; mentorId: string }) => {
+      const res = await fetch("/api/admin/demo/assign-mentor", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "assign failed");
+      return json;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-demo-bookings"] });
+      qc.invalidateQueries({ queryKey: ["admin-pending-demo-bookings"] });
+      toast.success("Mentor assigned successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Unable to assign mentor. Please try again.");
+    },
+  });
+}
+
+// Admin: take demo session themselves
+export function useAdminTakeDemoSession() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { bookingId: string }) => {
+      const res = await fetch("/api/admin/demo/take-session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "take session failed");
+      return json;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-demo-bookings"] });
+      qc.invalidateQueries({ queryKey: ["admin-pending-demo-bookings"] });
+      toast.success("Demo session taken");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Unable to take session. Please try again.");
+    },
+  });
+}
+
+// Mentor: respond to demo assignment (accept/reject)
+export function useMentorRespondDemoAssignment() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { bookingId: string; mentorId: string; action: "accept" | "reject" }) => {
+      const res = await fetch("/api/mentor/respond-demo-assignment", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "response failed");
+      return json;
+    },
+    onSuccess: (data, variables) => {
+      qc.invalidateQueries({ queryKey: ["mentor-demo-requests", variables.mentorId] });
+      qc.invalidateQueries({ queryKey: ["admin-demo-bookings"] });
+      qc.invalidateQueries({ queryKey: ["admin-pending-demo-bookings"] });
+      toast.success(variables.action === "accept" ? "Demo accepted!" : "Demo rejected");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to respond to demo assignment");
+    },
+  });
+}
+
+// Mentor: query demo requests assigned to mentor
+export function useMentorDemoRequests(mentorId: string | null) {
+  return useQuery({
+    queryKey: ["mentor-demo-requests", mentorId],
+    enabled: !!mentorId,
+    queryFn: async () => {
+      if (!mentorId) return [];
+      const { data, error } = await supabase
+        .from("demo_session_bookings")
+        .select("*")
+        .eq("mentor_id", mentorId)
+        .eq("assignment_status", "pending_mentor")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return (data ?? []) as DemoBooking[];
+    },
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 15,
+  });
+}
+
+// Admin: fetch available mentors for a demo time slot
+export function useAvailableMentorsForDemo(bookingDate: string | null, bookingTimeStart: string | null) {
+  return useQuery({
+    queryKey: ["available-mentors-for-demo", bookingDate, bookingTimeStart],
+    enabled: !!bookingDate && !!bookingTimeStart,
+    queryFn: async () => {
+      if (!bookingDate || !bookingTimeStart) return [];
+
+      const date = new Date(bookingDate);
+      const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+
+      // Fetch mentors with availability for this day/time
+      const { data: slots, error: slotsError } = await supabase
+        .from("availability_slots")
+        .select("mentor_id, start_time, end_time, day_of_week")
+        .eq("day_of_week", dayOfWeek)
+        .eq("is_available", true)
+        .gte("start_time", bookingTimeStart);
+
+      if (slotsError) throw slotsError;
+      if (!slots || slots.length === 0) return [];
+
+      const mentorIds = [...new Set(slots.map((s: any) => s.mentor_id))];
+
+      // Fetch mentor profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, bio, avatar_url")
+        .in("id", mentorIds);
+
+      if (profilesError) throw profilesError;
+
+      // Verify mentor role and active status
+      const { data: roles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", mentorIds)
+        .eq("role", "mentor");
+
+      const activeMentorIds = new Set((roles ?? []).map((r: any) => r.user_id));
+
+      const { data: mentorProfiles, error: mpError } = await supabase
+        .from("mentor_profiles")
+        .select("user_id, is_active")
+        .in("user_id", mentorIds)
+        .eq("is_active", true);
+
+      const activeProfileIds = new Set((mentorProfiles ?? []).map((m: any) => m.user_id));
+
+      return (profiles ?? []).filter((p: any) => activeMentorIds.has(p.id) && activeProfileIds.has(p.id));
+    },
+    staleTime: 1000 * 60, // 1 minute
+  });
+}

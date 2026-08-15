@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,9 @@ import {
   useCompleteDemoBooking,
   useMarkDemoNoShow,
   useCancelDemoBooking,
+  useAssignMentorToDemo,
+  useAdminTakeDemoSession,
+  useAvailableMentorsForDemo,
 } from "@/hooks/use-demo-bookings";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -41,6 +45,8 @@ import {
   Mail,
   Globe,
   BarChart3,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/demo-queue")({
@@ -55,14 +61,23 @@ const STATUS_TABS = [
   { value: "no_show", label: "No Show" },
 ] as const;
 
+const ASSIGNMENT_STATUSES: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  unassigned: { label: "Unassigned", variant: "secondary" },
+  pending_mentor: { label: "Awaiting Mentor Confirmation", variant: "outline" },
+  confirmed: { label: "Confirmed", variant: "default" },
+  rejected: { label: "Rejected", variant: "destructive" },
+  needs_reassignment: { label: "Needs Reassignment", variant: "destructive" },
+};
+
 function AdminDemoQueue() {
   const { data: auth } = useAuth();
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("pending_admin_confirmation");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
-  const [dialog, setDialog] = useState<null | "confirm" | "reschedule" | "complete" | "noShow">(
+  const [dialog, setDialog] = useState<null | "confirm" | "reschedule" | "complete" | "noShow" | "assignMentor" | "takeSession" | "viewDetails">(
     null,
   );
+  const [selectedMentorId, setSelectedMentorId] = useState<string>("");
 
   // Form state for confirm/reschedule
   const [meetingLink, setMeetingLink] = useState("");
@@ -78,6 +93,13 @@ function AdminDemoQueue() {
   const completeMutation = useCompleteDemoBooking();
   const noShowMutation = useMarkDemoNoShow();
   const cancelMutation = useCancelDemoBooking();
+  const assignMentorMutation = useAssignMentorToDemo();
+  const takeSessionMutation = useAdminTakeDemoSession();
+
+  const { data: availableMentors = [], isLoading: mentorsLoading } = useAvailableMentorsForDemo(
+    selectedBooking?.booking_date || null,
+    selectedBooking?.booking_time_start || null,
+  );
 
   // Fetch student profiles for all bookings
   const studentIds = [...new Set(allBookings.map((b: any) => b.user_id).filter(Boolean))];
@@ -93,13 +115,14 @@ function AdminDemoQueue() {
 
   const filtered = (allBookings as any[]).filter((b) => b.booking_status === activeTab);
 
-  function openDialog(booking: any, kind: "confirm" | "reschedule" | "complete" | "noShow") {
+  function openDialog(booking: any, kind: "confirm" | "reschedule" | "complete" | "noShow" | "assignMentor" | "takeSession" | "viewDetails") {
     setSelectedBooking(booking);
     setMeetingLink(booking.meeting_link || "");
     setAdminNotes(booking.admin_notes || "");
     setEditDate(booking.booking_date || "");
     setEditTimeStart(booking.booking_time_start || "");
     setEditTimeEnd(booking.booking_time_end || "");
+    setSelectedMentorId("");
     setDialog(kind);
   }
 
@@ -180,9 +203,41 @@ function AdminDemoQueue() {
     );
   }
 
+  function handleAssignMentor() {
+    if (!selectedBooking || !selectedMentorId || !auth?.user?.id) return;
+    assignMentorMutation.mutate(
+      {
+        bookingId: selectedBooking.id,
+        mentorId: selectedMentorId,
+      },
+      {
+        onSuccess: () => {
+          setDialog(null);
+          setSelectedBooking(null);
+          setSelectedMentorId("");
+        },
+      },
+    );
+  }
+
+  function handleTakeSession() {
+    if (!selectedBooking || !auth?.user?.id) return;
+    takeSessionMutation.mutate(
+      {
+        bookingId: selectedBooking.id,
+      },
+      {
+        onSuccess: () => {
+          setDialog(null);
+          setSelectedBooking(null);
+        },
+      },
+    );
+  }
+
   function handleCancel(booking: any) {
     if (!auth?.user?.id) return;
-    if (!window.confirm("Cancel this demo booking? The student will be notified.")) return;
+    if (window.confirm("Cancel this demo booking? The student will be notified.")) return;
     cancelMutation.mutate({
       bookingId: booking.id,
       userId: booking.user_id,
@@ -208,6 +263,37 @@ function AdminDemoQueue() {
     return <Badge variant={variants[status] ?? "secondary"}>{labels[status] ?? status}</Badge>;
   }
 
+  function getAssignmentBadge(status: string | null) {
+    if (!status) return null;
+    const config = ASSIGNMENT_STATUSES[status] || { label: status, variant: "secondary" as const };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  }
+
+  function getAssignedMentorName(booking: any) {
+    if (!booking.mentor_id) return null;
+    const mentor = students.find((s: any) => s.id === booking.mentor_id);
+    return mentor?.full_name || "Assigned Mentor";
+  }
+
+  const canAssign = (booking: any) => {
+    return (
+      booking.booking_status === "pending_admin_confirmation" &&
+      ["unassigned", "needs_reassignment"].includes(booking.assignment_status || "unassigned")
+    );
+  };
+
+  const isPendingMentor = (booking: any) => {
+    return booking.assignment_status === "pending_mentor";
+  };
+
+  const isConfirmedWithMentor = (booking: any) => {
+    return booking.booking_status === "confirmed" && booking.mentor_id && booking.assignment_status === "confirmed";
+  };
+
+  const isConfirmedWithAdmin = (booking: any) => {
+    return booking.booking_status === "confirmed" && (!booking.mentor_id || booking.assignment_status !== "confirmed");
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -226,7 +312,7 @@ function AdminDemoQueue() {
           <div>
             <h1 className="text-3xl font-display">Demo Session Queue</h1>
             <p className="mt-1 text-muted-foreground">
-              Review and confirm demo session bookings. Every demo is conducted by an admin.
+              Review and confirm demo session bookings. Assign mentors or conduct demos yourself.
             </p>
           </div>
           <Button
@@ -309,17 +395,44 @@ function AdminDemoQueue() {
             ) : (
               filtered.map((booking) => {
                 const student = studentMap.get(booking.user_id);
+                const assignmentLabel = ASSIGNMENT_STATUSES[booking.assignment_status || "unassigned"]?.label || "Unassigned";
+                const assignedMentorName = getAssignedMentorName(booking);
+
                 return (
                   <Card key={booking.id}>
                     <CardContent className="space-y-4 p-4">
                       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <div className="font-medium">
                               {student?.full_name || "Unknown student"}
                             </div>
                             {getStatusBadge(booking.booking_status)}
+                            {getAssignmentBadge(booking.assignment_status)}
                           </div>
+
+                          {/* Assignment info */}
+                          {isPendingMentor(booking) && (
+                            <div className="text-sm text-muted-foreground">
+                              Assigned to: <span className="font-medium">{assignedMentorName}</span> • Waiting for response
+                            </div>
+                          )}
+                          {isConfirmedWithMentor(booking) && (
+                            <div className="text-sm text-muted-foreground">
+                              Assigned to: <span className="font-medium">{assignedMentorName}</span> • Confirmed
+                            </div>
+                          )}
+                          {isConfirmedWithAdmin(booking) && (
+                            <div className="text-sm text-muted-foreground">
+                              Conducted by: <span className="font-medium">Admin</span> • Confirmed
+                            </div>
+                          )}
+                          {(booking.assignment_status === "unassigned" || booking.assignment_status === "needs_reassignment") && (
+                            <div className="text-sm text-muted-foreground">
+                              Assignment: <span className="font-medium">{assignmentLabel}</span>
+                            </div>
+                          )}
+
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3.5 w-3.5" />
@@ -357,6 +470,39 @@ function AdminDemoQueue() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
+                          {/* Assignment actions for unassigned pending demos */}
+                          {canAssign(booking) && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => openDialog(booking, "assignMentor")}
+                                disabled={assignMentorMutation.isPending}
+                              >
+                                <UserPlus className="mr-1 h-4 w-4" /> Assign Mentor
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openDialog(booking, "takeSession")}
+                                disabled={takeSessionMutation.isPending}
+                              >
+                                <UserCheck className="mr-1 h-4 w-4" /> Take Session Myself
+                              </Button>
+                            </>
+                          )}
+
+                          {/* Reassign for pending_mentor or needs_reassignment */}
+                          {(isPendingMentor(booking) || booking.assignment_status === "needs_reassignment") && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openDialog(booking, "assignMentor")}
+                              disabled={assignMentorMutation.isPending}
+                            >
+                              <UserPlus className="mr-1 h-4 w-4" /> Reassign
+                            </Button>
+                          )}
+
                           {booking.booking_status === "pending_admin_confirmation" && (
                             <>
                               <Button
@@ -404,7 +550,7 @@ function AdminDemoQueue() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => setSelectedBooking(booking)}
+                            onClick={() => openDialog(booking, "viewDetails")}
                           >
                             <Eye className="mr-1 h-4 w-4" /> View
                           </Button>
@@ -419,52 +565,6 @@ function AdminDemoQueue() {
                           </Button>
                         </div>
                       </div>
-
-                      {selectedBooking?.id === booking.id && (
-                        <div className="grid gap-4 rounded-lg border bg-muted/20 p-4 md:grid-cols-2">
-                          <div className="text-sm">
-                            <div className="font-medium mb-1">Student Details</div>
-                            <div className="text-muted-foreground">
-                              {student ? (
-                                <div className="space-y-1">
-                                  <div>{student.full_name}</div>
-                                  <div>{student.email}</div>
-                                  <div>{student.phone || "No phone"}</div>
-                                  <div>Level: {student.current_level || "—"}</div>
-                                  <div>Native: {student.native_language || "—"}</div>
-                                  <div>Goal: {student.learning_goal || "—"}</div>
-                                </div>
-                              ) : (
-                                "Unavailable"
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-sm">
-                            <div className="font-medium mb-1">Booking Details</div>
-                            <div className="text-muted-foreground space-y-1">
-                              <div>Preferred: {booking.booking_date} {booking.booking_time_start}</div>
-                              <div>Language: {booking.language}</div>
-                              {booking.notes ? <div>Notes: {booking.notes}</div> : null}
-                              {booking.meeting_link ? (
-                                <div>
-                                  Meeting:{" "}
-                                  <a
-                                    href={booking.meeting_link}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-primary underline"
-                                  >
-                                    {booking.meeting_link}
-                                  </a>
-                                </div>
-                              ) : null}
-                              {booking.admin_notes ? (
-                                <div>Admin notes: {booking.admin_notes}</div>
-                              ) : null}
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 );
@@ -642,6 +742,169 @@ function AdminDemoQueue() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Mentor Dialog */}
+      <Dialog open={dialog === "assignMentor"} onOpenChange={() => setDialog(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Assign Demo Session</DialogTitle>
+            <DialogDescription>
+              Select a mentor to conduct this demo session.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedBooking && (
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-muted/20 p-4 space-y-2">
+                <div className="text-sm font-medium">Student: {studentMap.get(selectedBooking.user_id)?.full_name || "Unknown"}</div>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(selectedBooking.booking_date).toDateString()} • {selectedBooking.booking_time_start} • {selectedBooking.duration_mins} min
+                </div>
+              </div>
+
+              <div>
+                <Label className="mb-2 block">Available Mentors</Label>
+                {mentorsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  </div>
+                ) : availableMentors.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-2">No mentors available for this time slot.</p>
+                ) : (
+                  <RadioGroup value={selectedMentorId} onValueChange={setSelectedMentorId}>
+                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                      {availableMentors.map((mentor: any) => (
+                        <div
+                          key={mentor.id}
+                          className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50"
+                        >
+                          <RadioGroupItem value={mentor.id} id={mentor.id} />
+                          <div className="flex-1">
+                            <div className="text-sm font-medium">{mentor.full_name}</div>
+                            <div className="text-xs text-muted-foreground">{mentor.email}</div>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">Available</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </RadioGroup>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setDialog(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAssignMentor} disabled={!selectedMentorId || assignMentorMutation.isPending}>
+                  {assignMentorMutation.isPending ? "Assigning..." : "Assign Mentor"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Take Session Myself Dialog */}
+      <Dialog open={dialog === "takeSession"} onOpenChange={() => setDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Take This Demo Session?</DialogTitle>
+            <DialogDescription>
+              You will be assigned as the conductor for this demo.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedBooking && (
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-muted/20 p-4 space-y-2">
+                <div className="text-sm font-medium">Student: {studentMap.get(selectedBooking.user_id)?.full_name || "Unknown"}</div>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(selectedBooking.booking_date).toDateString()} • {selectedBooking.booking_time_start} • {selectedBooking.duration_mins} min
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Language: {selectedBooking.language}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setDialog(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleTakeSession} disabled={takeSessionMutation.isPending}>
+                  {takeSessionMutation.isPending ? "Confirming..." : "Confirm"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Details Dialog */}
+      <Dialog open={dialog === "viewDetails"} onOpenChange={() => setDialog(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Demo Booking Details</DialogTitle>
+          </DialogHeader>
+          {selectedBooking && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="text-sm">
+                  <div className="font-medium mb-1">Student Details</div>
+                  <div className="text-muted-foreground space-y-1">
+                    <div>{studentMap.get(selectedBooking.user_id)?.full_name || "Unavailable"}</div>
+                    <div>{studentMap.get(selectedBooking.user_id)?.email || "—"}</div>
+                    <div>{studentMap.get(selectedBooking.user_id)?.phone || "No phone"}</div>
+                    <div>Level: {studentMap.get(selectedBooking.user_id)?.current_level || "—"}</div>
+                    <div>Native: {studentMap.get(selectedBooking.user_id)?.native_language || "—"}</div>
+                    <div>Goal: {studentMap.get(selectedBooking.user_id)?.learning_goal || "—"}</div>
+                  </div>
+                </div>
+                <div className="text-sm">
+                  <div className="font-medium mb-1">Booking Details</div>
+                  <div className="text-muted-foreground space-y-1">
+                    <div>Preferred: {selectedBooking.booking_date} {selectedBooking.booking_time_start}</div>
+                    <div>Language: {selectedBooking.language}</div>
+                    <div>Duration: {selectedBooking.duration_mins} min</div>
+                    <div>Payment: {selectedBooking.payment_status}</div>
+                    {selectedBooking.notes ? <div>Notes: {selectedBooking.notes}</div> : null}
+                    {selectedBooking.meeting_link ? (
+                      <div>
+                        Meeting:{" "}
+                        <a
+                          href={selectedBooking.meeting_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary underline"
+                        >
+                          {selectedBooking.meeting_link}
+                        </a>
+                      </div>
+                    ) : null}
+                    {selectedBooking.admin_notes ? (
+                      <div>Admin notes: {selectedBooking.admin_notes}</div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm">
+                <div className="font-medium mb-1">Assignment</div>
+                <div className="text-muted-foreground space-y-1">
+                  <div>Status: {ASSIGNMENT_STATUSES[selectedBooking.assignment_status || "unassigned"]?.label || "Unassigned"}</div>
+                  {selectedBooking.mentor_id && (
+                    <div>Mentor: {getAssignedMentorName(selectedBooking)}</div>
+                  )}
+                  {selectedBooking.admin_id && (
+                    <div>Admin: {selectedBooking.admin_id === auth?.user?.id ? "You" : "Another admin"}</div>
+                  )}
+                  {selectedBooking.assigned_at && (
+                    <div>Assigned at: {new Date(selectedBooking.assigned_at).toLocaleString()}</div>
+                  )}
+                  {selectedBooking.confirmed_at && (
+                    <div>Confirmed at: {new Date(selectedBooking.confirmed_at).toLocaleString()}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>

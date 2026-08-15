@@ -2,10 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  getActiveRole,
   getDashboardRoute,
-  getOnboardingRoute,
-  shouldRedirectToOnboarding,
+  getActiveRole,
   waitForSessionRestored,
   type AppRole,
 } from "@/lib/auth";
@@ -146,23 +144,21 @@ function OAuthCallbackPage() {
         clearIntendedRole();
 
         // ── Resolve final destination exactly once ────────────────────────────
-        const [{ data: roles, error: rolesError }, { data: profile, error: profileError }] =
-          await Promise.all([
-            supabase.from("user_roles").select("role").eq("user_id", user.id),
-            supabase.from("profiles").select("onboarded").eq("id", user.id).maybeSingle(),
-          ]);
+        const { data: roles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id);
 
-        if (rolesError || profileError) {
-          console.error("[OAuth callback] redirect lookup failed", { rolesError, profileError });
+        if (rolesError) {
+          console.error("[OAuth callback] redirect lookup failed", rolesError);
         }
 
         const fetchedRoles = (roles ?? []).map((roleRow) => roleRow.role as AppRole);
-        const onboarded = Boolean(profile?.onboarded);
-        const destination =
-          shouldRedirectToOnboarding(fetchedRoles, onboarded)
-            ? getOnboardingRoute()
-            : getDashboardRoute(getActiveRole(fetchedRoles));
-        console.log("[OAuth callback] final destination", { fetchedRoles, onboarded, destination });
+        const isNewStudent = !hasExistingRoles && fetchedRoles.includes("student");
+        const destination = isNewStudent
+          ? "/student/demo-session"
+          : getDashboardRoute(getActiveRole(fetchedRoles));
+        console.log("[OAuth callback] final destination", { fetchedRoles, isNewStudent, destination });
 
         if (!cancelled) {
           await navigate({ to: destination });

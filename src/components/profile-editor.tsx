@@ -17,7 +17,6 @@ export type ProfileEditorValues = {
   native_language: string;
   languages_taught: string[];
   years_experience: string;
-  hourly_rate: string;
   teaching_style: string;
   certifications: string;
   education: string;
@@ -198,14 +197,6 @@ export function ProfileEditor({
                   type="number"
                   value={values.years_experience}
                   onChange={(e) => update("years_experience", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Hourly rate</Label>
-                <Input
-                  type="number"
-                  value={values.hourly_rate}
-                  onChange={(e) => update("hourly_rate", e.target.value)}
                 />
               </div>
             </div>

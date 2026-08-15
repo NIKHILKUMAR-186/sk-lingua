@@ -64,11 +64,11 @@ export function ProfileCard({ auth, collapsed }: ProfileCardProps) {
               {auth?.profile?.full_name ?? "User"}
             </div>
             <div className="truncate text-xs text-muted-foreground">{auth?.user?.email ?? ""}</div>
-            {formatUserReferenceNo(auth?.profile?.reference_no) && (
-              <div className="truncate text-[11px] font-medium tabular-nums text-muted-foreground/70">
-                {formatUserReferenceNo(auth?.profile?.reference_no)}
-              </div>
-            )}
+            {/* {formatUserReferenceNo(auth?.profile?.reference_no) && (
+              // <div className="truncate text-[11px] font-medium tabular-nums text-muted-foreground/70">
+              //   {formatUserReferenceNo(auth?.profile?.reference_no)}
+              // </div>
+            )} */}
           </motion.div>
         )}
 

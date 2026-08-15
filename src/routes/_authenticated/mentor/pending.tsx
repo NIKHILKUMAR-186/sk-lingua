@@ -346,7 +346,7 @@ function MentorPendingDashboard() {
                   <CheckCircle2 className="h-6 w-6 text-primary" />
                   <p className="mt-2 text-sm font-semibold">Start Teaching</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Once approved, you'll unlock sessions, students, and earnings.
+                    Once approved, you'll unlock sessions and students.
                   </p>
                 </div>
               </div>

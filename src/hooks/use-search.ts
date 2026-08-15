@@ -4,21 +4,17 @@ import { useState, useMemo } from "react";
 
 export interface SearchFilters {
   query: string;
-  minPrice: number;
-  maxPrice: number;
   minRating: number;
   maxExperience: number;
   verifiedOnly: boolean;
   demoAvailable: boolean;
   category: string;
   level: string;
-  sortBy: "rating" | "price_low" | "price_high" | "experience" | "popular";
+  sortBy: "rating" | "experience" | "popular";
 }
 
 const defaultFilters: SearchFilters = {
   query: "",
-  minPrice: 0,
-  maxPrice: 200,
   minRating: 0,
   maxExperience: 20,
   verifiedOnly: false,
@@ -44,12 +40,6 @@ export function useSearch() {
         .eq("is_active", true);
 
       // Apply filters
-      if (filters.minPrice > 0) {
-        query = query.gte("hourly_rate", filters.minPrice);
-      }
-      if (filters.maxPrice < 200) {
-        query = query.lte("hourly_rate", filters.maxPrice);
-      }
       if (filters.minRating > 0) {
         query = query.gte("rating_avg", filters.minRating);
       }
@@ -65,12 +55,6 @@ export function useSearch() {
 
       // Sort
       switch (filters.sortBy) {
-        case "price_low":
-          query = query.order("hourly_rate", { ascending: true });
-          break;
-        case "price_high":
-          query = query.order("hourly_rate", { ascending: false });
-          break;
         case "experience":
           query = query.order("years_experience", { ascending: false });
           break;

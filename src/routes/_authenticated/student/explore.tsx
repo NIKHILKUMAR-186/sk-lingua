@@ -123,10 +123,6 @@ function Explore() {
                               <Clock className="h-3 w-3" /> {m.years_experience}y
                             </span>
                           )}
-                          <span className="text-sm font-semibold text-foreground">
-                            ${Number(m.hourly_rate).toFixed(0)}
-                            <span className="text-xs text-muted-foreground">/hr</span>
-                          </span>
                         </div>
                       </div>
                     </CardContent>

@@ -12,6 +12,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ResourceUpload } from "@/components/resource-upload";
 import { uploadStorageFile } from "@/lib/storage";
+import { mapCompletionError } from "@/lib/booking";
 
 export const Route = createFileRoute("/_authenticated/mentor/sessions")({
   component: MentorSessions,
@@ -57,13 +58,30 @@ function MentorSessions() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [notesDrafts, setNotesDrafts] = useState<Record<string, string>>({});
 
-  async function complete(id: string) {
-    const { error } = await supabase.from("sessions").update({ status: "completed" }).eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Marked complete");
-      qc.invalidateQueries();
+    async function complete(id: string) {
+    if (!uid) return;
+    // Only flip non-completed -> completed. Re-clicking an already-completed
+    // session matches 0 rows (idempotent: no second credit consumed). The
+    // actual credit consumption + ledger is performed by the
+    // trg_log_session_completion trigger on status -> 'completed'.
+    const { data, error } = await supabase
+      .from("sessions")
+      .update({ status: "completed" })
+      .eq("id", id)
+      .eq("mentor_id", uid)
+      .in("status", ["accepted", "confirmed"])
+      .select("id");
+
+    if (error) {
+      toast.error(mapCompletionError(error.message));
+      return;
     }
+    if (!data || data.length === 0) {
+      toast.info("This session was already completed.");
+      return;
+    }
+    toast.success("Marked complete — one session credit consumed.");
+    qc.invalidateQueries({ queryKey: ["mentor-all-sessions", uid] });
   }
 
   async function shareHomework() {
@@ -230,7 +248,7 @@ function MentorSessions() {
                           </a>
                         </Button>
                       )}
-                      {s.status === "accepted" && (
+                                            {["accepted", "confirmed"].includes(s.status) && (
                         <Button size="sm" variant="outline" onClick={() => complete(s.id)}>
                           Mark complete
                         </Button>
