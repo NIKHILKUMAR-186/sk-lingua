@@ -5,19 +5,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { MentorPublicProfile } from "@/components/mentor-public-profile";
 import { BookingCalendar } from "@/components/booking-calendar";
-import {
-  SessionConfirmCard,
-  BookingSuccessCard,
-} from "@/components/session-confirm-card";
+import { SessionConfirmCard, BookingSuccessCard } from "@/components/session-confirm-card";
 import { MentorRatingSummary } from "@/components/review/MentorRatingSummary";
 import { useMentorRatingSummary } from "@/hooks/use-reviews";
 import { useAvailableSlots, calculateAvailableDates } from "@/hooks/use-booking";
-import { useConfirmBooking } from "@/hooks/use-student-booking";
+import { useConfirmBooking, mapBookingError } from "@/hooks/use-student-booking";
 import { useStudentSubscription } from "@/hooks/use-subscriptions";
+import { createSlotHold, releaseSlotHold, type BookingHold } from "@/lib/slot-holds";
 import { format } from "date-fns";
 import { DashboardSkeleton } from "@/components/skeleton-loader";
 
@@ -51,6 +49,8 @@ function MentorProfile() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [booked, setBooked] = useState<{ scheduled_time: string } | null>(null);
+  const [hold, setHold] = useState<BookingHold | null>(null);
+  const [isCreatingHold, setIsCreatingHold] = useState(false);
 
   const slotDurationMins = 30;
 
@@ -79,40 +79,87 @@ function MentorProfile() {
 
   const confirmBooking = useConfirmBooking();
   const { data: subscription } = useStudentSubscription(auth?.user?.id ?? null);
-    const usableBefore =
+  const usableBefore =
     (subscription?.current_session_slots ?? 0) + (subscription?.bonus_slots ?? 0);
-  // P5: booking only RESERVES the slot — the credit is consumed at
-  // completion (trg_log_session_completion). The balance is unchanged by booking.
   const usableAfter = usableBefore;
+
+  const createHoldForSlot = useCallback(
+    async (slotValue: string) => {
+      setIsCreatingHold(true);
+      setHold(null);
+      try {
+        const result = await createSlotHold({
+          mentorId: id,
+          scheduledStart: slotValue,
+          durationMins: slotDurationMins,
+        });
+        if (result.success && result.hold) {
+          setHold(result.hold);
+        } else {
+          toast.error(result.error || "Unable to reserve slot.");
+          setSelectedSlot(null);
+        }
+      } catch (e) {
+        toast.error("Unable to reserve slot.");
+        setSelectedSlot(null);
+      } finally {
+        setIsCreatingHold(false);
+      }
+    },
+    [id, slotDurationMins],
+  );
 
   function handleSelectDate(date: string) {
     setSelectedDate(date);
     setSelectedSlot(null);
+    setHold(null);
   }
 
   function handleSelectSlot(slot: string | null) {
+    if (!slot) {
+      setSelectedSlot(null);
+      setHold(null);
+      return;
+    }
     setSelectedSlot(slot);
+    createHoldForSlot(slot);
   }
 
   async function handleConfirmBooking() {
-    if (!selectedSlot) return;
+    if (!selectedSlot || !hold) return;
 
     try {
       const booking = await confirmBooking.mutateAsync({
         mentorId: id,
         scheduledStart: selectedSlot,
         durationMins: slotDurationMins,
+        holdId: hold.id,
       });
       setBooked(booking ?? { scheduled_time: selectedSlot });
       setSelectedSlot(null);
+      setHold(null);
       qc.invalidateQueries({ queryKey: ["sessions-date"] });
       toast.success("Session booked!");
     } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Unable to book this session. Please try again.",
-      );
+      const message = e instanceof Error ? e.message : mapBookingError(null);
+      toast.error(message);
+      setHold(null);
+      setSelectedSlot(null);
     }
   }
+
+  function handleHoldExpired() {
+    setHold(null);
+    toast.error("Your slot reservation has expired. Please select again.");
+  }
+
+  useEffect(() => {
+    return () => {
+      if (hold?.id) {
+        releaseSlotHold(hold.id);
+      }
+    };
+  }, [hold]);
 
   if (isLoading) {
     return (
@@ -154,10 +201,7 @@ function MentorProfile() {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
           <div className="space-y-6">
-            <MentorPublicProfile
-              mentor={mentor.mp}
-              profile={mentor.profile}
-            />
+            <MentorPublicProfile mentor={mentor.mp} profile={mentor.profile} />
 
             <MentorRatingSummary
               stats={summaryStats}
@@ -233,9 +277,14 @@ function MentorProfile() {
                 durationMins={slotDurationMins}
                 sessionsBefore={usableBefore}
                 sessionsAfter={usableAfter}
-                isPending={confirmBooking.isPending}
+                isPending={isCreatingHold || confirmBooking.isPending}
                 onConfirm={handleConfirmBooking}
-                onCancel={() => setSelectedSlot(null)}
+                onCancel={() => {
+                  setSelectedSlot(null);
+                  setHold(null);
+                }}
+                hold={hold}
+                onHoldExpired={handleHoldExpired}
               />
             ) : null}
           </div>

@@ -17,6 +17,7 @@ import {
   Shield,
 } from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
+import { InlineIntroVideo } from "@/components/booking/inline-intro-video";
 import { format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -216,23 +217,10 @@ export function MentorPublicProfile({
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <Video className="h-5 w-5 text-primary" /> Demo lesson
             </h2>
-            <div className="aspect-video rounded-lg bg-muted flex items-center justify-center">
-              {mentor.demo_lesson_url ? (
-                <iframe
-                  src={mentor.demo_lesson_url}
-                  className="h-full w-full rounded-lg"
-                  allowFullScreen
-                  title="Demo lesson"
-                />
-              ) : mentor.intro_video_url ? (
-                <iframe
-                  src={mentor.intro_video_url}
-                  className="h-full w-full rounded-lg"
-                  allowFullScreen
-                  title="Intro video"
-                />
-              ) : null}
-            </div>
+            <InlineIntroVideo
+              src={mentor.demo_lesson_url || mentor.intro_video_url}
+              title="Demo lesson"
+            />
           </CardContent>
         </Card>
       )}

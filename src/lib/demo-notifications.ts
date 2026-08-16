@@ -251,7 +251,7 @@ export async function notifyMentorDemoAssigned(
     title: "New Demo Session Request",
     body: `You have been assigned a demo session with ${studentName} on ${new Date(bookingDate).toDateString()} at ${bookingTime}. Please accept or reject.`,
     related_id: bookingId,
-    link: "/mentor/demo-requests",
+    link: "/mentor/calendar",
     metadata: { booking_id: bookingId, type: "demo_assigned", student_name: studentName },
   });
 }

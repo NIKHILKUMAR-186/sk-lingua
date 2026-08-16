@@ -107,7 +107,7 @@ export function useStudentLearningState(): LearningStateResult {
 
   if (trialCompleted && activeSubscription) {
     state = "ACTIVE_SUBSCRIPTION";
-    primaryCta = { label: "Book a Session", to: "/student/explore" };
+    primaryCta = { label: "Book a Session", to: "/student/book" };
   } else if (trialCompleted && !activeSubscription) {
     state = "TRIAL_COMPLETED_NO_SUBSCRIPTION";
     primaryCta = { label: "View Plans", to: "/student/pricing" };

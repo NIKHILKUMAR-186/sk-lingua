@@ -35,6 +35,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      booking_rules: {
+        Row: {
+          id: string;
+          key: string;
+          value: string;
+          description: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          value: string;
+          description?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          key?: string;
+          value?: string;
+          description?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      booking_holds: {
+        Row: {
+          id: string;
+          mentor_id: string;
+          student_id: string;
+          scheduled_time: string;
+          duration_mins: number;
+          status: string;
+          expires_at: string;
+          created_at: string;
+          released_at: string | null;
+          booking_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          mentor_id: string;
+          student_id: string;
+          scheduled_time: string;
+          duration_mins?: number;
+          status?: string;
+          expires_at?: string;
+          created_at?: string;
+          released_at?: string | null;
+          booking_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          mentor_id?: string;
+          student_id?: string;
+          scheduled_time?: string;
+          duration_mins?: number;
+          status?: string;
+          expires_at?: string;
+          created_at?: string;
+          released_at?: string | null;
+          booking_id?: string | null;
+        };
+        Relationships: [];
+      };
       availability_slots: {
         Row: {
           id: string;
@@ -1347,8 +1416,50 @@ export type Database = {
           p_mentor_id: string;
           p_scheduled_start: string;
           p_duration_mins?: number;
+          p_hold_id?: string;
         };
         Returns: Database["public"]["Tables"]["sessions"]["Row"];
+      };
+      create_slot_hold: {
+        Args: {
+          p_mentor_id: string;
+          p_scheduled_start: string;
+          p_duration_mins?: number;
+          p_hold_minutes?: number;
+        };
+        Returns: Database["public"]["Tables"]["booking_holds"]["Row"];
+      };
+      release_slot_hold: {
+        Args: {
+          p_hold_id: string;
+        };
+        Returns: boolean;
+      };
+      cleanup_expired_holds: {
+        Args: {};
+        Returns: number;
+      };
+      get_booking_rule: {
+        Args: {
+          p_key: string;
+        };
+        Returns: string;
+      };
+      get_all_booking_rules: {
+        Args: {};
+        Returns: {
+          key: string;
+          value: string;
+          description: string | null;
+          updated_at: string;
+        }[];
+      };
+      validate_hold_for_booking: {
+        Args: {
+          p_hold_id: string;
+          p_student_id: string;
+        };
+        Returns: Database["public"]["Tables"]["booking_holds"]["Row"];
       };
       get_user_role: {
         Args: { _user_id: string };

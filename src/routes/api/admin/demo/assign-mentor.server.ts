@@ -118,7 +118,7 @@ export async function POST(request: Request) {
         title: "New Demo Session Request",
         body: `You have been assigned a demo session with ${student?.full_name || "a student"} on ${new Date(booking.booking_date).toDateString()} at ${booking.booking_time_start}. Please accept or reject.`,
         related_id: bookingId,
-        link: "/mentor/demo-requests",
+        link: "/mentor/calendar",
         metadata: { booking_id: bookingId, type: "demo_assigned", student_name: student?.full_name },
         read: false,
       });

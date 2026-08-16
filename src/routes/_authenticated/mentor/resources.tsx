@@ -1,32 +1,25 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ResourceUpload } from "@/components/resource-upload";
-import { uploadStorageFile } from "@/lib/storage";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/mentor/page-header";
+import { SectionCard } from "@/components/mentor/section-card";
+import { StatusBadge } from "@/components/mentor/status-badge";
+import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Trash2, ExternalLink, FileText } from "lucide-react";
+import { ExternalLink, Trash2, FileText, Upload } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ResourceUpload } from "@/components/resource-upload";
+import { uploadStorageFile } from "@/lib/storage";
 
 export const Route = createFileRoute("/_authenticated/mentor/resources")({
   component: MentorResources,
 });
-
-const visibilityOptions = ["public", "session", "private"] as const;
-
-function toHumanText(value: string) {
-  return value.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
-}
-
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 function MentorResources() {
   const { data: auth } = useAuth();
@@ -66,6 +59,9 @@ function MentorResources() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showUpload, setShowUpload] = useState(false);
+
+  const visibilityOptions = ["public", "session", "private"] as const;
 
   const sessionMap = useMemo(
     () => new Map(sessions.map((session) => [session.id, session])),
@@ -90,15 +86,24 @@ function MentorResources() {
     setUploading(true);
     setUploadProgress(10);
 
-    let filePayload = {
+    let filePayload: {
+      resource_type: "link" | "file";
+      url: string;
+      storage_url: string | null;
+      storage_path: string | null;
+      file_name: string | null;
+      file_type: string | null;
+      file_size: number | null;
+      thumbnail_url: string | null;
+    } = {
       resource_type: "link",
       url,
-      storage_url: null as string | null,
-      storage_path: null as string | null,
-      file_name: null as string | null,
-      file_type: null as string | null,
-      file_size: null as number | null,
-      thumbnail_url: null as string | null,
+      storage_url: null,
+      storage_path: null,
+      file_name: null,
+      file_type: null,
+      file_size: null,
+      thumbnail_url: null,
     };
 
     if (selectedFile) {
@@ -164,6 +169,7 @@ function MentorResources() {
     setSessionId("");
     setSelectedFile(null);
     setUploadProgress(0);
+    setShowUpload(false);
     qc.invalidateQueries({ queryKey: ["mentor-resources", uid] });
   }
 
@@ -180,80 +186,130 @@ function MentorResources() {
   return (
     <MentorLayout>
       <div className="mx-auto max-w-5xl space-y-6">
-        <div>
-          <h1 className="text-3xl font-display">Resources</h1>
-          <p className="text-muted-foreground">
-            Share learning material, homework, or session files with your students.
-          </p>
-        </div>
-        <ResourceUpload
-          title={title}
-          url={url}
-          description={description}
-          visibility={visibility}
-          sessionId={sessionId}
-          fileName={selectedFile?.name || ""}
-          fileSize={selectedFile?.size ?? 0}
-          uploadProgress={uploadProgress}
-          uploading={uploading}
-          sessions={sessions.map((session) => ({
-            id: session.id,
-            label: `${new Date(session.scheduled_time).toLocaleString()} • ${session.student_id.slice(0, 8)}`,
-          }))}
-          onChangeTitle={setTitle}
-          onChangeUrl={setUrl}
-          onChangeDescription={setDescription}
-          onChangeVisibility={setVisibility}
-          onChangeSessionId={setSessionId}
-          onChangeFile={setSelectedFile}
-          onUpload={addResource}
-          onClear={() => setSelectedFile(null)}
+        <PageHeader
+          title="Resources"
+          description="Share learning material, homework, or session files with your students."
+          action={
+            <Button onClick={() => setShowUpload(!showUpload)}>
+              <Upload className="mr-1 h-4 w-4" />
+              {showUpload ? "Cancel" : "New resource"}
+            </Button>
+          }
         />
 
-        <div className="space-y-4">
-          {resources.map((resource) => (
-            <Card key={resource.id}>
-              <CardHeader className="flex items-start justify-between gap-4">
-                <div>
-                  <CardTitle>{resource.title}</CardTitle>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {toHumanText(resource.visibility)}
-                  </div>
-                </div>
-                <Badge>{resource.resource_type === "file" ? "File" : "Link"}</Badge>
-              </CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] items-start">
-                <div className="space-y-2">
-                  {resource.description ? (
-                    <p className="text-sm text-muted-foreground">{resource.description}</p>
-                  ) : null}
-                  {resource.session_id ? (
-                    <div className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">
-                      Session resource
+        {showUpload && (
+          <SectionCard title="Create resource">
+            <ResourceUpload
+              title={title}
+              url={url}
+              description={description}
+              visibility={visibility}
+              sessionId={sessionId}
+              fileName={selectedFile?.name || ""}
+              fileSize={selectedFile?.size ?? 0}
+              uploadProgress={uploadProgress}
+              uploading={uploading}
+              sessions={sessions.map((session) => ({
+                id: session.id,
+                label: `${format(parseISO(session.scheduled_time), "MMM d, yyyy")} · ${session.student_id.slice(0, 8)}`,
+              }))}
+              onChangeTitle={setTitle}
+              onChangeUrl={setUrl}
+              onChangeDescription={setDescription}
+              onChangeVisibility={setVisibility}
+              onChangeSessionId={setSessionId}
+              onChangeFile={setSelectedFile}
+              onUpload={addResource}
+              onClear={() => setSelectedFile(null)}
+            />
+          </SectionCard>
+        )}
+
+        <SectionCard
+          title="Resource library"
+          description={`${resources.length} resource${resources.length !== 1 ? "s" : ""}`}
+        >
+          {resources.length === 0 ? (
+            <MentorEmptyState
+              icon={<FileText className="h-6 w-6" />}
+              title="Build your resource library"
+              description="Share learning materials, homework, and session files with your students."
+              actionLabel="Add resource"
+              onAction={() => setShowUpload(true)}
+            />
+          ) : (
+            <div className="space-y-2.5">
+              {resources.map((resource) => (
+                <div
+                  key={resource.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border/40 p-3.5 transition hover:border-primary/20 hover:bg-accent/10"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm font-medium text-foreground truncate">
+                        {resource.title}
+                      </span>
+                      <StatusBadge
+                        label={resource.resource_type === "file" ? "File" : "Link"}
+                        variant="default"
+                      />
                     </div>
-                  ) : null}
-                  <div className="text-xs text-muted-foreground">
-                    {resource.file_name
-                      ? `${resource.file_name} • ${resource.file_type} • ${formatBytes(resource.file_size ?? 0)}`
-                      : null}
+                    {resource.description && (
+                      <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                        {resource.description}
+                      </p>
+                    )}
+                    <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <Badge variant="outline" className="text-[10px] h-5">
+                        {resource.visibility}
+                      </Badge>
+                      {resource.session_id && (
+                        <Badge variant="secondary" className="text-[10px] h-5">
+                          Session resource
+                        </Badge>
+                      )}
+                      {resource.file_name && (
+                        <span>
+                          {resource.file_name} · {resource.file_type} ·{" "}
+                          {formatBytes(resource.file_size ?? 0)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
+                      <a
+                        href={resource.storage_url || resource.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Open resource"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => deleteResource(resource.id)}
+                      aria-label="Delete resource"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" asChild variant="outline">
-                    <a href={resource.storage_url || resource.url} target="_blank" rel="noreferrer">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Open
-                    </a>
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => deleteResource(resource.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              ))}
+            </div>
+          )}
+        </SectionCard>
       </div>
     </MentorLayout>
   );
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

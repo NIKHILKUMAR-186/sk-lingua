@@ -43,7 +43,7 @@ function MentorPendingDashboard() {
     },
   });
 
-// If the user is now an approved mentor, redirect to the full dashboard
+  // If the user is now an approved mentor, redirect to the full dashboard
   useEffect(() => {
     const hasMentorRole = (auth?.roles ?? []).includes("mentor");
     const isApplicationApproved = application?.status === "approved";
@@ -61,7 +61,8 @@ function MentorPendingDashboard() {
     const user = auth?.user;
     if (!user) return;
     const roles = auth.roles ?? [];
-    const hasMentorRole = roles.includes("mentor") || (roles as string[]).includes("mentor_pending");
+    const hasMentorRole =
+      roles.includes("mentor") || (roles as string[]).includes("mentor_pending");
     if (hasMentorRole) return;
 
     let cancelled = false;
@@ -74,10 +75,9 @@ function MentorPendingDashboard() {
         // Restore the mentor_pending role (idempotent, never downgrades).
         // Cast to a loose client because the generated Supabase types are
         // stale and omit the mentor_pending enum value.
-        await (supabase as any).from("user_roles").upsert(
-          [{ user_id: user.id, role: "mentor_pending" }],
-          { onConflict: "user_id,role" },
-        );
+        await (supabase as any)
+          .from("user_roles")
+          .upsert([{ user_id: user.id, role: "mentor_pending" }], { onConflict: "user_id,role" });
         // Ensure a mentor profile exists.
         await (supabase as any).from("mentor_profiles").upsert(
           {
@@ -147,15 +147,24 @@ function MentorPendingDashboard() {
   }
 
   const status = application?.status ?? "not_started";
-  const statusLabel = status === "not_started" ? "Not Started" : APPLICATION_STATUS_LABELS[status] ?? status;
+  const statusLabel =
+    status === "not_started" ? "Not Started" : (APPLICATION_STATUS_LABELS[status] ?? status);
 
   const statusConfig: Record<string, { color: string; icon: React.ElementType; text: string }> = {
     not_started: { color: "bg-slate-100 text-slate-700", icon: FileText, text: "Not Started" },
     draft: { color: "bg-slate-100 text-slate-700", icon: FileText, text: "Draft" },
     submitted: { color: "bg-blue-100 text-blue-700", icon: Clock, text: "Submitted" },
     under_review: { color: "bg-amber-100 text-amber-700", icon: Clock, text: "Under Review" },
-    interview_scheduled: { color: "bg-purple-100 text-purple-700", icon: Clock, text: "Interview Scheduled" },
-    interview_completed: { color: "bg-purple-100 text-purple-700", icon: CheckCircle2, text: "Interview Completed" },
+    interview_scheduled: {
+      color: "bg-purple-100 text-purple-700",
+      icon: Clock,
+      text: "Interview Scheduled",
+    },
+    interview_completed: {
+      color: "bg-purple-100 text-purple-700",
+      icon: CheckCircle2,
+      text: "Interview Completed",
+    },
     approved: { color: "bg-green-100 text-green-700", icon: CheckCircle2, text: "Approved" },
     rejected: { color: "bg-red-100 text-red-700", icon: XCircle, text: "Rejected" },
     active: { color: "bg-green-100 text-green-700", icon: CheckCircle2, text: "Active" },
@@ -249,7 +258,11 @@ function MentorPendingDashboard() {
                   {[
                     { label: "Signup", done: true },
                     { label: "Application", done: status !== "not_started" && status !== "draft" },
-                    { label: "Review", done: status === "under_review" || status === "approved" || status === "active" },
+                    {
+                      label: "Review",
+                      done:
+                        status === "under_review" || status === "approved" || status === "active",
+                    },
                     { label: "Approved", done: status === "approved" || status === "active" },
                   ].map((step, i) => (
                     <div key={step.label} className="flex flex-1 items-center gap-1.5">
@@ -275,7 +288,9 @@ function MentorPendingDashboard() {
                   <div className="flex items-start gap-3">
                     <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
                     <div>
-                      <p className="text-sm font-semibold text-red-800">Application requires changes</p>
+                      <p className="text-sm font-semibold text-red-800">
+                        Application requires changes
+                      </p>
                       <p className="mt-1 text-sm text-red-700">{application.admin_notes}</p>
                     </div>
                   </div>
@@ -296,7 +311,11 @@ function MentorPendingDashboard() {
                     </p>
                   </div>
                   {canApply && (
-                    <Button asChild size="lg" className="shrink-0 bg-background text-foreground hover:bg-white">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="shrink-0 bg-background text-foreground hover:bg-white"
+                    >
                       <Link to="/mentor/apply">
                         Apply for Mentor
                         <ArrowRight className="ml-2 h-4 w-4" />

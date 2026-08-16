@@ -48,7 +48,7 @@ function resolveTarget(notification: Notification, role?: "student" | "mentor" |
   if (role === "mentor") {
     if (kind === "session" || category === "session") return `/mentor/session/${relatedId}`;
     if (kind === "booking" || category === "booking") return `/mentor/calendar`;
-    if (kind === "demo" || category === "demo") return `/mentor/demo-requests`;
+    if (kind === "demo" || category === "demo") return `/mentor/calendar`;
     if (kind === "review" || category === "review") return `/mentor/sessions`;
     if (kind === "resource" || category === "resource") return `/mentor/resources`;
     if (kind === "mentor_application" || category === "mentor_application") return `/mentor/profile`;

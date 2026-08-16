@@ -8,15 +8,9 @@ interface DateSelectorProps {
   dateAvailability: { dateStr: string; count: number }[];
 }
 
-export function DateSelector({
-  selectedDate,
-  onSelectDate,
-  dateAvailability,
-}: DateSelectorProps) {
+export function DateSelector({ selectedDate, onSelectDate, dateAvailability }: DateSelectorProps) {
   const today = startOfDay(new Date());
-  const availabilityMap = new Map(
-    dateAvailability.map((d) => [d.dateStr, d.count])
-  );
+  const availabilityMap = new Map(dateAvailability.map((d) => [d.dateStr, d.count]));
 
   const dates = Array.from({ length: 14 }, (_, i) => addDays(today, i));
 
@@ -69,12 +63,11 @@ export function DateSelector({
               <span className="text-lg font-bold leading-none">{format(date, "d")}</span>
               {available && !isSelected && (
                 <span className="text-[10px] text-muted-foreground">
-                  {availabilityMap.get(dateStr)} mentor{availabilityMap.get(dateStr) !== 1 ? "s" : ""}
+                  {availabilityMap.get(dateStr)} mentor
+                  {availabilityMap.get(dateStr) !== 1 ? "s" : ""}
                 </span>
               )}
-              {isSelected && (
-                <span className="text-[10px] opacity-80">Selected</span>
-              )}
+              {isSelected && <span className="text-[10px] opacity-80">Selected</span>}
             </button>
           );
         })}

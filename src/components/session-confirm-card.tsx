@@ -1,10 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -16,15 +11,12 @@ import {
   Languages,
   ArrowRight,
   GraduationCap,
+  AlertCircle,
 } from "lucide-react";
 import { format } from "date-fns";
+import { useState, useEffect } from "react";
+import { formatHoldRemaining, type BookingHold } from "@/lib/slot-holds";
 
-/**
- * P5 — Confirm Session card.
- * No Gig / Service / price. Shows the exact slot. The balance shown is
- * unchanged at booking — a session credit is consumed only when the
- * session is later marked 'completed'.
- */
 export function SessionConfirmCard({
   mentorName,
   date,
@@ -35,6 +27,8 @@ export function SessionConfirmCard({
   isPending,
   onConfirm,
   onCancel,
+  hold,
+  onHoldExpired,
 }: {
   mentorName: string;
   date: string;
@@ -45,7 +39,25 @@ export function SessionConfirmCard({
   isPending: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  hold?: BookingHold | null;
+  onHoldExpired?: () => void;
 }) {
+  const [holdRemaining, setHoldRemaining] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hold?.expires_at) return;
+    const update = () => {
+      const remaining = formatHoldRemaining(hold.expires_at);
+      setHoldRemaining(remaining);
+      if (remaining === "Expired") {
+        onHoldExpired?.();
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [hold, onHoldExpired]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -103,26 +115,24 @@ export function SessionConfirmCard({
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               {sessionsAfter}
             </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-              Balance unchanged when booking. One session credit is consumed
-              when this session is completed.
+            <p className="mt-1 text-xs text-muted-foreground">
+              Balance unchanged when booking. One session credit is consumed when this session is
+              completed.
             </p>
           </div>
 
+          {holdRemaining && (
+            <div className="flex items-center justify-between rounded-lg bg-primary/5 p-3 text-sm">
+              <span className="text-muted-foreground">Slot reserved for</span>
+              <span className="font-medium text-primary">{holdRemaining}</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={onCancel}
-              disabled={isPending}
-            >
+            <Button variant="outline" className="flex-1" onClick={onCancel} disabled={isPending}>
               Cancel
             </Button>
-            <Button
-              className="flex-1"
-              onClick={onConfirm}
-              disabled={isPending}
-            >
+            <Button className="flex-1" onClick={onConfirm} disabled={isPending}>
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Booking...
@@ -132,9 +142,9 @@ export function SessionConfirmCard({
               )}
             </Button>
           </div>
-                    <p className="text-center text-xs text-muted-foreground">
-            Confirming reserves this slot. Your session credit is consumed
-            after the session is completed.
+          <p className="text-center text-xs text-muted-foreground">
+            Confirming reserves this slot. Your session credit is consumed after the session is
+            completed.
           </p>
         </CardContent>
       </Card>

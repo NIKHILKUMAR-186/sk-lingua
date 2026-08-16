@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MentorLayout } from "@/components/layouts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/mentor/page-header";
+import { SectionCard } from "@/components/mentor/section-card";
 import { Button } from "@/components/ui/button";
-import { User, Bell, BookOpen, Clock, Shield } from "lucide-react";
+import { User, BookOpen, Clock, Bell, Shield, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/mentor/settings")({
   component: MentorSettingsHub,
@@ -12,96 +13,81 @@ function MentorSettingsHub() {
   return (
     <MentorLayout>
       <div className="mx-auto max-w-4xl space-y-6">
-        <div>
-          <h1 className="text-3xl font-display">Settings</h1>
-          <p className="text-muted-foreground">Manage your mentor profile and teaching preferences.</p>
-        </div>
+        <PageHeader
+          title="Settings"
+          description="Manage your mentor profile and teaching preferences."
+        />
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Manage your public profile, bio, certifications, and teaching experience.
-              </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SectionCard
+            title="Profile"
+            description="Manage your public profile, bio, certifications, and teaching experience."
+            action={
               <Button asChild variant="outline" className="w-full">
                 <Link to="/mentor/profile">Edit Profile</Link>
               </Button>
-            </CardContent>
-          </Card>
+            }
+          >
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <User className="h-5 w-5 text-muted-foreground" />
+              <span>Profile photo, bio, headline, and personal details.</span>
+            </div>
+          </SectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Teaching
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Manage languages taught, teaching style, and hourly rate.
-              </p>
+          <SectionCard
+            title="Teaching"
+            description="Manage languages taught, teaching style, and hourly rate."
+            action={
               <Button asChild variant="outline" className="w-full">
                 <Link to="/mentor/profile">Teaching Settings</Link>
               </Button>
-            </CardContent>
-          </Card>
+            }
+          >
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <BookOpen className="h-5 w-5 text-muted-foreground" />
+              <span>Languages, certifications, and teaching preferences.</span>
+            </div>
+          </SectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Availability
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Set your availability preferences and schedule.
-              </p>
+          <SectionCard
+            title="Availability"
+            description="Set your availability preferences and schedule."
+            action={
               <Button asChild variant="outline" className="w-full">
                 <Link to="/mentor/availability">Manage Availability</Link>
               </Button>
-            </CardContent>
-          </Card>
+            }
+          >
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Clock className="h-5 w-5 text-muted-foreground" />
+              <span>Weekly schedule and time slot management.</span>
+            </div>
+          </SectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Configure notifications for bookings, demos, and session reminders.
-              </p>
+          <SectionCard
+            title="Notifications"
+            description="Configure notifications for bookings, demos, and session reminders."
+            action={
               <Button asChild variant="outline" className="w-full">
                 <Link to="/mentor/notifications">Notification Preferences</Link>
               </Button>
-            </CardContent>
-          </Card>
+            }
+          >
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Bell className="h-5 w-5 text-muted-foreground" />
+              <span>Email and in-app notification preferences.</span>
+            </div>
+          </SectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Account
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Manage your account security and sign-out preferences.
-              </p>
-              <Button variant="outline" className="w-full" disabled>
-                Security Settings
-              </Button>
-            </CardContent>
-          </Card>
+          <SectionCard
+            title="Account"
+            description="Manage your account security and sign-out preferences."
+          >
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Shield className="h-5 w-5 text-muted-foreground" />
+              <span>Password, email, and account security.</span>
+            </div>
+          </SectionCard>
         </div>
       </div>
     </MentorLayout>

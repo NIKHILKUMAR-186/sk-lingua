@@ -93,6 +93,17 @@ export function useSessionsForDate(mentorId?: string, _selectedDate?: string) {
   });
 }
 
+function safeDateFromString(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  try {
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return null;
+    return d;
+  } catch {
+    return null;
+  }
+}
+
 export function useAvailableSlots(
   mentorId?: string,
   selectedDate?: string,
@@ -128,7 +139,8 @@ export function useAvailableSlots(
 
     const startIso = slotStart.toISOString();
     const conflict = (sessions as any[]).some((s) => {
-      const existingStart = new Date(s.scheduled_time).getTime();
+      const existingStart = safeDateFromString(s.scheduled_time)?.getTime();
+      if (existingStart == null) return false;
       const existingEnd = existingStart + s.duration_mins * 60_000;
       const proposedStart = new Date(startIso).getTime();
       const proposedEnd = proposedStart + durationMins * 60_000;

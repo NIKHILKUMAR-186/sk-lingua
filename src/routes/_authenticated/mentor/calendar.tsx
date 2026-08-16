@@ -1,62 +1,106 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/mentor/page-header";
+import { RequestCard } from "@/components/mentor/request-card";
+import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import {
   CalendarDays,
-  CheckCircle2,
-  XCircle,
+  Clock3,
   Video,
-  Clock,
-  MessageSquare,
-  User,
+  CalendarClock,
 } from "lucide-react";
+import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { EmptyState } from "@/components/empty-state";
-import { ListSkeleton } from "@/components/skeleton-loader";
+import { useState, useMemo } from "react";
+import { useMentorRespondDemoAssignment } from "@/hooks/use-demo-bookings";
 
 export const Route = createFileRoute("/_authenticated/mentor/calendar")({
-  component: MentorCalendar,
+  component: MentorCalendarRequests,
 });
 
-function MentorCalendar() {
-  const { data: auth } = useAuth();
-  const qc = useQueryClient();
+type TopTab = "calendar" | "requests";
+type RequestTab = "pending" | "upcoming" | "past";
 
-  const { data: requests = [], isLoading } = useQuery({
-    queryKey: ["mentor-requests", auth?.user?.id],
-    enabled: !!auth?.user,
+function MentorCalendarRequests() {
+  const { data: auth } = useAuth();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const uid = auth?.user?.id;
+  const [topTab, setTopTab] = useState<TopTab>("requests");
+  const [requestTab, setRequestTab] = useState<RequestTab>("pending");
+
+  const {
+    data: sessions = [],
+    isLoading: sessionsLoading,
+    refetch: refetchSessions,
+  } = useQuery({
+    queryKey: ["mentor-calendar-sessions", uid],
+    enabled: !!uid,
     queryFn: async () => {
-      const uid = auth!.user!.id;
+      const uidLocal = auth!.user!.id;
       const { data } = await supabase
         .from("sessions")
-        .select("*")
-        .eq("mentor_id", uid)
+        .select("*, gig:gig_id(*), student:profiles!student_id(full_name, avatar_url)")
+        .eq("mentor_id", uidLocal)
         .order("scheduled_time");
-      if (!data?.length) return [];
-      const ids = [...new Set(data.map((d) => d.student_id))];
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url")
-        .in("id", ids);
-      const byId = new Map((profs ?? []).map((p) => [p.id, p]));
-
-      return data.map((d) => ({
-        ...d,
-        student: byId.get(d.student_id),
-      }));
+      return (data ?? []) as any[];
     },
   });
 
-  const pending = requests.filter((r) => r.status === "pending");
-  const upcoming = requests.filter((r) => r.status === "accepted");
-  const past = requests.filter((r) => ["completed", "rejected", "cancelled"].includes(r.status));
+  const {
+    data: demoRequests = [],
+    isLoading: demoLoading,
+  } = useQuery({
+    queryKey: ["mentor-demo-requests", uid],
+    enabled: !!uid,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("demo_session_bookings" as any)
+        .select("*")
+        .eq("mentor_id", uid!)
+        .eq("assignment_status", "pending_mentor")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 15,
+  });
+
+  const studentIds = useMemo(
+    () => [
+      ...new Set([
+        ...sessions.map((s: any) => s.student_id).filter(Boolean),
+        ...demoRequests.map((r: any) => r.user_id).filter(Boolean),
+      ]),
+    ],
+    [sessions, demoRequests],
+  );
+
+  const { data: students = [] } = useQuery({
+    queryKey: ["mentor-calendar-students", studentIds.join(",")],
+    enabled: studentIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("*").in("id", studentIds);
+      return data ?? [];
+    },
+  });
+  const studentMap = useMemo(() => new Map(students.map((s: any) => [s.id, s])), [students]);
+
+  const pendingSessions = sessions.filter((r: any) => r.status === "pending");
+  const upcomingSessions = sessions.filter((r: any) => r.status === "accepted" || r.status === "confirmed");
+  const pastSessions = sessions.filter((r: any) => ["completed", "rejected", "cancelled"].includes(r.status));
+
+  const totalPending = pendingSessions.length + demoRequests.length;
+
+  const respondMutation = useMentorRespondDemoAssignment();
 
   async function updateStatus(id: string, status: "accepted" | "rejected" | "completed") {
     const patch: any = { status };
@@ -73,185 +117,295 @@ function MentorCalendar() {
             : "Marked complete",
       );
       qc.invalidateQueries();
+      refetchSessions();
     }
   }
 
+  async function respondDemo(bookingId: string, action: "accept" | "reject") {
+    try {
+      await respondMutation.mutateAsync({ bookingId, mentorId: uid!, action });
+      qc.invalidateQueries({ queryKey: ["mentor-demo-requests", uid] });
+    } catch (err: any) {
+      toast.error(err.message || String(err));
+    }
+  }
+
+  const todaySessions = useMemo(() => {
+    return upcomingSessions.filter((s: any) => {
+      const dt = parseISO(s.scheduled_time);
+      return (
+        dt.getDate() === new Date().getDate() &&
+        dt.getMonth() === new Date().getMonth() &&
+        dt.getFullYear() === new Date().getFullYear()
+      );
+    });
+  }, [upcomingSessions]);
+
+  const isLoading = sessionsLoading;
+
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-display">Calendar & requests</h1>
-          <p className="text-muted-foreground">Manage your bookings and availability.</p>
-        </motion.div>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <PageHeader
+          title="Calendar & Requests"
+          description="Manage your schedule, bookings, and student requests."
+        />
 
-        <Tabs defaultValue="pending">
-          <TabsList>
-            <TabsTrigger value="pending">Pending ({pending.length})</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming ({upcoming.length})</TabsTrigger>
-            <TabsTrigger value="past">Past ({past.length})</TabsTrigger>
+        <Tabs value={topTab} onValueChange={(v) => setTopTab(v as TopTab)}>
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="requests">
+              Requests
+              {totalPending > 0 && (
+                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1.5 text-[11px] font-semibold text-blue-700">
+                  {totalPending}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="mt-4 space-y-3">
-            {isLoading ? (
-              <ListSkeleton items={3} />
-            ) : pending.length === 0 ? (
-              <EmptyState
-                icon={CalendarDays}
-                title="No pending requests"
-                description="When a student books a session, you'll see it here."
-              />
-            ) : (
-              pending.map((r) => (
-                <motion.div
-                  key={r.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                            <User className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-medium">{r.student?.full_name ?? "Student"}</div>
-                            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <CalendarDays className="h-3 w-3" />
-                                {new Date(r.scheduled_time).toLocaleString()}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {r.duration_mins} min
-                              </span>
-                              {r.gig && (
-                                <Badge variant="outline" className="text-[10px]">
-                                  {r.gig.title}
-                                </Badge>
-                              )}
-                            </div>
-                            {r.student_message && (
-                              <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-muted/50 p-2">
-                                <MessageSquare className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground italic">
-                                  "{r.student_message}"
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex shrink-0 gap-2">
-                          <Button size="sm" onClick={() => updateStatus(r.id, "accepted")}>
-                            <CheckCircle2 className="mr-1 h-4 w-4" /> Accept
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateStatus(r.id, "rejected")}
-                          >
-                            <XCircle className="mr-1 h-4 w-4" /> Reject
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </TabsContent>
-
-          <TabsContent value="upcoming" className="mt-4 space-y-3">
-            {isLoading ? (
-              <ListSkeleton items={3} />
-            ) : upcoming.length === 0 ? (
-              <EmptyState
-                icon={Video}
-                title="No upcoming sessions"
-                description="Accepted sessions will appear here."
-              />
-            ) : (
-              upcoming.map((r) => (
-                <motion.div
-                  key={r.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/10 text-success">
-                            <CheckCircle2 className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <div className="font-medium">{r.student?.full_name ?? "Student"}</div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                              <span>{new Date(r.scheduled_time).toLocaleString()}</span>
-                              <span>• {r.duration_mins} min</span>
-                              {r.gig && (
-                                <Badge variant="outline" className="text-[10px]">
-                                  {r.gig.title}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          {r.video_call_link && (
-                            <Button size="sm" asChild>
-                              <a href={r.video_call_link} target="_blank" rel="noreferrer">
-                                <Video className="mr-1 h-4 w-4" /> Join
-                              </a>
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateStatus(r.id, "completed")}
-                          >
-                            Mark complete
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </TabsContent>
-
-          <TabsContent value="past" className="mt-4 space-y-3">
-            {isLoading ? (
-              <ListSkeleton items={3} />
-            ) : past.length === 0 ? (
-              <EmptyState
-                icon={Clock}
-                title="No past sessions"
-                description="Completed and cancelled sessions appear here."
-              />
-            ) : (
-              past.map((r) => (
-                <Card key={r.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{r.student?.full_name ?? "Student"}</span>
-                          <Badge variant={r.status === "completed" ? "outline" : "secondary"}>
-                            {r.status}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(r.scheduled_time).toLocaleString()} • {r.duration_mins} min
-                        </div>
+          {topTab === "calendar" && (
+            <div className="mt-6 space-y-6">
+              {isLoading ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex gap-4">
+                      <Skeleton className="h-12 w-12 shrink-0 rounded-xl" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-3 w-32" />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </TabsContent>
+                  ))}
+                </div>
+              ) : upcomingSessions.length === 0 ? (
+                <MentorEmptyState
+                  icon={<CalendarDays className="h-5 w-5" />}
+                  title="No upcoming sessions"
+                  description="Accepted and confirmed sessions will appear here."
+                />
+              ) : (
+                <div className="space-y-3">
+                  {upcomingSessions.map((session: any) => {
+                    const start = parseISO(session.scheduled_time);
+                    const student = studentMap.get(session.student_id);
+                    return (
+                      <motion.div
+                        key={session.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center gap-4 rounded-xl border border-border/60 p-4 transition hover:border-primary/20 hover:bg-accent/20"
+                      >
+                        <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <span className="text-[10px] font-semibold uppercase leading-none">
+                            {format(start, "MMM")}
+                          </span>
+                          <span className="text-lg font-display font-bold leading-tight">
+                            {format(start, "d")}
+                          </span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {student?.full_name || "Student"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(start, "h:mm a")} · {session.duration_mins} min
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 text-xs"
+                          onClick={() =>
+                            navigate({ to: "/mentor/session/$id", params: { id: session.id } } as any)
+                          }
+                        >
+                          Open
+                        </Button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {topTab === "requests" && (
+            <div className="mt-4">
+              <Tabs value={requestTab} onValueChange={(v) => setRequestTab(v as RequestTab)}>
+                <TabsList className="w-full justify-start">
+                  <TabsTrigger value="pending">
+                    Pending {totalPending > 0 && `(${totalPending})`}
+                  </TabsTrigger>
+                  <TabsTrigger value="upcoming">Upcoming ({upcomingSessions.length})</TabsTrigger>
+                  <TabsTrigger value="past">Past ({pastSessions.length})</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="pending" className="mt-4 space-y-3">
+                  {isLoading && demoLoading ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 rounded-xl border border-border/60 p-4"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-muted" />
+                          <div className="space-y-2 flex-1">
+                            <div className="h-4 w-48 bg-muted rounded" />
+                            <div className="h-3 w-32 bg-muted rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : pendingSessions.length === 0 && demoRequests.length === 0 ? (
+                    <MentorEmptyState
+                      icon={<CalendarClock className="h-6 w-6" />}
+                      title="No pending requests"
+                      description="New booking requests will appear here."
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {demoRequests.map((r: any) => {
+                        const student = studentMap.get(r.user_id);
+                        const start = parseISO(r.booking_date);
+                        return (
+                          <motion.div
+                            key={`demo-${r.id}`}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            <RequestCard
+                              studentName={student?.full_name || "Student"}
+                              studentAvatar={student?.avatar_url}
+                              topic="Demo Session"
+                              date={format(start, "MMM d, yyyy")}
+                              time={`${r.booking_time_start} — ${r.booking_time_end}`}
+                              duration={r.duration_mins}
+                              message={r.notes}
+                              status="pending"
+                              requestAge={formatDistanceToNow(parseISO(r.created_at), { addSuffix: true })}
+                              language={r.language}
+                              onAccept={() => respondDemo(r.id, "accept")}
+                              onReject={() => respondDemo(r.id, "reject")}
+                            />
+                          </motion.div>
+                        );
+                      })}
+                      {pendingSessions.map((r: any) => (
+                        <motion.div
+                          key={r.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
+                          <RequestCard
+                            studentName={r.student?.full_name ?? "Student"}
+                            studentAvatar={r.student?.avatar_url}
+                            topic={r.gig?.title || "Session request"}
+                            date={format(parseISO(r.scheduled_time), "MMM d, yyyy")}
+                            time={format(parseISO(r.scheduled_time), "h:mm a")}
+                            duration={r.duration_mins}
+                            message={r.student_message}
+                            status="pending"
+                            requestAge={formatDistanceToNow(parseISO(r.created_at), { addSuffix: true })}
+                            language={r.language}
+                            onAccept={() => updateStatus(r.id, "accepted")}
+                            onReject={() => updateStatus(r.id, "rejected")}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="upcoming" className="mt-4 space-y-3">
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 rounded-xl border border-border/60 p-4"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-muted" />
+                          <div className="space-y-2 flex-1">
+                            <div className="h-4 w-48 bg-muted rounded" />
+                            <div className="h-3 w-32 bg-muted rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : upcomingSessions.length === 0 ? (
+                    <MentorEmptyState
+                      icon={<Video className="h-6 w-6" />}
+                      title="No upcoming sessions"
+                      description="Accepted sessions will appear here."
+                    />
+                  ) : (
+                    upcomingSessions.map((r: any) => (
+                      <motion.div
+                        key={r.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                      >
+                        <RequestCard
+                          studentName={r.student?.full_name ?? "Student"}
+                          studentAvatar={r.student?.avatar_url}
+                          topic={r.gig?.title || "Session"}
+                          date={format(parseISO(r.scheduled_time), "MMM d, yyyy")}
+                          time={format(parseISO(r.scheduled_time), "h:mm a")}
+                          duration={r.duration_mins}
+                          status="accepted"
+                          onOpen={() => navigate({ to: "/mentor/session/$id", params: { id: r.id } })}
+                        />
+                      </motion.div>
+                    ))
+                  )}
+                </TabsContent>
+
+                <TabsContent value="past" className="mt-4 space-y-3">
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 rounded-xl border border-border/60 p-4"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-muted" />
+                          <div className="space-y-2 flex-1">
+                            <div className="h-4 w-48 bg-muted rounded" />
+                            <div className="h-3 w-32 bg-muted rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : pastSessions.length === 0 ? (
+                    <MentorEmptyState
+                      icon={<Clock3 className="h-6 w-6" />}
+                      title="No past sessions"
+                      description="Completed and cancelled sessions appear here."
+                    />
+                  ) : (
+                    pastSessions.map((r: any) => (
+                      <motion.div
+                        key={r.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                      >
+                        <RequestCard
+                          studentName={r.student?.full_name ?? "Student"}
+                          studentAvatar={r.student?.avatar_url}
+                          topic={r.gig?.title || "Session"}
+                          date={format(parseISO(r.scheduled_time), "MMM d, yyyy")}
+                          time={format(parseISO(r.scheduled_time), "h:mm a")}
+                          duration={r.duration_mins}
+                          status={r.status as any}
+                        />
+                      </motion.div>
+                    ))
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
         </Tabs>
       </div>
     </MentorLayout>

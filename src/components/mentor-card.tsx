@@ -8,6 +8,7 @@ import { Star, Shield, Clock, BookMarked } from "lucide-react";
 import { format, parseISO, isSameDay } from "date-fns";
 import { BookingConfirmDialog } from "@/components/booking-confirm-dialog";
 import type { AvailableMentor, SlotOption } from "@/hooks/use-available-mentors";
+import { useBookingRules } from "@/hooks/use-booking-rules";
 
 interface MentorCardProps {
   mentor: AvailableMentor;
@@ -17,12 +18,12 @@ interface MentorCardProps {
 export function MentorCard({ mentor, selectedDate }: MentorCardProps) {
   const [bookingSlot, setBookingSlot] = useState<SlotOption | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { data: rules } = useBookingRules();
+  const durationMins = rules?.session_duration_minutes ?? 30;
 
   const primaryLanguage = mentor.languages_taught?.[0] || "English";
   const dateObj = parseISO(selectedDate);
-  const dateLabel = isSameDay(dateObj, new Date())
-    ? "Today"
-    : format(dateObj, "EEE, d MMM");
+  const dateLabel = isSameDay(dateObj, new Date()) ? "Today" : format(dateObj, "EEE, d MMM");
 
   function handleBook(slot: SlotOption) {
     setBookingSlot(slot);
@@ -55,9 +56,7 @@ export function MentorCard({ mentor, selectedDate }: MentorCardProps) {
                 >
                   {mentor.profile?.full_name || "Mentor"}
                 </Link>
-                {mentor.is_verified && (
-                  <Shield className="h-3.5 w-3.5 shrink-0 text-primary" />
-                )}
+                {mentor.is_verified && <Shield className="h-3.5 w-3.5 shrink-0 text-primary" />}
               </div>
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
@@ -72,23 +71,20 @@ export function MentorCard({ mentor, selectedDate }: MentorCardProps) {
               <div className="flex items-center gap-1 text-sm mt-1">
                 <Star className="h-3.5 w-3.5 fill-warning text-warning" />
                 <span className="font-medium">{Number(mentor.rating_avg).toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground">
-                  ({mentor.total_reviews})
-                </span>
+                <span className="text-xs text-muted-foreground">({mentor.total_reviews})</span>
               </div>
             </div>
           </div>
 
           {mentor.headline && (
-            <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
-              {mentor.headline}
-            </p>
+            <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{mentor.headline}</p>
           )}
 
           <div className="mt-3 flex items-center gap-2">
             <Badge variant="secondary" className="text-xs">
               <BookMarked className="mr-1 h-3 w-3" />
-              {mentor.totalAvailable} slot{mentor.totalAvailable !== 1 ? "s" : ""} {dateLabel.toLowerCase()}
+              {mentor.totalAvailable} slot{mentor.totalAvailable !== 1 ? "s" : ""}{" "}
+              {dateLabel.toLowerCase()}
             </Badge>
           </div>
 
@@ -99,11 +95,7 @@ export function MentorCard({ mentor, selectedDate }: MentorCardProps) {
                 className="flex items-center justify-between rounded-lg border bg-muted/20 px-3 py-2"
               >
                 <span className="text-sm font-medium">{slot.label}</span>
-                <Button
-                  size="sm"
-                  onClick={() => handleBook(slot)}
-                  className="shrink-0"
-                >
+                <Button size="sm" onClick={() => handleBook(slot)} className="shrink-0">
                   Book
                 </Button>
               </div>
@@ -119,7 +111,7 @@ export function MentorCard({ mentor, selectedDate }: MentorCardProps) {
         mentorName={mentor.profile?.full_name || "Mentor"}
         slot={bookingSlot!}
         date={selectedDate}
-        durationMins={25}
+        durationMins={durationMins}
         language={primaryLanguage}
       />
     </>

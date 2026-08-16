@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState, useEffect } from "react";
 import { format, addDays, startOfDay, isSameDay, parseISO } from "date-fns";
 import { DAY_KEYS } from "@/lib/booking";
+import { useBookingRules } from "@/hooks/use-booking-rules";
 
 export type TimeGroup = "morning" | "afternoon" | "evening" | "night";
 
@@ -60,115 +61,206 @@ function getTimeGroup(hour: number): TimeGroup {
   return "night";
 }
 
+function safeDate(value: unknown): Date | null {
+  if (value == null) return null;
+  try {
+    const d = new Date(value as string);
+    if (isNaN(d.getTime())) return null;
+    return d;
+  } catch {
+    return null;
+  }
+}
+
 function getUTCOffsetMinutes(timeZone: string, date: Date): number {
-  const localDate = new Date(date.toISOString());
-  const tzStr = new Intl.DateTimeFormat("en-US", {
-    timeZone: timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(localDate);
-  const tzAsUTC = new Date(tzStr + "Z");
-  return Math.round((localDate.getTime() - tzAsUTC.getTime()) / (60_000));
+  if (!timeZone || timeZone === "UTC") return 0;
+  try {
+    const localDate = new Date(date.toISOString());
+    const tzStr = new Intl.DateTimeFormat("en-US", {
+      timeZone: timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(localDate);
+    const tzAsUTC = safeDate(tzStr + "Z");
+    if (!tzAsUTC) return 0;
+    return Math.round((localDate.getTime() - tzAsUTC.getTime()) / 60_000);
+  } catch {
+    return 0;
+  }
 }
 
 function convertSlotTimeToStudentTimezone(
   timeStr: string,
   mentorTimezone: string | null,
   studentTimezone: string,
-  selectedDate: Date
-): { displayTime: string; utcTimestamp: string } {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const mentorOffset = getUTCOffsetMinutes(mentorTimezone || "UTC", selectedDate);
-  const studentOffset = getUTCOffsetMinutes(studentTimezone, selectedDate);
+  selectedDate: Date,
+): { displayTime: string; utcTimestamp: string } | null {
+  const parts = timeStr.split(":");
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
 
-  const utcTotalMinutes = hours * 60 + minutes - mentorOffset;
-  const studentTotalMinutes = utcTotalMinutes + studentOffset;
+  try {
+    const mentorOffset = getUTCOffsetMinutes(mentorTimezone || "UTC", selectedDate);
+    const studentOffset = getUTCOffsetMinutes(studentTimezone, selectedDate);
 
-  const normalizedMinutes = ((studentTotalMinutes % 1440) + 1440) % 1440;
-  const studentHours = Math.floor(normalizedMinutes / 60);
-  const studentMinutes = normalizedMinutes % 60;
+    const utcTotalMinutes = hours * 60 + minutes - mentorOffset;
+    const studentTotalMinutes = utcTotalMinutes + studentOffset;
 
-  const period = studentHours >= 12 ? "PM" : "AM";
-  const displayHours = studentHours % 12 || 12;
-  const displayTime = `${displayHours}:${String(studentMinutes).padStart(2, "0")} ${period}`;
+    const normalizedMinutes = ((studentTotalMinutes % 1440) + 1440) % 1440;
+    const studentHours = Math.floor(normalizedMinutes / 60);
+    const studentMinutes = normalizedMinutes % 60;
 
-  const utcDate = new Date(selectedDate);
-  utcDate.setUTCHours(0, 0, 0, 0);
-  utcDate.setUTCMinutes(utcDate.getUTCMinutes() + Math.round(utcTotalMinutes));
-  const utcTimestamp = utcDate.toISOString();
+    const period = studentHours >= 12 ? "PM" : "AM";
+    const displayHours = studentHours % 12 || 12;
+    const displayTime = `${displayHours}:${String(studentMinutes).padStart(2, "0")} ${period}`;
 
-  return { displayTime, utcTimestamp };
+    const utcDate = new Date(selectedDate);
+    utcDate.setUTCHours(0, 0, 0, 0);
+    utcDate.setUTCMinutes(utcDate.getUTCMinutes() + Math.round(utcTotalMinutes));
+    const utcTimestamp = utcDate.toISOString();
+
+    return { displayTime, utcTimestamp };
+  } catch {
+    return null;
+  }
 }
 
-function computeMentorSlots(
-  slots: any[],
-  sessions: any[],
-  selectedDate: string,
-  durationMins: number,
-  mentorTimezone: string | null
-): SlotOption[] {
-  const dayKey = getDateDayKey(selectedDate);
-  const candidates = slots.filter(
-    (s) => s.day_of_week === dayKey && s.is_available !== false
-  );
+interface SlotWithMentor {
+  slot: any;
+  mentor: any;
+  sessions: any[];
+  holds: any[];
+  durationMins: number;
+  studentTimezone: string;
+  selectedDate: string;
+  now: number;
+  minNoticeMs: number;
+  maxWindowMs: number;
+}
 
-  const baseDate = dateFromString(selectedDate);
-  const studentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+function computeSlotsForMentorDate(params: SlotWithMentor[]): SlotOption[] {
+  const results: SlotOption[] = [];
 
-  return candidates.flatMap((slot) => {
-    const { displayTime, utcTimestamp } = convertSlotTimeToStudentTimezone(
+  for (const {
+    slot,
+    mentor,
+    sessions,
+    holds,
+    durationMins,
+    studentTimezone,
+    selectedDate,
+    now,
+    minNoticeMs,
+    maxWindowMs,
+  } of params) {
+    const baseDate = dateFromString(selectedDate);
+    const startResult = convertSlotTimeToStudentTimezone(
       slot.start_time,
-      mentorTimezone,
+      mentor.timezone,
       studentTimezone,
-      baseDate
+      baseDate,
     );
+    if (!startResult) continue;
 
-    const { displayTime: endDisplayTime } = convertSlotTimeToStudentTimezone(
+    const endResult = convertSlotTimeToStudentTimezone(
       slot.end_time,
-      mentorTimezone,
+      mentor.timezone,
       studentTimezone,
-      baseDate
+      baseDate,
     );
+    if (!endResult) continue;
 
-    const slotStart = new Date(utcTimestamp);
-    const slotEnd = new Date(utcTimestamp);
+    const { displayTime, utcTimestamp } = startResult;
+    const { displayTime: endDisplayTime } = endResult;
+
+    const slotStart = safeDate(utcTimestamp);
+    if (!slotStart) continue;
+
+    const slotEnd = safeDate(utcTimestamp);
+    if (!slotEnd) continue;
+
     const [eh, em] = slot.end_time.split(":").map(Number);
-    const mentorOffset = getUTCOffsetMinutes(mentorTimezone || "UTC", baseDate);
+    const mentorOffset = getUTCOffsetMinutes(mentor.timezone || "UTC", baseDate);
     slotEnd.setUTCHours(eh, em - mentorOffset, 0, 0);
 
     if (slotEnd.getTime() - slotStart.getTime() < durationMins * 60_000) {
-      return [];
+      continue;
     }
 
-    const conflict = sessions.some((s) => {
+    const proposedStart = slotStart.getTime();
+    const proposedEnd = proposedStart + durationMins * 60_000;
+
+    if (proposedStart <= now) continue;
+    if (proposedStart < now + minNoticeMs) continue;
+    if (proposedStart > now + maxWindowMs) continue;
+
+    const hasBookingConflict = sessions.some((s) => {
       if (s.status === "cancelled" || s.status === "rejected") return false;
-      const existingStart = new Date(s.scheduled_time).getTime();
+      const existingStart = safeDate(s.scheduled_time)?.getTime();
+      if (existingStart == null) return false;
       const existingEnd = existingStart + s.duration_mins * 60_000;
-      const proposedStart = new Date(utcTimestamp).getTime();
-      const proposedEnd = proposedStart + durationMins * 60_000;
       return proposedStart < existingEnd && proposedEnd > existingStart;
     });
 
-    return [
-      {
-        value: utcTimestamp,
-        label: `${displayTime} – ${endDisplayTime}`,
-        disabled: conflict,
-        startTime: slot.start_time,
-        endTime: slot.end_time,
-        group: getTimeGroup(new Date(utcTimestamp).getUTCHours()),
-      },
-    ];
-  });
+    const hasHoldConflict = holds.some((h) => {
+      if (h.status !== "active") return false;
+      const holdStart = safeDate(h.scheduled_time);
+      if (!holdStart) return false;
+      const holdEnd = holdStart.getTime() + h.duration_mins * 60_000;
+      return proposedStart < holdEnd && proposedEnd > holdStart.getTime();
+    });
+
+    const disabled = hasBookingConflict || hasHoldConflict;
+
+    results.push({
+      value: utcTimestamp,
+      label: `${displayTime} – ${endDisplayTime}`,
+      disabled,
+      startTime: slot.start_time,
+      endTime: slot.end_time,
+      group: getTimeGroup(slotStart.getUTCHours()),
+    });
+  }
+
+  return results;
+}
+
+function buildMentorSlotParams(
+  daySlots: any[],
+  mentor: any,
+  mentorSessions: any[],
+  mentorHolds: any[],
+  selectedDate: string,
+  durationMins: number,
+  studentTimezone: string,
+  now: number,
+  minNoticeMs: number,
+  maxWindowMs: number,
+) {
+  return daySlots.map((slot) => ({
+    slot: { ...slot, _selectedDate: selectedDate },
+    mentor,
+    sessions: mentorSessions,
+    holds: mentorHolds,
+    durationMins,
+    studentTimezone,
+    selectedDate,
+    now,
+    minNoticeMs,
+    maxWindowMs,
+  }));
 }
 
 export function useAvailableMentors(date?: string) {
   const selectedDate = date || format(new Date(), "yyyy-MM-dd");
   const dayKey = useMemo(() => getDateDayKey(selectedDate), [selectedDate]);
+  const { data: rulesData } = useBookingRules();
+  const durationMins = rulesData?.session_duration_minutes ?? 30;
 
   const { data: mentors = [], isLoading: mentorsLoading } = useQuery({
     queryKey: ["available-mentors-list"],
@@ -176,7 +268,7 @@ export function useAvailableMentors(date?: string) {
       const { data: mps } = await supabase
         .from("mentor_profiles")
         .select(
-          "user_id, headline, bio, hourly_rate, rating_avg, total_reviews, total_students, total_sessions, languages_taught, years_experience, is_verified, demo_lesson_url, teaching_style, cover_url, timezone"
+          "user_id, headline, bio, hourly_rate, rating_avg, total_reviews, total_students, total_sessions, languages_taught, years_experience, is_verified, demo_lesson_url, teaching_style, cover_url, timezone",
         )
         .eq("is_active", true);
 
@@ -199,12 +291,11 @@ export function useAvailableMentors(date?: string) {
   });
 
   const { data: allSlots = [] } = useQuery({
-    queryKey: ["availability-slots-day", dayKey],
+    queryKey: ["availability-slots-all"],
     queryFn: async () => {
       const { data } = await supabase
         .from("availability_slots")
         .select("*")
-        .eq("day_of_week", dayKey)
         .eq("is_available", true);
       return data ?? [];
     },
@@ -212,15 +303,15 @@ export function useAvailableMentors(date?: string) {
   });
 
   const { data: allSessions = [] } = useQuery({
-    queryKey: ["sessions-date-all", selectedDate],
+    queryKey: ["sessions-date-range"],
     queryFn: async () => {
-      const startOfDayStr = `${selectedDate}T00:00:00`;
-      const endOfDayStr = `${selectedDate}T23:59:59`;
+      const today = format(new Date(), "yyyy-MM-dd");
+      const future = format(addDays(new Date(), 14), "yyyy-MM-dd");
       const { data } = await supabase
         .from("sessions")
         .select("*")
-        .gte("scheduled_time", startOfDayStr)
-        .lte("scheduled_time", endOfDayStr)
+        .gte("scheduled_time", `${today}T00:00:00`)
+        .lte("scheduled_time", `${future}T23:59:59`)
         .neq("status", "cancelled")
         .neq("status", "rejected");
       return data ?? [];
@@ -228,90 +319,183 @@ export function useAvailableMentors(date?: string) {
     staleTime: 1000 * 30,
   });
 
+  const { data: allHolds = [] } = useQuery({
+    queryKey: ["booking-holds-active"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("booking_holds")
+        .select("*")
+        .eq("status", "active")
+        .gt("expires_at", new Date().toISOString());
+      return data ?? [];
+    },
+    staleTime: 1000 * 15,
+  });
+
   const availableMentors = useMemo(() => {
-    const slotsByMentor = new Map<string, any[]>();
+    if (!mentors.length || !allSlots.length) return [];
+
+    const studentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const now = Date.now();
+    const minNoticeMs = (rulesData?.minimum_booking_notice_minutes ?? 30) * 60 * 1000;
+    const maxWindowMs = (rulesData?.maximum_booking_days ?? 30) * 24 * 60 * 60 * 1000;
+
+    const slotsByMentorDay = new Map<string, any[]>();
     for (const slot of allSlots) {
-      const list = slotsByMentor.get(slot.mentor_id) || [];
+      const key = `${slot.mentor_id}|${slot.day_of_week}`;
+      const list = slotsByMentorDay.get(key) || [];
       list.push(slot);
-      slotsByMentor.set(slot.mentor_id, list);
+      slotsByMentorDay.set(key, list);
     }
 
-    const sessionsByMentor = new Map<string, any[]>();
+    const sessionsByMentorDate = new Map<string, any[]>();
     for (const session of allSessions) {
-      const list = sessionsByMentor.get(session.mentor_id) || [];
+      const sessionDate = safeDate(session.scheduled_time);
+      if (!sessionDate) continue;
+      const ds = format(sessionDate, "yyyy-MM-dd");
+      const key = `${session.mentor_id}|${ds}`;
+      const list = sessionsByMentorDate.get(key) || [];
       list.push(session);
-      sessionsByMentor.set(session.mentor_id, list);
+      sessionsByMentorDate.set(key, list);
     }
 
-    const result: AvailableMentor[] = mentors
-      .map((mentor) => {
-        const mentorSlots = slotsByMentor.get(mentor.user_id) || [];
-        const mentorSessions = sessionsByMentor.get(mentor.user_id) || [];
+    const holdsByMentorDate = new Map<string, any[]>();
+    for (const hold of allHolds) {
+      const holdDate = safeDate(hold.scheduled_time);
+      if (!holdDate) continue;
+      const ds = format(holdDate, "yyyy-MM-dd");
+      const key = `${hold.mentor_id}|${ds}`;
+      const list = holdsByMentorDate.get(key) || [];
+      list.push(hold);
+      holdsByMentorDate.set(key, list);
+    }
 
-        const slotOptions = computeMentorSlots(
-          mentorSlots,
+    const result: AvailableMentor[] = [];
+
+    for (const mentor of mentors) {
+      try {
+        const daySlots = slotsByMentorDay.get(`${mentor.user_id}|${dayKey}`) || [];
+        const mentorSessions = sessionsByMentorDate.get(`${mentor.user_id}|${selectedDate}`) || [];
+        const mentorHolds = holdsByMentorDate.get(`${mentor.user_id}|${selectedDate}`) || [];
+
+        const slotParams = buildMentorSlotParams(
+          daySlots,
+          mentor,
           mentorSessions,
+          mentorHolds,
           selectedDate,
-          25,
-          mentor.timezone
+          durationMins,
+          studentTimezone,
+          now,
+          minNoticeMs,
+          maxWindowMs,
         );
 
+        const slotOptions = computeSlotsForMentorDate(slotParams);
         const availableSlots = slotOptions.filter((s) => !s.disabled);
+
+        if (availableSlots.length === 0) continue;
+
         const earliestSlot = availableSlots[0] || null;
 
-        return {
+        result.push({
           ...mentor,
           slotOptions,
           availableSlots,
           earliestSlot,
           totalAvailable: availableSlots.length,
-        };
-      })
-      .filter((m) => m.totalAvailable > 0);
+        });
+      } catch (e) {
+        console.warn(`[DiscoverMentors] Failed to compute slots for mentor ${mentor.user_id}:`, e);
+      }
+    }
 
     return result;
-  }, [mentors, allSlots, allSessions, selectedDate]);
+  }, [mentors, allSlots, allSessions, allHolds, selectedDate, dayKey, durationMins, rulesData]);
 
-  const { data: dateAvailability = [] } = useQuery({
-    queryKey: ["date-availability-preview"],
-    queryFn: async () => {
-      const { data: slots } = await supabase
-        .from("availability_slots")
-        .select("day_of_week, mentor_id")
-        .eq("is_available", true);
+  const dateAvailability = useMemo(() => {
+    if (!mentors.length || !allSlots.length) return [];
 
-      if (!slots?.length) return [];
+    const slotsByMentorDay = new Map<string, any[]>();
+    for (const slot of allSlots) {
+      const key = `${slot.mentor_id}|${slot.day_of_week}`;
+      const list = slotsByMentorDay.get(key) || [];
+      list.push(slot);
+      slotsByMentorDay.set(key, list);
+    }
 
-      const mentorIds = [...new Set(slots.map((s: any) => s.mentor_id))];
-      const { data: activeMentors } = await supabase
-        .from("mentor_profiles")
-        .select("user_id")
-        .eq("is_active", true)
-        .in("user_id", mentorIds);
+    const sessionsByMentorDate = new Map<string, any[]>();
+    for (const session of allSessions) {
+      const sessionDate = safeDate(session.scheduled_time);
+      if (!sessionDate) continue;
+      const ds = format(sessionDate, "yyyy-MM-dd");
+      const key = `${session.mentor_id}|${ds}`;
+      const list = sessionsByMentorDate.get(key) || [];
+      list.push(session);
+      sessionsByMentorDate.set(key, list);
+    }
 
-      const activeIds = new Set((activeMentors ?? []).map((m: any) => m.user_id));
+    const holdsByMentorDate = new Map<string, any[]>();
+    for (const hold of allHolds) {
+      const holdDate = safeDate(hold.scheduled_time);
+      if (!holdDate) continue;
+      const ds = format(holdDate, "yyyy-MM-dd");
+      const key = `${hold.mentor_id}|${ds}`;
+      const list = holdsByMentorDate.get(key) || [];
+      list.push(hold);
+      holdsByMentorDate.set(key, list);
+    }
 
-      const byDay = new Map<string, Set<string>>();
-      for (const slot of slots) {
-        if (!activeIds.has(slot.mentor_id)) continue;
-        const set = byDay.get(slot.day_of_week) || new Set<string>();
-        set.add(slot.mentor_id);
-        byDay.set(slot.day_of_week, set);
+    const studentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const now = Date.now();
+    const minNoticeMs = (rulesData?.minimum_booking_notice_minutes ?? 30) * 60 * 1000;
+    const maxWindowMs = (rulesData?.maximum_booking_days ?? 30) * 24 * 60 * 60 * 1000;
+    const today = new Date();
+    const dates: { dateStr: string; dayKey: string; count: number }[] = [];
+
+    for (let i = 0; i < 14; i++) {
+      const d = addDays(today, i);
+      const ds = format(d, "yyyy-MM-dd");
+      const dk = getDateDayKey(ds);
+
+      let count = 0;
+      for (const mentor of mentors) {
+        try {
+          const daySlots = slotsByMentorDay.get(`${mentor.user_id}|${dk}`) || [];
+          if (daySlots.length === 0) continue;
+
+          const mentorSessions = sessionsByMentorDate.get(`${mentor.user_id}|${ds}`) || [];
+          const mentorHolds = holdsByMentorDate.get(`${mentor.user_id}|${ds}`) || [];
+
+          const slotParams = buildMentorSlotParams(
+            daySlots,
+            mentor,
+            mentorSessions,
+            mentorHolds,
+            ds,
+            durationMins,
+            studentTimezone,
+            now,
+            minNoticeMs,
+            maxWindowMs,
+          );
+
+          const slots = computeSlotsForMentorDate(slotParams);
+          const available = slots.filter((s) => !s.disabled);
+          if (available.length > 0) count++;
+        } catch (e) {
+          console.warn(
+            `[DiscoverMentors] Failed to compute preview for mentor ${mentor.user_id} on ${ds}:`,
+            e,
+          );
+        }
       }
 
-      const today = new Date();
-      const dates: { dateStr: string; dayKey: string; count: number }[] = [];
-      for (let i = 0; i < 14; i++) {
-        const d = addDays(today, i);
-        const ds = format(d, "yyyy-MM-dd");
-        const dk = getDateDayKey(ds);
-        const count = byDay.get(dk)?.size || 0;
-        dates.push({ dateStr: ds, dayKey: dk, count });
-      }
-      return dates;
-    },
-    staleTime: 1000 * 60 * 5,
-  });
+      dates.push({ dateStr: ds, dayKey: dk, count });
+    }
+
+    return dates;
+  }, [mentors, allSlots, allSessions, allHolds, durationMins, rulesData]);
 
   return {
     availableMentors,

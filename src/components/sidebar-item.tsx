@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { LucideIcon } from "lucide-react";
 
@@ -21,36 +20,30 @@ export function SidebarItem({ icon: Icon, label, to, isActive, badge, tooltip }:
         isActive={isActive}
         tooltip={tooltip ?? label}
         className={cn(
-          "group/menu-button relative h-12 rounded-[14px] px-4 py-3 transition-all duration-200",
-          "data-[active=true]:bg-hero-gradient data-[active=true]:text-white data-[active=true]:shadow-sm",
-          "hover:translate-x-[4px] hover:bg-[#F3F4F6] data-[active=true]:hover:translate-x-[4px]",
+          "group/menu-button relative h-11 rounded-xl px-3 py-2 transition-all duration-200",
+          isActive
+            ? "bg-blue-50 text-blue-700 shadow-none"
+            : "text-muted-foreground hover:bg-gray-50 hover:text-foreground",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           "aria-disabled:opacity-50 aria-disabled:pointer-events-none",
         )}
       >
         <Link to={to as any} className="flex w-full items-center gap-3">
-          {/* Active indicator bar */}
           {isActive && (
-            <motion.span
-              layoutId="sidebar-active-indicator"
-              className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-white"
-              transition={{ type: "spring", stiffness: 500, damping: 35 }}
-            />
+            <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-blue-600" />
           )}
 
           <Icon
             className={cn(
-              "h-5 w-5 shrink-0 stroke-[1.8]",
-              isActive
-                ? "text-white"
-                : "text-muted-foreground group-hover/menu-button:text-foreground",
+              "h-[18px] w-[18px] shrink-0",
+              isActive ? "text-blue-700" : "text-muted-foreground group-hover/menu-button:text-foreground",
             )}
           />
 
           <span
             className={cn(
-              "flex-1 truncate text-sm font-medium",
-              isActive ? "text-white" : "text-foreground",
+              "flex-1 truncate text-[13px] font-medium",
+              isActive ? "text-blue-700" : "text-foreground",
             )}
           >
             {label}

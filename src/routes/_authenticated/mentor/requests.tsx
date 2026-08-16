@@ -1,22 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { MentorLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/mentor/page-header";
+import { RequestCard } from "@/components/mentor/request-card";
+import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { motion } from "framer-motion";
 import {
   CalendarClock,
-  Clock,
+  Clock3,
   Languages,
   User,
   BookOpen,
   CheckCircle2,
   XCircle,
+  Loader2,
 } from "lucide-react";
+import { format } from "date-fns";
+import { toast } from "sonner";
 import { useMentorSessionRequests, useRespondAssignment } from "@/hooks/use-session-requests";
+import { parseISO } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/mentor/requests")({
   component: MentorRequests,
@@ -30,7 +35,6 @@ function MentorRequests() {
   const { data: requests = [], isLoading } = useMentorSessionRequests(mentorId);
   const respondMutation = useRespondAssignment();
 
-  // Fetch student profiles for the requests
   const studentIds = [...new Set(requests.map((r: any) => r.student_id).filter(Boolean))];
   const { data: students = [] } = useQuery({
     queryKey: ["mentor-request-students", studentIds.join(",")],
@@ -56,88 +60,56 @@ function MentorRequests() {
 
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-5xl space-y-6 py-6">
-        <div>
-          <h1 className="text-3xl font-display">Incoming Requests</h1>
-          <p className="text-sm text-muted-foreground">
-            Review and respond to session requests assigned to you.
-          </p>
-        </div>
+      <div className="mx-auto max-w-5xl space-y-6">
+        <PageHeader
+          title="Incoming Requests"
+          description="Review and respond to session requests assigned to you."
+        />
 
         <div className="space-y-3">
           {isLoading ? (
-            <div>Loading…</div>
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 rounded-xl border border-border/60 p-4"
+                >
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-48 bg-muted rounded" />
+                    <div className="h-3 w-32 bg-muted rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : requests.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center gap-2 p-10 text-center">
-                <CheckCircle2 className="h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">No incoming requests at the moment.</p>
-              </CardContent>
-            </Card>
+            <MentorEmptyState
+              icon={<CheckCircle2 className="h-6 w-6" />}
+              title="No incoming requests"
+              description="When a student requests a session, you'll see it here."
+            />
           ) : (
             requests.map((r: any) => {
               const student = studentMap.get(r.student_id);
               return (
-                <Card key={r.id}>
-                  <CardContent className="space-y-4 p-4">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium text-lg">{r.topic || "Session request"}</div>
-                          <Badge variant="secondary">Pending</Badge>
-                        </div>
-
-                        <div className="grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
-                          <div className="flex items-center gap-2">
-                            <CalendarClock className="h-4 w-4" />
-                            <span>{new Date(r.scheduled_time).toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>{r.duration_mins} minutes</span>
-                          </div>
-                          {r.language && (
-                            <div className="flex items-center gap-2">
-                              <Languages className="h-4 w-4" />
-                              <span>{r.language}</span>
-                            </div>
-                          )}
-                          {student && (
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4" />
-                              <span>Student: {student.full_name || "Unknown"}</span>
-                            </div>
-                          )}
-                          {r.notes && (
-                            <div className="flex items-center gap-2 md:col-span-2">
-                              <BookOpen className="h-4 w-4" />
-                              <span>{r.notes}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => respond(r.id, "accept")}
-                          disabled={respondMutation.isPending}
-                        >
-                          <CheckCircle2 className="mr-1 h-4 w-4" /> Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => respond(r.id, "reject")}
-                          disabled={respondMutation.isPending}
-                        >
-                          <XCircle className="mr-1 h-4 w-4" /> Reject
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <motion.div
+                  key={r.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <RequestCard
+                    studentName={student?.full_name || "Student"}
+                    studentAvatar={student?.avatar_url}
+                    topic={r.topic || "Session request"}
+                    date={format(parseISO(r.scheduled_time), "MMM d, yyyy")}
+                    time={format(parseISO(r.scheduled_time), "h:mm a")}
+                    duration={r.duration_mins}
+                    message={r.notes}
+                    status="pending"
+                    onAccept={() => respond(r.id, "accept")}
+                    onReject={() => respond(r.id, "reject")}
+                  />
+                </motion.div>
               );
             })
           )}

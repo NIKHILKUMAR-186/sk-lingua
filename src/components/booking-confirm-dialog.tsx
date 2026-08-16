@@ -12,17 +12,18 @@ import { CalendarDays, Clock, Languages, Loader2, AlertCircle } from "lucide-rea
 import { format } from "date-fns";
 import { useConfirmBooking, mapBookingError } from "@/hooks/use-student-booking";
 import { toast } from "sonner";
-import type { SlotOption } from "@/hooks/use-available-mentors";
 
 interface BookingConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mentorId: string;
   mentorName: string;
-  slot: SlotOption;
+  slot: { value: string; label: string };
   date: string;
   durationMins?: number;
   language?: string;
+  /** Invoked when the selected slot was just taken by another student. */
+  onRaceConflict?: (message: string) => void;
 }
 
 export function BookingConfirmDialog({
@@ -32,11 +33,22 @@ export function BookingConfirmDialog({
   mentorName,
   slot,
   date,
-  durationMins = 25,
+  durationMins = 30,
   language = "English",
+  onRaceConflict,
 }: BookingConfirmDialogProps) {
   const [isPending, setIsPending] = useState(false);
   const confirmMutation = useConfirmBooking();
+
+  function isRaceConflict(message: string): boolean {
+    const msg = (message || "").toLowerCase();
+    return (
+      msg.includes("just booked") ||
+      msg.includes("no longer available") ||
+      msg.includes("just reserved") ||
+      msg.includes("rejected")
+    );
+  }
 
   async function handleConfirm() {
     if (!slot.value) return;
@@ -55,6 +67,9 @@ export function BookingConfirmDialog({
     } catch (error) {
       const message = error instanceof Error ? error.message : mapBookingError(null);
       toast.error(message);
+      if (isRaceConflict(message)) {
+        onRaceConflict?.(message);
+      }
     } finally {
       setIsPending(false);
     }
@@ -115,16 +130,16 @@ export function BookingConfirmDialog({
         {confirmMutation.isError && (
           <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <p>{confirmMutation.error instanceof Error ? confirmMutation.error.message : "Unable to book. Please try again."}</p>
+            <p>
+              {confirmMutation.error instanceof Error
+                ? confirmMutation.error.message
+                : "Unable to book. Please try again."}
+            </p>
           </div>
         )}
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isPending}
-          >
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={isPending}>

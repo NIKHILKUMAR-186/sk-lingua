@@ -46,6 +46,7 @@ import { Route as AuthenticatedMentorRequestsRouteImport } from './routes/_authe
 import { Route as AuthenticatedMentorResourcesRouteImport } from './routes/_authenticated/mentor/resources'
 import { Route as AuthenticatedMentorSessionsRouteImport } from './routes/_authenticated/mentor/sessions'
 import { Route as AuthenticatedMentorSettingsRouteImport } from './routes/_authenticated/mentor/settings'
+import { Route as AuthenticatedStudentBookRouteImport } from './routes/_authenticated/student/book'
 import { Route as AuthenticatedStudentCheckoutRouteImport } from './routes/_authenticated/student/checkout'
 import { Route as AuthenticatedStudentDashboardRouteImport } from './routes/_authenticated/student/dashboard'
 import { Route as AuthenticatedStudentDemoConversionRouteImport } from './routes/_authenticated/student/demo-conversion'
@@ -282,6 +283,12 @@ const AuthenticatedMentorSettingsRoute =
     path: '/mentor/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStudentBookRoute =
+  AuthenticatedStudentBookRouteImport.update({
+    id: '/student/book',
+    path: '/student/book',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentCheckoutRoute =
   AuthenticatedStudentCheckoutRouteImport.update({
     id: '/student/checkout',
@@ -464,6 +471,7 @@ export interface FileRoutesByFullPath {
   '/mentor/resources': typeof AuthenticatedMentorResourcesRoute
   '/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
   '/mentor/settings': typeof AuthenticatedMentorSettingsRoute
+  '/student/book': typeof AuthenticatedStudentBookRoute
   '/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/student/dashboard': typeof AuthenticatedStudentDashboardRoute
   '/student/demo-conversion': typeof AuthenticatedStudentDemoConversionRoute
@@ -526,6 +534,7 @@ export interface FileRoutesByTo {
   '/mentor/resources': typeof AuthenticatedMentorResourcesRoute
   '/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
   '/mentor/settings': typeof AuthenticatedMentorSettingsRoute
+  '/student/book': typeof AuthenticatedStudentBookRoute
   '/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/student/dashboard': typeof AuthenticatedStudentDashboardRoute
   '/student/demo-conversion': typeof AuthenticatedStudentDemoConversionRoute
@@ -590,6 +599,7 @@ export interface FileRoutesById {
   '/_authenticated/mentor/resources': typeof AuthenticatedMentorResourcesRoute
   '/_authenticated/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
   '/_authenticated/mentor/settings': typeof AuthenticatedMentorSettingsRoute
+  '/_authenticated/student/book': typeof AuthenticatedStudentBookRoute
   '/_authenticated/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/_authenticated/student/dashboard': typeof AuthenticatedStudentDashboardRoute
   '/_authenticated/student/demo-conversion': typeof AuthenticatedStudentDemoConversionRoute
@@ -654,6 +664,7 @@ export interface FileRouteTypes {
     | '/mentor/resources'
     | '/mentor/sessions'
     | '/mentor/settings'
+    | '/student/book'
     | '/student/checkout'
     | '/student/dashboard'
     | '/student/demo-conversion'
@@ -716,6 +727,7 @@ export interface FileRouteTypes {
     | '/mentor/resources'
     | '/mentor/sessions'
     | '/mentor/settings'
+    | '/student/book'
     | '/student/checkout'
     | '/student/dashboard'
     | '/student/demo-conversion'
@@ -779,6 +791,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mentor/resources'
     | '/_authenticated/mentor/sessions'
     | '/_authenticated/mentor/settings'
+    | '/_authenticated/student/book'
     | '/_authenticated/student/checkout'
     | '/_authenticated/student/dashboard'
     | '/_authenticated/student/demo-conversion'
@@ -1077,6 +1090,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMentorSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/student/book': {
+      id: '/_authenticated/student/book'
+      path: '/student/book'
+      fullPath: '/student/book'
+      preLoaderRoute: typeof AuthenticatedStudentBookRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student/checkout': {
       id: '/_authenticated/student/checkout'
       path: '/student/checkout'
@@ -1292,6 +1312,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMentorResourcesRoute: typeof AuthenticatedMentorResourcesRoute
   AuthenticatedMentorSessionsRoute: typeof AuthenticatedMentorSessionsRoute
   AuthenticatedMentorSettingsRoute: typeof AuthenticatedMentorSettingsRoute
+  AuthenticatedStudentBookRoute: typeof AuthenticatedStudentBookRoute
   AuthenticatedStudentCheckoutRoute: typeof AuthenticatedStudentCheckoutRoute
   AuthenticatedStudentDashboardRoute: typeof AuthenticatedStudentDashboardRoute
   AuthenticatedStudentDemoConversionRoute: typeof AuthenticatedStudentDemoConversionRoute
@@ -1351,6 +1372,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMentorResourcesRoute: AuthenticatedMentorResourcesRoute,
   AuthenticatedMentorSessionsRoute: AuthenticatedMentorSessionsRoute,
   AuthenticatedMentorSettingsRoute: AuthenticatedMentorSettingsRoute,
+  AuthenticatedStudentBookRoute: AuthenticatedStudentBookRoute,
   AuthenticatedStudentCheckoutRoute: AuthenticatedStudentCheckoutRoute,
   AuthenticatedStudentDashboardRoute: AuthenticatedStudentDashboardRoute,
   AuthenticatedStudentDemoConversionRoute:

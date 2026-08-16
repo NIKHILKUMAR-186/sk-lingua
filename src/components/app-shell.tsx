@@ -32,6 +32,7 @@ import {
   Inbox,
   BarChart3,
   Sparkles,
+  User,
 } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -45,11 +46,8 @@ import { isStudent } from "@/lib/authorization";
 
 const MENTOR_ITEMS = [
   { title: "Dashboard", to: "/mentor/dashboard", icon: LayoutDashboard },
-  { title: "Calendar & requests", to: "/mentor/calendar", icon: CalendarDays },
-  { title: "Demo Requests", to: "/mentor/demo-requests", icon: Clock },
-  { title: "My Profile", to: "/mentor/profile", icon: Compass },
-  { title: "Availability", to: "/mentor/availability", icon: Clock },
-  { title: "Sessions", to: "/mentor/sessions", icon: CalendarDays },
+  { title: "Calendar & Requests", to: "/mentor/calendar", icon: CalendarDays },
+  { title: "Sessions", to: "/mentor/sessions", icon: History },
   { title: "Resources", to: "/mentor/resources", icon: BookOpenText },
 ] as const;
 
@@ -85,10 +83,18 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
   const { state: sidebarState } = useSidebar();
   const collapsed = sidebarState === "collapsed";
 
-  const accountItems = ACCOUNT_ITEMS_BASE.map((item) => ({
-    ...item,
-    to: `/${variant}/${item.title.toLowerCase()}`,
-  }));
+  const accountItems =
+    variant === "mentor"
+      ? [
+          { title: "Availability", to: "/mentor/availability", icon: Clock },
+          { title: "My Profile", to: "/mentor/profile", icon: User },
+          { title: "Notifications", to: "/mentor/notifications", icon: Bell },
+          { title: "Settings", to: "/mentor/settings", icon: Settings },
+        ]
+      : ACCOUNT_ITEMS_BASE.map((item) => ({
+          ...item,
+          to: `/${variant}/${item.title.toLowerCase()}`,
+        }));
 
   // ── Dynamic student nav items (P1 lifecycle-aware) ─────────────────
   const isStudentVariant = variant === "student";
@@ -97,11 +103,12 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
   const studentItems = isStudentVariant
     ? [
         { title: "Dashboard", to: "/student/dashboard", icon: LayoutDashboard },
+        { title: "Book a Session", to: "/student/book", icon: CalendarDays },
         { title: "Discover Mentors", to: "/student/explore", icon: Compass },
         {
           title: studentLearning!.primaryCta.label,
-          to: studentLearning!.primaryCta.to,
-          icon: studentLearning!.primaryCta.label === "Book a Trial" ? Clock : LayoutDashboard,
+          to: studentLearning!.primaryCta.label === "Book a Session" ? "/student/book" : studentLearning!.primaryCta.to,
+          icon: studentLearning!.primaryCta.label === "Book a Trial" ? Clock : CalendarDays,
         },
         { title: "Sessions", to: "/student/sessions", icon: CalendarDays },
         { title: "Resources", to: "/student/resources", icon: BookOpenText },
@@ -275,23 +282,15 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
       {/* Footer: Profile + Logout */}
       <SidebarFooter className="border-t border-border/50 p-3">
         <ProfileCard auth={auth} collapsed={collapsed} settingsPath={`/${variant}/settings`} />
-
         {!collapsed && (
-          <motion.button
+          <button
+            type="button"
             onClick={signOut}
-            className={cn(
-              "mx-2 mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground",
-              "transition-all duration-200 hover:bg-red-50 hover:text-red-600",
-              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              "cursor-pointer",
-            )}
-            whileHover={{ x: 2 }}
-            whileTap={{ scale: 0.98 }}
-            aria-label="Sign out"
+            className="mx-2 mt-2 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-red-600 hover:bg-red-50"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3.5 w-3.5" />
             <span>Sign out</span>
-          </motion.button>
+          </button>
         )}
       </SidebarFooter>
     </>
