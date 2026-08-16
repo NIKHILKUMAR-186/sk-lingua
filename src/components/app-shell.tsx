@@ -67,9 +67,9 @@ const ADMIN_ITEMS = [
   { title: "Subscription Plans", to: "/admin/subscription-plans", icon: Crown },
 ] as const;
 
-const ACCOUNT_ITEMS = [
-  { title: "Notifications", to: "/notifications", icon: Bell },
-  { title: "Settings", to: "/settings", icon: Settings },
+const ACCOUNT_ITEMS_BASE = [
+  { title: "Notifications", icon: Bell },
+  { title: "Settings", icon: Settings },
 ] as const;
 
 // const HELP_ITEMS = [
@@ -84,6 +84,11 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { state: sidebarState } = useSidebar();
   const collapsed = sidebarState === "collapsed";
+
+  const accountItems = ACCOUNT_ITEMS_BASE.map((item) => ({
+    ...item,
+    to: `/${variant}/${item.title.toLowerCase()}`,
+  }));
 
   // ── Dynamic student nav items (P1 lifecycle-aware) ─────────────────
   const isStudentVariant = variant === "student";
@@ -224,7 +229,7 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
           <SidebarGroupContent>
             <nav aria-label="Account">
               <ul className="flex w-full min-w-0 flex-col gap-0.5">
-                {ACCOUNT_ITEMS.map((item) => (
+                {accountItems.map((item) => (
                   <SidebarItem
                     key={item.to}
                     icon={item.icon}
@@ -269,7 +274,7 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
 
       {/* Footer: Profile + Logout */}
       <SidebarFooter className="border-t border-border/50 p-3">
-        <ProfileCard auth={auth} collapsed={collapsed} />
+        <ProfileCard auth={auth} collapsed={collapsed} settingsPath={`/${variant}/settings`} />
 
         {!collapsed && (
           <motion.button

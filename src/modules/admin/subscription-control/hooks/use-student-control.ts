@@ -11,9 +11,14 @@ import {
   createSubscription,
   replacePlan,
   fetchPlans,
+  listStudents,
+  getStudentStats,
   type StudentDetail,
   type StudentSubscriptionLite,
   type PlanLite,
+  type AdminStudentsList,
+  type AdminStudentsStats,
+  type StudentFilter,
 } from "../services/student-control.service";
 
 const adminKey = ["admin", "students"];
@@ -187,5 +192,30 @@ export function usePlans() {
     queryKey: [...adminKey, "plans"],
     queryFn: fetchPlans,
     staleTime: 1000 * 60,
+  });
+}
+
+// ------------------------------------------------------------------
+// Admin Students list + statistics (server-side, role-filtered)
+// ------------------------------------------------------------------
+
+export function useAdminStudentList(params: {
+  search: string;
+  filter: StudentFilter;
+}) {
+  return useQuery<AdminStudentsList>({
+    queryKey: [...adminKey, "list", params.search, params.filter],
+    queryFn: () => listStudents({ search: params.search, filter: params.filter }),
+    staleTime: 1000 * 30,
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useAdminStudentStats() {
+  return useQuery<AdminStudentsStats>({
+    queryKey: [...adminKey, "stats"],
+    queryFn: getStudentStats,
+    staleTime: 1000 * 30,
+    placeholderData: (prev) => prev,
   });
 }

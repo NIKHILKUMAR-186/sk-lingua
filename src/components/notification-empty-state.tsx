@@ -35,6 +35,22 @@ export function NotificationEmptyState({ activeFilter }: NotificationEmptyStateP
       title: "No system notifications",
       body: "System announcements will appear here.",
     },
+    cancellation: {
+      title: "No cancellation notifications",
+      body: "Session cancellation updates will appear here.",
+    },
+    mentor_application: {
+      title: "No mentor application notifications",
+      body: "Mentor application updates will appear here.",
+    },
+    student: {
+      title: "No student notifications",
+      body: "Student registration and activity updates will appear here.",
+    },
+    subscription: {
+      title: "No subscription notifications",
+      body: "Subscription and plan updates will appear here.",
+    },
   };
 
   const msg = messages[activeFilter] || messages.all;

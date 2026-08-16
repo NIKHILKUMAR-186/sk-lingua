@@ -1,16 +1,24 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { ALL_TABS, getCategoryConfig, type TabKey } from "@/components/notification-types";
+import { getCategoryConfig, type TabKey, type StudentTabKey, type MentorTabKey, type AdminTabKey } from "@/components/notification-types";
 import { NotificationBadge } from "@/components/notification-badge";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Notification = Tables<"notifications">;
 
+export interface TabConfig {
+  key: string;
+  label: string;
+}
+
 interface NotificationFiltersProps {
-  activeTab: TabKey;
-  onTabChange: (tab: TabKey) => void;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
   items: Notification[];
   unreadCount: number;
+  tabs: readonly TabConfig[];
+  getCountForTab: (tab: string) => number;
+  getUnreadForTab: (tab: string) => number;
 }
 
 export function NotificationFilters({
@@ -18,54 +26,15 @@ export function NotificationFilters({
   onTabChange,
   items,
   unreadCount,
+  tabs,
+  getCountForTab,
+  getUnreadForTab,
 }: NotificationFiltersProps) {
-  const getCountForTab = (tab: TabKey): number => {
-    switch (tab) {
-      case "all":
-        return items.length;
-      case "unread":
-        return unreadCount;
-      case "booking":
-        return items.filter((n) => n.category === "booking").length;
-      case "session":
-        return items.filter((n) => n.category === "session").length;
-      case "payment":
-        return items.filter((n) => n.category === "payment").length;
-      case "resource":
-        return items.filter((n) => n.category === "resource").length;
-      case "general":
-        return items.filter((n) => !n.category || n.category === "general").length;
-      default:
-        return 0;
-    }
-  };
-
-  const getUnreadForTab = (tab: TabKey): number => {
-    switch (tab) {
-      case "all":
-        return unreadCount;
-      case "unread":
-        return unreadCount;
-      case "booking":
-        return items.filter((n) => n.category === "booking" && !n.read).length;
-      case "session":
-        return items.filter((n) => n.category === "session" && !n.read).length;
-      case "payment":
-        return items.filter((n) => n.category === "payment" && !n.read).length;
-      case "resource":
-        return items.filter((n) => n.category === "resource" && !n.read).length;
-      case "general":
-        return items.filter((n) => (!n.category || n.category === "general") && !n.read).length;
-      default:
-        return 0;
-    }
-  };
-
   return (
     <div className="flex flex-wrap gap-1" role="tablist" aria-label="Notification filters">
-      {ALL_TABS.map((tab) => {
+      {tabs.map((tab) => {
         const config = getCategoryConfig(
-          tab.key === "unread" ? null : tab.key === "all" ? null : tab.key,
+          tab.key === "unread" || tab.key === "all" ? null : tab.key,
         );
         const Icon = config.icon;
         const count = getCountForTab(tab.key);

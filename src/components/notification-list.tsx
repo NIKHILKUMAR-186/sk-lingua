@@ -1,10 +1,9 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NotificationHeader } from "@/components/notification-header";
-import { NotificationFilters } from "@/components/notification-filters";
+import { NotificationFilters, type TabConfig } from "@/components/notification-filters";
 import { NotificationCard } from "@/components/notification-card";
 import { NotificationEmptyState } from "@/components/notification-empty-state";
-import type { TabKey } from "@/components/notification-types";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Notification = Tables<"notifications">;
@@ -15,6 +14,10 @@ interface NotificationListProps {
   onMarkAll: () => void;
   onMarkOne: (id: string) => void;
   onDelete: (id: string) => void;
+  tabs: readonly TabConfig[];
+  getCountForTab: (tab: string) => number;
+  getUnreadForTab: (tab: string) => number;
+  role?: "student" | "mentor" | "admin";
 }
 
 export function NotificationList({
@@ -23,8 +26,12 @@ export function NotificationList({
   onMarkAll,
   onMarkOne,
   onDelete,
+  tabs,
+  getCountForTab,
+  getUnreadForTab,
+  role,
 }: NotificationListProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [activeTab, setActiveTab] = useState(tabs[0]?.key ?? "all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredItems = useMemo(() => {
@@ -35,22 +42,10 @@ export function NotificationList({
       case "unread":
         filtered = filtered.filter((n) => !n.read);
         break;
-      case "booking":
-        filtered = filtered.filter((n) => n.category === "booking");
-        break;
-      case "session":
-        filtered = filtered.filter((n) => n.category === "session");
-        break;
-      case "payment":
-        filtered = filtered.filter((n) => n.category === "payment");
-        break;
-      case "resource":
-        filtered = filtered.filter((n) => n.category === "resource");
-        break;
-      case "general":
-        filtered = filtered.filter((n) => !n.category || n.category === "general");
-        break;
-      // "all" - no filter
+      default:
+        if (activeTab !== "all") {
+          filtered = filtered.filter((n) => n.category === activeTab);
+        }
     }
 
     // Apply search filter
@@ -81,6 +76,9 @@ export function NotificationList({
         onTabChange={setActiveTab}
         items={items}
         unreadCount={unreadCount}
+        tabs={tabs}
+        getCountForTab={getCountForTab}
+        getUnreadForTab={getUnreadForTab}
       />
 
       {/* Notification list */}
@@ -102,6 +100,7 @@ export function NotificationList({
                 notification={notification}
                 onMarkRead={onMarkOne}
                 onDelete={onDelete}
+                role={role}
               />
             ))
           )}

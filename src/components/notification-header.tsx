@@ -9,6 +9,7 @@ interface NotificationHeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onMarkAllRead: () => void;
+  role?: "student" | "mentor" | "admin";
 }
 
 export function NotificationHeader({
@@ -16,7 +17,9 @@ export function NotificationHeader({
   searchQuery,
   onSearchChange,
   onMarkAllRead,
+  role = "student",
 }: NotificationHeaderProps) {
+  const settingsPath = `/${role}/settings`;
   return (
     <div className="space-y-4">
       {/* Title and subtitle */}
@@ -68,7 +71,7 @@ export function NotificationHeader({
             className="h-9 w-9 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             aria-label="Notification settings"
           >
-            <Link to="/settings">
+            <Link to={settingsPath}>
               <Settings className="h-4 w-4" />
             </Link>
           </Button>

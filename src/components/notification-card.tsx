@@ -16,13 +16,14 @@ interface NotificationCardProps {
   notification: Notification;
   onMarkRead: (id: string) => void;
   onDelete: (id: string) => void;
+  role?: "student" | "mentor" | "admin";
 }
 
 /**
- * Resolve a type-safe target route for a notification based on its category/kind.
+ * Resolve a type-safe target route for a notification based on its category/kind and user role.
  * Returns a route path string that matches the router's expectations.
  */
-function resolveTarget(notification: Notification): string | null {
+function resolveTarget(notification: Notification, role?: "student" | "mentor" | "admin"): string | null {
   // If an explicit link is stored, use it (it's a route path in this app).
   if (notification.link) return notification.link;
 
@@ -30,18 +31,42 @@ function resolveTarget(notification: Notification): string | null {
   const kind = notification.kind ?? "";
   const category = notification.category ?? "";
 
-  // Route based on category/kind to a type-safe destination.
-  if (relatedId) {
-    if (kind === "session" || category === "session") return `/student/session/${relatedId}`;
-    if (kind === "review" || category === "review") return `/student/sessions`;
-    if (kind === "mentor" || category === "mentor") return `/student/explore`;
-    if (kind === "booking" || category === "booking") return `/student/sessions`;
-    if (kind === "payment" || category === "payment") return `/student/subscriptions`;
-    if (kind === "resource" || category === "resource") return `/student/resources`;
-    if (kind === "homework") return `/student/sessions`;
-    if (kind === "mentor_application" || category === "mentor_application")
-      return `/mentor/application`;
+  // Admin routes
+  if (role === "admin") {
+    if (kind === "mentor_application" || category === "mentor_application") return "/admin/mentor-applications";
+    if (kind === "booking" || category === "booking") return "/admin/booking-queue";
+    if (kind === "session" || category === "session") return "/admin/sessions";
+    if (kind === "payment" || category === "payment") return "/admin/analytics";
+    if (kind === "support" || category === "support") return "/admin/support-tickets";
+    if (kind === "student" || category === "student") return "/admin/students";
+    if (kind === "subscription" || category === "subscription") return "/admin/subscription-plans";
+    if (category === "announcement") return "/admin/dashboard";
+    return "/admin/dashboard";
   }
+
+  // Mentor routes
+  if (role === "mentor") {
+    if (kind === "session" || category === "session") return `/mentor/session/${relatedId}`;
+    if (kind === "booking" || category === "booking") return `/mentor/calendar`;
+    if (kind === "demo" || category === "demo") return `/mentor/demo-requests`;
+    if (kind === "review" || category === "review") return `/mentor/sessions`;
+    if (kind === "resource" || category === "resource") return `/mentor/resources`;
+    if (kind === "mentor_application" || category === "mentor_application") return `/mentor/profile`;
+    if (kind === "cancellation" || category === "cancellation") return `/mentor/calendar`;
+    if (category === "announcement") return `/mentor/dashboard`;
+    return `/mentor/dashboard`;
+  }
+
+  // Student routes (default)
+  if (kind === "session" || category === "session") return `/student/session/${relatedId}`;
+  if (kind === "review" || category === "review") return `/student/sessions`;
+  if (kind === "mentor" || category === "mentor") return `/student/explore`;
+  if (kind === "booking" || category === "booking") return `/student/sessions`;
+  if (kind === "payment" || category === "payment") return `/student/subscriptions`;
+  if (kind === "resource" || category === "resource") return `/student/resources`;
+  if (kind === "homework") return `/student/sessions`;
+  if (kind === "mentor_application" || category === "mentor_application")
+    return `/mentor/application`;
 
   // Fallback by category.
   switch (category) {
@@ -60,14 +85,14 @@ function resolveTarget(notification: Notification): string | null {
   }
 }
 
-export function NotificationCard({ notification, onMarkRead, onDelete }: NotificationCardProps) {
+export function NotificationCard({ notification, onMarkRead, onDelete, role }: NotificationCardProps) {
   const config = getCategoryConfig(notification.category);
   const isUnread = !notification.read;
   const navigate = useNavigate();
 
   function handleOpen() {
     if (isUnread) onMarkRead(notification.id);
-    const target = resolveTarget(notification);
+    const target = resolveTarget(notification, role);
     if (target) navigate({ to: target });
   }
 

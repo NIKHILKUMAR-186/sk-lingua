@@ -41,9 +41,21 @@ export interface StudentProfileInfo {
   reference_no: number | null;
   avatar_url: string | null;
   country: string | null;
+  state: string | null;
+  city: string | null;
   bio: string | null;
   onboarded: boolean | null;
+  phone_number: string | null;
+  native_language: string | null;
+  target_language: string | null;
+  current_level: string | null;
+  learning_goal: string | null;
+  learning_level: string | null;
+  learning_goals: string | null;
+  interests: string | null;
+  timezone: string | null;
   created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface StudentDetail {
@@ -51,6 +63,8 @@ export interface StudentDetail {
   subscription: StudentSubscriptionLite | null;
   history: StudentSubscriptionLite[];
   adjustments: any[];
+  payments: any[];
+  sessions: any[];
 }
 
 export interface ApiResponse<T = any> {
@@ -59,6 +73,64 @@ export interface ApiResponse<T = any> {
   error?: string;
   data?: T;
 }
+
+export interface AdminStudentRow {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  onboarded: boolean;
+  reference_no: number | null;
+  current_level: string | null;
+  learning_goal: string | null;
+  last_activity: string | null;
+  subscription: {
+    id: string;
+    plan_id: string;
+    plan_name: string | null;
+    plan_price: number | null;
+    plan_currency: string | null;
+    status: string;
+    total_session_slots: number;
+    used_session_slots: number;
+    current_session_slots: number;
+    bonus_slots: number;
+    expires_at: string | null;
+    activated_at: string | null;
+    purchased_at: string | null;
+    price_at_purchase: number | null;
+    currency_at_purchase: string | null;
+    validity_days_at_purchase: number | null;
+    is_current_active: boolean;
+  } | null;
+}
+
+export interface AdminStudentsStats {
+  totalStudents: number;
+  activeAccounts: number;
+  withActiveSubscription: number;
+  expiringSoon: number;
+  totalSessionsUsed: number;
+}
+
+export interface AdminStudentsList {
+  students: AdminStudentRow[];
+  stats: AdminStudentsStats;
+  total: number;
+}
+
+export type StudentFilter =
+  | "all"
+  | "active_subscription"
+  | "no_subscription"
+  | "expired_subscription"
+  | "active_account"
+  | "suspended_account";
 
 // Append the auth token so the server-side requireAdminAuth() can authorise it.
 async function apiFetch<T = any>(url: string, init?: RequestInit): Promise<ApiResponse<T>> {
@@ -152,18 +224,53 @@ export async function updateStudentProfile(
     phone_number?: string;
     native_language?: string;
     state?: string;
+    city?: string;
     country?: string;
     bio?: string;
+    current_level?: string;
+    learning_goal?: string;
+    learning_level?: string;
+    learning_goals?: string;
+    interests?: string;
+    target_language?: string;
+    timezone?: string;
   },
 ): Promise<StudentProfileInfo> {
-  const json = await apiFetch<StudentProfileInfo>(
-    `/api/admin/students/${encodeURIComponent(studentId)}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(updates),
-    },
-  );
+  const json = await apiFetch<StudentProfileInfo>("/api/admin/students/update-profile", {
+    method: "PUT",
+    body: JSON.stringify({ studentId, updates }),
+  });
   return json.data as StudentProfileInfo;
+}
+
+export async function listStudents(params?: {
+  search?: string;
+  filter?: StudentFilter;
+  limit?: number;
+}): Promise<AdminStudentsList> {
+  const qp = new URLSearchParams();
+  if (params?.search) qp.set("search", params.search);
+  if (params?.filter && params.filter !== "all") qp.set("filter", params.filter);
+  if (params?.limit) qp.set("limit", String(params.limit));
+  const json = await apiFetch<AdminStudentsList>(
+    `/api/admin/students/list${qp.toString() ? `?${qp.toString()}` : ""}`,
+  );
+  return (json.data as AdminStudentsList) || { students: [], stats: emptyStats(), total: 0 };
+}
+
+export async function getStudentStats(): Promise<AdminStudentsStats> {
+  const json = await apiFetch<AdminStudentsStats>("/api/admin/students/stats");
+  return (json.data as AdminStudentsStats) || emptyStats();
+}
+
+function emptyStats(): AdminStudentsStats {
+  return {
+    totalStudents: 0,
+    activeAccounts: 0,
+    withActiveSubscription: 0,
+    expiringSoon: 0,
+    totalSessionsUsed: 0,
+  };
 }
 
 export async function getStudentDetail(

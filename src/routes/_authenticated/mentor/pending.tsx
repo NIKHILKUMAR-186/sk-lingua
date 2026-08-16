@@ -179,10 +179,10 @@ function MentorPendingDashboard() {
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
-              <Link to="/notifications">Notifications</Link>
+              <Link to="/mentor/notifications">Notifications</Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/settings">Settings</Link>
+              <Link to="/mentor/settings">Settings</Link>
             </Button>
           </div>
         </div>

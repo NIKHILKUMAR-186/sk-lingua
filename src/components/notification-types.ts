@@ -115,3 +115,37 @@ export const ALL_TABS = [
 ] as const;
 
 export type TabKey = (typeof ALL_TABS)[number]["key"];
+
+export const STUDENT_TABS = [
+  { key: "all", label: "All" },
+  { key: "unread", label: "Unread" },
+  { key: "booking", label: "Bookings" },
+  { key: "session", label: "Sessions" },
+  { key: "payment", label: "Payments" },
+  { key: "resource", label: "Resources" },
+  { key: "general", label: "System" },
+] as const;
+
+export const MENTOR_TABS = [
+  { key: "all", label: "All" },
+  { key: "unread", label: "Unread" },
+  { key: "booking", label: "Bookings" },
+  { key: "session", label: "Sessions" },
+  { key: "cancellation", label: "Cancellations" },
+  { key: "resource", label: "Resources" },
+  { key: "general", label: "System" },
+] as const;
+
+export const ADMIN_TABS = [
+  { key: "all", label: "All" },
+  { key: "unread", label: "Unread" },
+  { key: "booking", label: "Bookings" },
+  { key: "mentor_application", label: "Mentors" },
+  { key: "student", label: "Students" },
+  { key: "subscription", label: "Subscriptions" },
+  { key: "general", label: "System" },
+] as const;
+
+export type StudentTabKey = (typeof STUDENT_TABS)[number]["key"];
+export type MentorTabKey = (typeof MENTOR_TABS)[number]["key"];
+export type AdminTabKey = (typeof ADMIN_TABS)[number]["key"];

@@ -8,12 +8,13 @@ import { formatUserReferenceNo } from "@/lib/auth";
 interface ProfileCardProps {
   auth: AuthSession | undefined;
   collapsed: boolean;
+  settingsPath?: string;
 }
 
-export function ProfileCard({ auth, collapsed }: ProfileCardProps) {
+export function ProfileCard({ auth, collapsed, settingsPath = "/settings" }: ProfileCardProps) {
   return (
     <Link
-      to="/settings"
+      to={settingsPath}
       className={cn(
         "group relative block rounded-2xl transition-all duration-200",
         collapsed ? "mx-auto p-1" : "mx-2 p-2",

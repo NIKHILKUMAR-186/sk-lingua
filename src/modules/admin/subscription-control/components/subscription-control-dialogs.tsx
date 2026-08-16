@@ -646,3 +646,152 @@ export function ChangePlanDialog({
     </Dialog>
   );
 }
+
+export function AdjustSessionsDialog({
+  open,
+  onOpenChange,
+  subscription,
+  mutation,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  subscription: StudentSubscriptionLite;
+  mutation: UseMutationResult<
+    StudentSubscriptionLite,
+    any,
+    { amount: number; reason: string },
+    unknown
+  >;
+}) {
+  const [mode, setMode] = useState<"add" | "remove" | "set">("add");
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("");
+
+  const current = usableSessions(subscription);
+  const parsed = Number(amount);
+  const isInteger = Number.isInteger(parsed);
+  const isPositive = parsed > 0;
+
+  let preview = current;
+  let valid = false;
+
+  if (mode === "add" && isInteger && isPositive) {
+    preview = current + parsed;
+    valid = true;
+  } else if (mode === "remove" && isInteger && isPositive) {
+    preview = Math.max(0, current - parsed);
+    valid = parsed <= current;
+  } else if (mode === "set" && isInteger && isPositive) {
+    preview = parsed;
+    valid = true;
+  }
+
+  function reset() {
+    setMode("add");
+    setAmount("");
+    setReason("");
+  }
+
+  function handleOpenChange(next: boolean) {
+    if (!next) reset();
+    onOpenChange(next);
+  }
+
+  async function submit() {
+    if (!valid || !isInteger) return;
+    let delta = 0;
+    if (mode === "add") delta = parsed;
+    else if (mode === "remove") delta = -parsed;
+    else if (mode === "set") delta = preview - current;
+
+    await mutation.mutateAsync({ amount: delta, reason });
+    reset();
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            Adjust Session Credits
+          </DialogTitle>
+          <DialogDescription>
+            Manually adjust the student's remaining session balance.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-1">
+          <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+            <div className="flex justify-between">
+              <span>Current remaining</span>
+              <span className="font-medium">{current}</span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Adjustment type</Label>
+            <RadioGroup value={mode} onValueChange={(v: any) => { setMode(v); setAmount(""); }}>
+              <div className="flex gap-2">
+                <label className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-muted/50 flex-1">
+                  <RadioGroupItem value="add" />
+                  <span className="text-sm">Add</span>
+                </label>
+                <label className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-muted/50 flex-1">
+                  <RadioGroupItem value="remove" />
+                  <span className="text-sm">Remove</span>
+                </label>
+                <label className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-muted/50 flex-1">
+                  <RadioGroupItem value="set" />
+                  <span className="text-sm">Set exact</span>
+                </label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="adjust-amount">
+              {mode === "set" ? "New balance" : mode === "add" ? "Sessions to add" : "Sessions to remove"}
+            </Label>
+            <Input
+              id="adjust-amount"
+              type="number"
+              min={1}
+              placeholder={mode === "set" ? "30" : "5"}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+
+          <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+            <div className="flex justify-between font-medium text-foreground">
+              <span>New balance</span>
+              <span>{valid ? preview : current}</span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="adjust-reason">Reason (required)</Label>
+            <Textarea
+              id="adjust-reason"
+              placeholder="e.g. Compensation for cancelled session / Manual correction"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => handleOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={submit} disabled={!valid || !reason.trim() || mutation.isPending}>
+            {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Confirm Adjustment
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
