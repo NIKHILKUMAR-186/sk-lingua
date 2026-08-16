@@ -3,6 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState, useEffect } from "react";
 import { format, addDays, startOfDay, isSameDay, parseISO } from "date-fns";
 import { DAY_KEYS } from "@/lib/booking";
+import {
+  safeDate,
+  safeTimeString,
+  safeUTCTimestamp,
+  isInvalidUTCTimestamp,
+} from "@/lib/safe-datetime";
 
 export type TimeGroup = "morning" | "afternoon" | "evening" | "night";
 
@@ -80,8 +86,17 @@ function convertSlotTimeToStudentTimezone(
   mentorTimezone: string | null,
   studentTimezone: string,
   selectedDate: Date
-): { displayTime: string; utcTimestamp: string } {
-  const [hours, minutes] = timeStr.split(":").map(Number);
+): { displayTime: string; utcTimestamp: string } | null {
+  const timeResult = safeTimeString(timeStr);
+  if (!timeResult.valid) {
+    console.warn("[use-available-mentors] Invalid slot time, skipping", {
+      rawTime: timeStr,
+      reason: timeResult.reason,
+    });
+    return null;
+  }
+
+  const { hours, minutes } = timeResult;
   const mentorOffset = getUTCOffsetMinutes(mentorTimezone || "UTC", selectedDate);
   const studentOffset = getUTCOffsetMinutes(studentTimezone, selectedDate);
 
@@ -120,25 +135,43 @@ function computeMentorSlots(
   const studentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return candidates.flatMap((slot) => {
-    const { displayTime, utcTimestamp } = convertSlotTimeToStudentTimezone(
+    const startResult = convertSlotTimeToStudentTimezone(
       slot.start_time,
       mentorTimezone,
       studentTimezone,
       baseDate
     );
 
-    const { displayTime: endDisplayTime } = convertSlotTimeToStudentTimezone(
+    const endResult = convertSlotTimeToStudentTimezone(
       slot.end_time,
       mentorTimezone,
       studentTimezone,
       baseDate
     );
 
-    const slotStart = new Date(utcTimestamp);
-    const slotEnd = new Date(utcTimestamp);
-    const [eh, em] = slot.end_time.split(":").map(Number);
-    const mentorOffset = getUTCOffsetMinutes(mentorTimezone || "UTC", baseDate);
-    slotEnd.setUTCHours(eh, em - mentorOffset, 0, 0);
+    if (!startResult || !endResult) {
+      console.warn("[use-available-mentors] Skipping slot due to invalid time", {
+        mentorId: slot.mentor_id,
+        slotId: slot.id,
+        day: slot.day_of_week,
+        startTime: slot.start_time,
+        endTime: slot.end_time,
+      });
+      return [];
+    }
+
+    const slotStart = new Date(startResult.utcTimestamp);
+    const slotEnd = new Date(endResult.utcTimestamp);
+
+    if (Number.isNaN(slotStart.getTime()) || Number.isNaN(slotEnd.getTime())) {
+      console.warn("[use-available-mentors] Invalid computed slot dates", {
+        mentorId: slot.mentor_id,
+        slotId: slot.id,
+        startUtc: startResult.utcTimestamp,
+        endUtc: endResult.utcTimestamp,
+      });
+      return [];
+    }
 
     if (slotEnd.getTime() - slotStart.getTime() < durationMins * 60_000) {
       return [];
@@ -146,21 +179,29 @@ function computeMentorSlots(
 
     const conflict = sessions.some((s) => {
       if (s.status === "cancelled" || s.status === "rejected") return false;
-      const existingStart = new Date(s.scheduled_time).getTime();
+      const existingStartResult = safeDate(s.scheduled_time);
+      if (!existingStartResult.valid) {
+        console.warn("[use-available-mentors] Invalid session time, ignoring session", {
+          sessionId: s.id,
+          scheduled_time: s.scheduled_time,
+        });
+        return false;
+      }
+      const existingStart = existingStartResult.value.getTime();
       const existingEnd = existingStart + s.duration_mins * 60_000;
-      const proposedStart = new Date(utcTimestamp).getTime();
+      const proposedStart = slotStart.getTime();
       const proposedEnd = proposedStart + durationMins * 60_000;
       return proposedStart < existingEnd && proposedEnd > existingStart;
     });
 
     return [
       {
-        value: utcTimestamp,
-        label: `${displayTime} – ${endDisplayTime}`,
+        value: startResult.utcTimestamp,
+        label: `${startResult.displayTime} – ${endResult.displayTime}`,
         disabled: conflict,
         startTime: slot.start_time,
         endTime: slot.end_time,
-        group: getTimeGroup(new Date(utcTimestamp).getUTCHours()),
+        group: getTimeGroup(slotStart.getUTCHours()),
       },
     ];
   });
@@ -248,13 +289,22 @@ export function useAvailableMentors(date?: string) {
         const mentorSlots = slotsByMentor.get(mentor.user_id) || [];
         const mentorSessions = sessionsByMentor.get(mentor.user_id) || [];
 
-        const slotOptions = computeMentorSlots(
-          mentorSlots,
-          mentorSessions,
-          selectedDate,
-          25,
-          mentor.timezone
-        );
+        let slotOptions: SlotOption[] = [];
+        try {
+          slotOptions = computeMentorSlots(
+            mentorSlots,
+            mentorSessions,
+            selectedDate,
+            25,
+            mentor.timezone
+          );
+        } catch (error) {
+          console.warn("[use-available-mentors] Failed to compute mentor slots, returning empty set", {
+            mentorId: mentor.user_id,
+            error,
+          });
+          slotOptions = [];
+        }
 
         const availableSlots = slotOptions.filter((s) => !s.disabled);
         const earliestSlot = availableSlots[0] || null;

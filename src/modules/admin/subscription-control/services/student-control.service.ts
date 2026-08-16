@@ -133,6 +133,12 @@ export type StudentFilter =
   | "suspended_account";
 
 // Append the auth token so the server-side requireAdminAuth() can authorise it.
+function toApiUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  const base = typeof window !== "undefined" ? window.location.origin : "";
+  return `${base}${path}`;
+}
+
 async function apiFetch<T = any>(url: string, init?: RequestInit): Promise<ApiResponse<T>> {
   const {
     data: { session },
@@ -156,7 +162,8 @@ async function apiFetch<T = any>(url: string, init?: RequestInit): Promise<ApiRe
     ...((init?.headers as Record<string, string>) || {}),
   };
 
-  const res = await fetch(url, { ...init, headers });
+  const resolved = toApiUrl(url);
+  const res = await fetch(resolved, { ...init, headers });
 
   // The routes under /api/admin/* always return JSON, so any other content type
   // (HTML, empty, etc.) means the endpoint was not registered on the running
