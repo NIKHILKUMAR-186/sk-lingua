@@ -87,6 +87,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const search = (url.searchParams.get("search") || "").trim();
     const filter = (url.searchParams.get("filter") || "all").trim();
+    const sort = (url.searchParams.get("sort") || "recently_joined").trim();
     const rawLimit = Number(url.searchParams.get("limit") || "1000");
     const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 2000) : 1000;
 
@@ -237,7 +238,10 @@ export async function GET(request: Request) {
       });
     }
 
-    const limited = filtered.slice(0, limit);
+    // 7b. Server-side sort on the filtered cohort (mirrors admin sort options).
+    const sorted = sortStudents(filtered, sort);
+
+    const limited = sorted.slice(0, limit);
 
     return json({
       success: true,
@@ -283,4 +287,48 @@ function isUsableCurrent(sub: any): boolean {
   if (sub.status !== "active") return false;
   if (sub.expires_at && new Date(sub.expires_at).getTime() <= Date.now()) return false;
   return true;
+}
+
+/**
+ * Deterministic, server-side sort for the Admin Students directory.
+ * Every comparator is defensive against null/undefined so a partial student
+ * can never throw. Sorting happens on the server (not in React) so the
+ * browser never has to hold the whole cohort.
+ */
+function sortStudents(rows: AdminStudentRow[], sort: string): AdminStudentRow[] {
+  const byDate = (v: string | null | undefined): number => {
+    const t = v ? new Date(v).getTime() : 0;
+    return Number.isFinite(t) ? t : 0;
+  };
+  const used = (r: AdminStudentRow): number =>
+    Number(r.subscription?.used_session_slots || 0);
+  const remaining = (r: AdminStudentRow): number =>
+    Number(r.subscription?.current_session_slots || 0) + Number(r.subscription?.bonus_slots || 0);
+  const expires = (r: AdminStudentRow): number => byDate(r.subscription?.expires_at);
+
+  const cmp = (a: AdminStudentRow, b: AdminStudentRow): number => {
+    switch (sort) {
+      case "name":
+        return (a.full_name || "").localeCompare(b.full_name || "", undefined, {
+          sensitivity: "base",
+        });
+      case "recently_active":
+        return byDate(b.last_activity) - byDate(a.last_activity);
+      case "least_active":
+        return byDate(a.last_activity) - byDate(b.last_activity);
+      case "most_sessions":
+        return used(b) - used(a);
+      case "least_sessions":
+        return used(a) - used(b);
+      case "expiring_soon":
+        return expires(a) - expires(b);
+      case "low_balance":
+        return remaining(a) - remaining(b);
+      case "recently_joined":
+      default:
+        return byDate(b.created_at) - byDate(a.created_at);
+    }
+  };
+
+  return [...rows].sort(cmp);
 }

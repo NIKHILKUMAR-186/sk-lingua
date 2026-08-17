@@ -14,9 +14,9 @@ export function Languages() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
               Languages
             </p>
-            <h2 className="mt-3 text-3xl tracking-tight sm:text-4xl">
-              One mentor at a time, in 40+ languages.
-            </h2>
+          <h2 className="mt-3 font-heading text-section sm:text-section-lg">
+            One mentor at a time, in 40+ languages.
+          </h2>
           </div>
           <Link
             to="/auth"

@@ -4,11 +4,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
-import { SectionCard } from "@/components/mentor/section-card";
-import { StatusBadge } from "@/components/mentor/status-badge";
 import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -187,18 +184,21 @@ function MentorResources() {
     <MentorLayout>
       <div className="mx-auto max-w-5xl space-y-6">
         <PageHeader
-          title="Resources"
-          description="Share learning material, homework, or session files with your students."
+          title="Teaching Library"
+          description="Everything you use while teaching."
           action={
             <Button onClick={() => setShowUpload(!showUpload)}>
-              <Upload className="mr-1 h-4 w-4" />
-              {showUpload ? "Cancel" : "New resource"}
+              <Upload className="mr-1.5 h-4 w-4" />
+              {showUpload ? "Cancel" : "New material"}
             </Button>
           }
         />
 
         {showUpload && (
-          <SectionCard title="Create resource">
+          <div className="rounded-xl border border-border/60 bg-card p-5">
+            <p className="text-xs font-medium tracking-[0.12em] uppercase text-muted-foreground mb-4">
+              Create resource
+            </p>
             <ResourceUpload
               title={title}
               url={url}
@@ -222,63 +222,57 @@ function MentorResources() {
               onUpload={addResource}
               onClear={() => setSelectedFile(null)}
             />
-          </SectionCard>
+          </div>
         )}
 
-        <SectionCard
-          title="Resource library"
-          description={`${resources.length} resource${resources.length !== 1 ? "s" : ""}`}
-        >
+        <section>
+          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
+            Library
+          </h2>
           {resources.length === 0 ? (
             <MentorEmptyState
               icon={<FileText className="h-6 w-6" />}
-              title="Build your resource library"
+              title="Build your teaching library"
               description="Share learning materials, homework, and session files with your students."
-              actionLabel="Add resource"
+              actionLabel="Add material"
               onAction={() => setShowUpload(true)}
             />
           ) : (
-            <div className="space-y-2.5">
+            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
               {resources.map((resource) => (
                 <div
                   key={resource.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-border/40 p-3.5 transition hover:border-primary/20 hover:bg-accent/10"
+                  className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-accent/10 transition-colors"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="text-sm font-medium text-foreground truncate">
                         {resource.title}
                       </span>
-                      <StatusBadge
-                        label={resource.resource_type === "file" ? "File" : "Link"}
-                        variant="default"
-                      />
+                      <span className="text-[11px] text-muted-foreground capitalize">
+                        {resource.resource_type === "file" ? "File" : "Link"}
+                      </span>
                     </div>
                     {resource.description && (
-                      <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                      <p className="mt-1 text-xs text-muted-foreground line-clamp-1 ml-6.5">
                         {resource.description}
                       </p>
                     )}
-                    <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                      <Badge variant="outline" className="text-[10px] h-5">
+                    <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground ml-6.5">
+                      <Badge variant="outline" className="text-[10px] h-5 capitalize">
                         {resource.visibility}
                       </Badge>
-                      {resource.session_id && (
-                        <Badge variant="secondary" className="text-[10px] h-5">
-                          Session resource
-                        </Badge>
-                      )}
+                      {resource.session_id && <span>Session resource</span>}
                       {resource.file_name && (
                         <span>
-                          {resource.file_name} · {resource.file_type} ·{" "}
-                          {formatBytes(resource.file_size ?? 0)}
+                          {resource.file_name} · {formatBytes(resource.file_size ?? 0)}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
+                    <Button size="icon" variant="ghost" className="h-9 w-9" asChild>
                       <a
                         href={resource.storage_url || resource.url}
                         target="_blank"
@@ -302,7 +296,7 @@ function MentorResources() {
               ))}
             </div>
           )}
-        </SectionCard>
+        </section>
       </div>
     </MentorLayout>
   );

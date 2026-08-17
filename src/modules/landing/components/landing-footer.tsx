@@ -6,7 +6,6 @@ const COLUMNS = [
   {
     title: "Product",
     links: [
-      { label: "Method", to: "/", hash: "method" },
       { label: "How it works", to: "/", hash: "how" },
       { label: "Mentors", to: "/", hash: "mentors" },
       { label: "Pricing", to: "/", hash: "pricing" },
@@ -46,13 +45,12 @@ export function LandingFooter() {
     <footer className="border-t border-border/70 bg-background">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          {/* Brand */}
           <div>
             <Link to="/" className="flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient shadow-glow">
                 <img src="/logo.png" alt="" className="h-5 w-5" />
               </span>
-              <span className="text-xl font-display tracking-tight">Lingua</span>
+              <span className="text-xl font-semibold tracking-tight">Lingua</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               Learn any language from a real human. Verified mentors, live sessions, and streaks
@@ -72,7 +70,6 @@ export function LandingFooter() {
             </div>
           </div>
 
-          {/* Link columns */}
           {COLUMNS.map((col) => (
             <div key={col.title}>
               <div className="text-sm font-semibold">{col.title}</div>
@@ -95,13 +92,13 @@ export function LandingFooter() {
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border/70 pt-8 text-sm text-muted-foreground sm:flex-row">
           <div>© {year ?? ""} Lingua. Learn from real humans.</div>
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-            </span>
-            All systems operational
-          </div>
+          <Link
+            to="/mentor-signup"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            For Mentors
+            <span className="text-xs">→</span>
+          </Link>
         </div>
       </div>
     </footer>

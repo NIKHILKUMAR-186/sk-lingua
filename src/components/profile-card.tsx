@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import type { AuthSession } from "@/hooks/use-auth";
 import { formatUserReferenceNo } from "@/lib/auth";
+import { useEffect, useState } from "react";
 
 interface ProfileCardProps {
   auth: AuthSession | undefined;
@@ -12,6 +13,16 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ auth, collapsed, settingsPath = "/settings" }: ProfileCardProps) {
+  const [prefersReduced, setPrefersReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   return (
     <Link
       to={settingsPath}
@@ -24,7 +35,7 @@ export function ProfileCard({ auth, collapsed, settingsPath = "/settings" }: Pro
       <motion.div
         className={cn(
           "flex items-center gap-3 rounded-xl p-2 transition-all duration-200",
-          "hover:bg-[#F3F4F6]",
+          "hover:bg-accent",
           collapsed && "justify-center",
         )}
         whileHover={{ scale: 1.02 }}
@@ -47,7 +58,9 @@ export function ProfileCard({ auth, collapsed, settingsPath = "/settings" }: Pro
           </div>
           {/* Online dot */}
           <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            {!prefersReduced && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            )}
             <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 ring-1 ring-white" />
           </span>
         </div>

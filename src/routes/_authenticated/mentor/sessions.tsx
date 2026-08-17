@@ -4,20 +4,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
-import { SessionCard } from "@/components/mentor/session-card";
 import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
-import { SectionCard } from "@/components/mentor/section-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { FileUp, Video, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Video, FileUp, Loader2, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ResourceUpload } from "@/components/resource-upload";
 import { uploadStorageFile } from "@/lib/storage";
 import { mapCompletionError } from "@/lib/booking";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isToday, isTomorrow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/mentor/sessions")({
   component: MentorSessions,
@@ -187,18 +183,25 @@ function MentorSessions() {
   }
 
   const upcoming = sessions.filter((s) => s.status === "accepted" || s.status === "confirmed");
+  const todayList = upcoming.filter((s) => {
+    const dt = parseISO(s.scheduled_time);
+    return isToday(dt);
+  });
   const past = sessions.filter((s) => ["completed", "rejected", "cancelled"].includes(s.status));
 
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-8">
         <PageHeader
           title="Sessions"
-          description="Keep session paperwork and homework attached to each lesson."
+          description="Your upcoming, today, and past sessions."
         />
 
         {activeSessionId && (
-          <SectionCard title="Share homework for this session">
+          <div className="rounded-xl border border-border/60 bg-card p-5">
+            <p className="text-xs font-medium tracking-[0.12em] uppercase text-muted-foreground mb-3">
+              Share homework for this session
+            </p>
             <ResourceUpload
               title={resourceTitle}
               url={resourceUrl}
@@ -224,65 +227,161 @@ function MentorSessions() {
               onUpload={shareHomework}
               onClear={() => setSelectedFile(null)}
             />
-          </SectionCard>
+          </div>
         )}
 
-        {/* Upcoming Sessions */}
-        <SectionCard title="Upcoming sessions" description={`${upcoming.length} upcoming`}>
-          {upcoming.length === 0 ? (
-            <MentorEmptyState
-              icon={<Video className="h-5 w-5" />}
-              title="No upcoming sessions"
-              description="Once a student books a session, you'll see it here."
-            />
+        {/* Today */}
+        <section>
+          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
+            Today
+          </h2>
+          {todayList.length === 0 ? (
+            <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
+              <p className="text-sm text-muted-foreground">No sessions scheduled today.</p>
+            </div>
           ) : (
-            <div className="space-y-3">
-              {upcoming.map((s) => (
-                <SessionCard
-                  key={s.id}
-                  studentName={sessionStudentMap.get(s.student_id)?.full_name || "Student"}
-                  studentAvatar={sessionStudentMap.get(s.student_id)?.avatar_url}
-                  topic="Session"
-                  date={format(parseISO(s.scheduled_time), "MMM d, yyyy")}
-                  time={format(parseISO(s.scheduled_time), "h:mm a")}
-                  duration={s.duration_mins}
-                  status={s.status}
-                  videoLink={s.video_call_link}
-                  onOpen={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
-                  onJoin={() => s.video_call_link && window.open(s.video_call_link, "_blank")}
-                  onComplete={() => complete(s.id)}
-                />
-              ))}
+            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+              {todayList.map((s) => {
+                const start = parseISO(s.scheduled_time);
+                const student = sessionStudentMap.get(s.student_id);
+                return (
+                  <div
+                    key={s.id}
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                    onClick={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
+                  >
+                    <span className="text-sm font-medium text-muted-foreground tabular-nums w-16 shrink-0">
+                      {format(start, "h:mm a")}
+                    </span>
+                    <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {student?.full_name || "Student"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {(s as any).gig?.title || "Session"} · {s.duration_mins} min
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      {s.video_call_link && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(s.video_call_link!, "_blank");
+                          }}
+                        >
+                          <Video className="mr-1 h-3.5 w-3.5" />
+                          Join
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate({ to: "/mentor/session/$id", params: { id: s.id } });
+                        }}
+                      >
+                        Open
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
-        </SectionCard>
+        </section>
 
-        {/* Past Sessions */}
-        <SectionCard title="Past sessions" description={`${past.length} completed or cancelled`}>
-          {past.length === 0 ? (
-            <MentorEmptyState
-              title="No past sessions"
-              description="Completed and cancelled sessions appear here."
-            />
+        {/* Upcoming */}
+        <section>
+          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
+            Upcoming
+          </h2>
+          {upcoming.length === 0 ? (
+            <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
+              <p className="text-sm text-muted-foreground">No upcoming sessions.</p>
+            </div>
           ) : (
-            <div className="space-y-3">
-              {past.slice(0, 20).map((s) => (
-                <SessionCard
-                  key={s.id}
-                  studentName={sessionStudentMap.get(s.student_id)?.full_name || "Student"}
-                  studentAvatar={sessionStudentMap.get(s.student_id)?.avatar_url}
-                  topic="Session"
-                  date={format(parseISO(s.scheduled_time), "MMM d, yyyy")}
-                  time={format(parseISO(s.scheduled_time), "h:mm a")}
-                  duration={s.duration_mins}
-                  status={s.status}
-                  onOpen={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
-                  onUploadResource={() => setActiveSessionId(s.id)}
-                />
-              ))}
+            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+              {upcoming.map((s) => {
+                const start = parseISO(s.scheduled_time);
+                const student = sessionStudentMap.get(s.student_id);
+                const dayLabel = isToday(start)
+                  ? "Today"
+                  : isTomorrow(start)
+                    ? "Tomorrow"
+                    : format(start, "EEE, MMM d");
+
+                return (
+                  <div
+                    key={s.id}
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                    onClick={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {student?.full_name || "Student"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {dayLabel} · {format(start, "h:mm a")} · {s.duration_mins} min
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground capitalize shrink-0">
+                      {s.status === "accepted" || s.status === "confirmed" ? "Confirmed" : s.status}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </div>
+                );
+              })}
             </div>
           )}
-        </SectionCard>
+        </section>
+
+        {/* Past */}
+        <section>
+          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
+            Past
+          </h2>
+          {past.length === 0 ? (
+            <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
+              <p className="text-sm text-muted-foreground">No past sessions yet.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Once a session is completed, it will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+              {past.slice(0, 20).map((s) => {
+                const start = parseISO(s.scheduled_time);
+                const student = sessionStudentMap.get(s.student_id);
+                return (
+                  <div
+                    key={s.id}
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                    onClick={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {student?.full_name || "Student"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(start, "MMM d, yyyy")} · {format(start, "h:mm a")} · {s.duration_mins} min
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground capitalize shrink-0">
+                      {s.status}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
     </MentorLayout>
   );

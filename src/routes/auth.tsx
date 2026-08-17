@@ -10,12 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2, GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  getDashboardRoute,
-  getActiveRole,
-  waitForSessionRestored,
-  type AppRole,
-} from "@/lib/auth";
+import { getDashboardRoute, getActiveRole, waitForSessionRestored, type AppRole } from "@/lib/auth";
 import { GoogleButton } from "@/components/auth/google-button";
 import { signInWithGoogle } from "@/lib/google-auth";
 
@@ -270,7 +265,7 @@ function AuthPage() {
                 </div>
               </div>
             </CardHeader>
-                  {/* <div className="rounded-3xl border border-border bg-background p-4 text-sm text-muted-foreground">
+            {/* <div className="rounded-3xl border border-border bg-background p-4 text-sm text-muted-foreground">
                     Create a Student account and start learning with verified mentors.
                   </div> */}
             <CardContent className="space-y-4">
@@ -303,9 +298,7 @@ function AuthPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="login-password" aria-placeholder="password">
-                        Password
-                      </Label>
+                      <Label htmlFor="login-password">Password</Label>
                       <Input
                         id="login-password"
                         type="password"
@@ -320,7 +313,7 @@ function AuthPage() {
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log in"}
                     </Button>
                   </form>
-                      {/* <GoogleButton onClick={() => signInWithGoogle("student")} loading={loading} /> */}
+                  {/* <GoogleButton onClick={() => signInWithGoogle("student")} loading={loading} /> */}
                 </TabsContent>
                 <TabsContent value="signup" className="space-y-4">
                   <form onSubmit={handleSignup} className="space-y-4">
@@ -328,7 +321,7 @@ function AuthPage() {
                       <Label htmlFor="signup-name">Full name</Label>
                       <Input
                         id="signup-name"
-                        placeholder = "Enter your Name"
+                        placeholder="Enter your Name"
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
@@ -340,7 +333,7 @@ function AuthPage() {
                         id="signup-email"
                         type="email"
                         autoComplete="email"
-                        placeholder = "Enter your Email"
+                        placeholder="Enter your Email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -351,7 +344,7 @@ function AuthPage() {
                       <Input
                         id="signup-password"
                         type="password"
-                        placeholder = "Create New password"
+                        placeholder="Create New password"
                         autoComplete="new-password"
                         minLength={6}
                         required
@@ -360,7 +353,11 @@ function AuthPage() {
                       />
                     </div>
                     {/* group relative w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-[15px] font-medium text-slate-800 shadow-xl transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none disabled:active:scale-100 */}
-                    <Button type="submit" className="w-full shadow-sm order border-slate-200 hover:border-slate-100 hover:bg-mentor/30 hover:text-slate-900 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" disabled={loading}>
+                    <Button
+                      type="submit"
+                      className="w-full shadow-sm order border-border hover:border-border hover:bg-accent hover:text-foreground hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      disabled={loading}
+                    >
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
                     </Button>
                   </form>

@@ -1,6 +1,12 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { getCategoryConfig, type TabKey, type StudentTabKey, type MentorTabKey, type AdminTabKey } from "@/components/notification-types";
+import {
+  getCategoryConfig,
+  type TabKey,
+  type StudentTabKey,
+  type MentorTabKey,
+  type AdminTabKey,
+} from "@/components/notification-types";
 import { NotificationBadge } from "@/components/notification-badge";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -52,10 +58,10 @@ export function NotificationFilters({
             whileTap={{ scale: 0.98 }}
             className={cn(
               "relative inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
               isActive
-                ? "bg-blue-50 text-blue-700 shadow-sm dark:bg-blue-950/40 dark:text-blue-300"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200",
+                ? "bg-primary/10 text-primary shadow-sm dark:bg-primary/20 dark:text-primary"
+                : "text-foreground hover:bg-accent hover:text-foreground dark:text-foreground dark:hover:bg-accent dark:hover:text-foreground",
             )}
           >
             {tab.key !== "all" && tab.key !== "unread" && (
@@ -67,8 +73,8 @@ export function NotificationFilters({
                 className={cn(
                   "text-xs tabular-nums",
                   isActive
-                    ? "text-blue-500 dark:text-blue-400"
-                    : "text-slate-400 dark:text-slate-500",
+                    ? "text-primary dark:text-primary"
+                    : "text-muted-foreground dark:text-muted-foreground",
                 )}
               >
                 {count}

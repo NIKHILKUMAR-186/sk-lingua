@@ -66,12 +66,12 @@ export function NotificationEmptyState({ activeFilter }: NotificationEmptyStateP
         initial={{ scale: 0.8 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-        className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm ring-1 ring-slate-200/50 dark:from-slate-900 dark:to-slate-800 dark:ring-slate-700/50"
+        className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-secondary to-muted shadow-sm ring-1 ring-border/50 dark:from-background dark:to-muted dark:ring-border"
       >
-        <Bell className="h-9 w-9 text-slate-400 dark:text-slate-500" />
+        <Bell className="h-9 w-9 text-muted-foreground dark:text-muted-foreground" />
       </motion.div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{msg.title}</h3>
-      <p className="mt-1.5 max-w-sm text-center text-sm text-slate-500 dark:text-slate-400">
+      <h3 className="text-lg font-semibold text-foreground dark:text-foreground">{msg.title}</h3>
+      <p className="mt-1.5 max-w-sm text-center text-sm text-muted-foreground dark:text-muted-foreground">
         {msg.body}
       </p>
     </motion.div>

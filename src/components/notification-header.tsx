@@ -24,10 +24,8 @@ export function NotificationHeader({
     <div className="space-y-4">
       {/* Title and subtitle */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-          Notifications
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Notifications</h1>
+        <p className="text-sm text-muted-foreground">
           {unreadCount > 0
             ? `You have ${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`
             : "Stay updated with bookings, sessions and platform activity."}
@@ -37,12 +35,12 @@ export function NotificationHeader({
       {/* Search and actions */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search notifications..."
-            className="h-9 rounded-lg border-slate-200 bg-white pl-9 text-sm placeholder:text-slate-400 focus-visible:ring-blue-500 dark:border-slate-800 dark:bg-slate-900 dark:placeholder:text-slate-500"
+            className="h-9 rounded-lg border-border bg-background pl-9 text-sm placeholder:text-muted-foreground focus-visible:ring-ring dark:border-border dark:bg-background dark:placeholder:text-muted-foreground"
             aria-label="Search notifications"
           />
         </div>
@@ -57,7 +55,7 @@ export function NotificationHeader({
                 variant="outline"
                 size="sm"
                 onClick={onMarkAllRead}
-                className="h-9 gap-1.5 rounded-lg border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                className="h-9 gap-1.5 rounded-lg border-border text-xs font-medium text-foreground hover:bg-accent hover:text-foreground dark:border-border dark:text-foreground dark:hover:bg-accent dark:hover:text-foreground"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 Mark all read
@@ -68,7 +66,7 @@ export function NotificationHeader({
             asChild
             variant="ghost"
             size="sm"
-            className="h-9 w-9 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+            className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
             aria-label="Notification settings"
           >
             <Link to={settingsPath}>

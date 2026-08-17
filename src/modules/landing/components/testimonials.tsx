@@ -58,7 +58,7 @@ export function Testimonials() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
             Real outcomes
           </p>
-          <h2 className="mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">
+          <h2 className="mt-3 font-heading text-section sm:text-section-lg">
             Loved by learners and mentors alike.
           </h2>
         </Reveal>

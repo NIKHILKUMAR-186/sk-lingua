@@ -1,13 +1,13 @@
 import { DAY_KEYS, DAY_LABELS } from "@/lib/booking";
 import { useAuth } from "@/hooks/use-auth";
-import { useAvailability } from "@/hooks/use-availability";
+import { useAvailability, formatAvailabilityError } from "@/hooks/use-availability";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Clock, Copy, Plus, Trash2, Globe, ChevronDown, AlertCircle } from "lucide-react";
+import { Clock, Copy, Plus, Trash2, Globe, ChevronDown, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MentorAvailability() {
@@ -25,6 +25,7 @@ export function MentorAvailability() {
     }
     return "Asia/Kolkata";
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   const grouped = useMemo(() => {
     const result: Record<string, any[]> = {};
@@ -65,30 +66,19 @@ export function MentorAvailability() {
   }
 
   async function handleAdd() {
-    if (!mentorId) return;
+    if (!mentorId) {
+      toast.error("Your user identity could not be resolved. Please sign out and back in.");
+      return;
+    }
     if (selectedDayIndex === null) {
       toast.error("Select a day first");
       return;
     }
-    if (newStart >= newEnd) {
-      toast.error("Start time must be before end time");
-      return;
-    }
 
     const dayKey = DAY_KEYS[selectedDayIndex];
-    const daySlots = grouped[dayKey] ?? [];
-    const overlaps = daySlots.find((s: any) => {
-      const sStart = s.start_time?.slice(0, 5);
-      const sEnd = s.end_time?.slice(0, 5);
-      return (newStart < sEnd && newEnd > sStart);
-    });
-
-    if (overlaps) {
-      toast.error("This slot overlaps with an existing slot");
-      return;
-    }
 
     try {
+      setIsSaving(true);
       await addSlot({
         mentor_id: mentorId,
         day_of_week: dayKey,
@@ -99,14 +89,19 @@ export function MentorAvailability() {
         timezone: newTimezone || null,
       });
       setNewLabel("");
-      toast.success("Slot added");
+      toast.success("Availability added");
     } catch (e) {
-      toast.error(String(e instanceof Error ? e.message : e));
+      toast.error(formatAvailabilityError(e));
+    } finally {
+      setIsSaving(false);
     }
   }
 
   async function handleToggleDay(dayKey: string, enable: boolean) {
-    if (!mentorId) return;
+    if (!mentorId) {
+      toast.error("Your user identity could not be resolved. Please sign out and back in.");
+      return;
+    }
     const daySlots = grouped[dayKey] ?? [];
     if (daySlots.length === 0) {
       if (enable) {
@@ -126,7 +121,9 @@ export function MentorAvailability() {
     for (const slot of daySlots) {
       await updateSlot(slot.id, { is_available: enable });
     }
-    toast.success(`${DAY_LABELS[DAY_KEYS.indexOf(dayKey as (typeof DAY_KEYS)[number])]} ${enable ? "enabled" : "disabled"}`);
+    toast.success(
+      `${DAY_LABELS[DAY_KEYS.indexOf(dayKey as (typeof DAY_KEYS)[number])]} ${enable ? "enabled" : "disabled"}`,
+    );
   }
 
   async function handleToggleSlot(slotId: string, currentAvailable: boolean) {
@@ -135,7 +132,7 @@ export function MentorAvailability() {
       await updateSlot(slotId, { is_available: newValue });
       toast.success(newValue ? "Slot enabled" : "Slot disabled");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(formatAvailabilityError(e));
     }
   }
 
@@ -143,7 +140,9 @@ export function MentorAvailability() {
     const issues: string[] = [];
     (slots ?? []).forEach((s: any) => {
       if (s.start_time && s.end_time && s.start_time >= s.end_time) {
-        issues.push(`Invalid slot on ${DAY_LABELS[DAY_KEYS.indexOf(s.day_of_week)]}: ${s.start_time} — ${s.end_time}`);
+        issues.push(
+          `Invalid slot on ${DAY_LABELS[DAY_KEYS.indexOf(s.day_of_week)]}: ${s.start_time} — ${s.end_time}`,
+        );
       }
     });
     return issues;
@@ -171,9 +170,9 @@ export function MentorAvailability() {
             <Globe className="h-3.5 w-3.5" />
             {firstTimezone}
           </Badge>
-          <Badge variant="secondary" className="text-xs">
-            {totalSlots} slot{totalSlots !== 1 ? "s" : ""} configured
-          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {totalSlots} window{totalSlots !== 1 ? "s" : ""} configured
+          </span>
         </div>
       </div>
 
@@ -190,7 +189,7 @@ export function MentorAvailability() {
               key={label}
               className={cn(
                 "rounded-xl border border-border/60 bg-card transition-all",
-                isSelected && "ring-2 ring-primary/20 border-primary/40",
+                isSelected && "ring-1 ring-primary/20 border-primary/40",
               )}
             >
               <div
@@ -213,7 +212,7 @@ export function MentorAvailability() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">
-                    {activeCount} slot{activeCount !== 1 ? "s" : ""}
+                    {activeCount} window{activeCount !== 1 ? "s" : ""}
                   </span>
                   <Switch
                     checked={isEnabled}
@@ -258,8 +257,17 @@ export function MentorAvailability() {
                         onChange={(e) => setNewLabel(e.target.value)}
                       />
                     </div>
-                    <Button onClick={handleAdd} size="sm" className="mt-auto">
-                      <Plus className="h-4 w-4 mr-1.5" /> Add time
+                    <Button onClick={handleAdd} size="sm" className="mt-auto" disabled={isSaving}>
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                          Saving…
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-1.5" /> Add window
+                        </>
+                      )}
                     </Button>
                   </div>
 
@@ -268,7 +276,7 @@ export function MentorAvailability() {
                       <div className="rounded-lg border border-dashed p-6 text-center">
                         <Clock className="h-6 w-6 mx-auto text-muted-foreground/40 mb-2" />
                         <p className="text-xs text-muted-foreground">
-                          No time slots for {label}
+                          No teaching windows for {label}
                         </p>
                       </div>
                     ) : (
@@ -315,12 +323,16 @@ export function MentorAvailability() {
                                 title="Duplicate to next day"
                                 onClick={async () => {
                                   try {
-                                    const currentIndex = DAY_KEYS.indexOf(s.day_of_week as (typeof DAY_KEYS)[number]);
+                                    const currentIndex = DAY_KEYS.indexOf(
+                                      s.day_of_week as (typeof DAY_KEYS)[number],
+                                    );
                                     const nextDayKey = DAY_KEYS[(currentIndex + 1) % 7];
                                     await duplicateToDay(s.id, nextDayKey);
-                                    toast.success(`Duplicated to ${DAY_LABELS[(currentIndex + 1) % 7]}`);
+                                    toast.success(
+                                      `Duplicated to ${DAY_LABELS[(currentIndex + 1) % 7]}`,
+                                    );
                                   } catch (e) {
-                                    toast.error((e as Error).message);
+                                    toast.error(formatAvailabilityError(e));
                                   }
                                 }}
                               >
@@ -336,7 +348,7 @@ export function MentorAvailability() {
                                     await deleteSlot(s.id);
                                     toast.success("Slot deleted");
                                   } catch (e) {
-                                    toast.error((e as Error).message);
+                                    toast.error(formatAvailabilityError(e));
                                   }
                                 }}
                               >

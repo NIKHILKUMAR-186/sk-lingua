@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "./reveal";
 import {
-  ArrowRight,
   Video,
   CalendarClock,
   Flame,
@@ -11,7 +10,7 @@ import {
   Sparkles,
   Trophy,
   Check,
-  Star,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +23,7 @@ function SplitFeature() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
             The Method
           </p>
-          <h2 className="mt-4 text-4xl leading-tight tracking-tight sm:text-5xl">
+          <h2 className="mt-4 font-heading text-section sm:text-section-lg">
             Lessons that feel like a conversation, not a classroom.
           </h2>
           <p className="mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
@@ -63,7 +62,6 @@ function SplitFeature() {
           </div>
         </Reveal>
 
-        {/* Visual panel */}
         <Reveal delay={120}>
           <div className="relative">
             <div className="absolute -top-8 -right-8 h-56 w-56 rounded-full bg-electric/10 blur-3xl" />
@@ -75,18 +73,17 @@ function SplitFeature() {
                 <span className="ml-2 text-xs text-muted-foreground">Live conversation</span>
               </div>
 
-              {/* Pseudo chat window */}
               <div className="space-y-3">
                 <div className="flex justify-end">
                   <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
-                    Hola, how do I say “I'm a little nervous about the interview”?
+                    Hola, how do I say &ldquo;I&rsquo;m a little nervous about the interview&rdquo;?
                   </div>
                 </div>
                 <div className="flex justify-start">
                   <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-muted/60 px-4 py-2.5 text-sm">
                     <span className="font-semibold text-primary">María ·</span> ¡Perfecto! Say —
-                    <span className="font-medium"> “Estoy un poco nervioso por la entrevista”</span>
-                    . Try stressing the “ner-vio-so”.
+                    <span className="font-medium"> &ldquo;Estoy un poco nervioso por la entrevista&rdquo;</span>
+                    . Try stressing the &ldquo;ner-vio-so&rdquo;.
                   </div>
                 </div>
                 <div className="flex justify-end">
@@ -100,7 +97,6 @@ function SplitFeature() {
                 </div>
               </div>
 
-              {/* Correction chip */}
               <div className="mt-4 flex items-start gap-3 rounded-2xl border border-success/30 bg-success/8 p-3.5">
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
                   <Check className="h-4 w-4" />
@@ -108,7 +104,7 @@ function SplitFeature() {
                 <div className="text-sm">
                   <div className="font-semibold text-success-foreground">Great pronunciation!</div>
                   <p className="mt-0.5 text-muted-foreground">
-                    Nail the double “r” next time and you'll sound native.
+                    Nail the double &ldquo;r&rdquo; next time and you&rsquo;ll sound native.
                   </p>
                 </div>
               </div>
@@ -135,13 +131,12 @@ function StrengthFeature() {
   return (
     <section className="border-y border-border/60 bg-muted/40">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:py-28">
-        {/* Interactive strength meter */}
         <Reveal className="order-2 lg:order-1">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-electric">
               Progress
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
+            <h2 className="mt-4 font-heading text-section text-foreground">
               Your language, measured in growing confidence.
             </h2>
             <p className="mt-4 max-w-md text-muted-foreground">
@@ -205,18 +200,17 @@ function StrengthFeature() {
           </div>
         </Reveal>
 
-        {/* Text side */}
         <Reveal delay={120} className="order-1 lg:order-2">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-electric">
             The Streak Engine
           </p>
-          <h2 className="mt-4 text-4xl leading-tight tracking-tight sm:text-5xl">
-            Consistency, turned into a habit you'll protect.
+          <h2 className="mt-4 font-heading text-section sm:text-section-lg">
+            Consistency, turned into a habit you&rsquo;ll protect.
           </h2>
           <p className="mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
             Research is clear: frequency beats intensity. Lingua turns daily practice into a streak
-            you'll hate to break — with gentle nudges, streaks, and milestones that keep you showing
-            up.
+            you&rsquo;ll hate to break — with gentle nudges, streaks, and milestones that keep you
+            showing up.
           </p>
           <ul className="mt-8 space-y-3">
             {[
@@ -242,110 +236,54 @@ function StrengthFeature() {
   );
 }
 
-/* ─────────────────────────── 3-column bento: editorial + visual  ─────────────────────────── */
-function MethodBento() {
+/* ─────────────────────────── Benefits: clean editorial cards ─────────────────────────── */
+const BENEFITS = [
+  {
+    icon: Video,
+    title: "Live video, engineered for learning.",
+    desc: "Browser-based calls with low latency, shared notes, and a pronunciation grader — no installs required.",
+  },
+  {
+    icon: Flame,
+    title: "Streaks that matter.",
+    desc: "Real-session streaks, adaptive goals, and milestones that keep you motivated day after day.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Mentor trust, by design.",
+    desc: "Identity & credential vetting, transparent reviews, and money-back assurance on every booking.",
+  },
+  {
+    icon: CalendarClock,
+    title: "Book in under 30 seconds.",
+    desc: "Real-time availability, instant confirmation, and reminders that fit your schedule.",
+  },
+];
+
+function Benefits() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
-      <div className="mb-14 max-w-2xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Why Lingua</p>
-        <h2 className="mt-4 text-4xl leading-tight tracking-tight sm:text-5xl">
-          Everything you need. Nothing you don't.
+      <Reveal className="mb-14 max-w-2xl">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+          Why Lingua
+        </p>
+        <h2 className="mt-4 font-heading text-section sm:text-section-lg">
+          Everything you need. Nothing you don&rsquo;t.
         </h2>
-      </div>
+      </Reveal>
 
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {/* Large editorial card */}
-        <Reveal className="md:col-span-2 lg:row-span-2">
-          <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[1.75rem] border border-border/80 bg-card p-8 shadow-sm transition-shadow hover:shadow-lift">
-            <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/8 blur-3xl" />
-            <div>
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Video className="h-5 w-5" />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {BENEFITS.map((b, i) => (
+          <Reveal key={b.title} delay={i * 80}>
+            <div className="flex h-full flex-col rounded-[1.5rem] border border-border/80 bg-card p-7 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lift">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <b.icon className="h-5 w-5" />
               </span>
-              <h3 className="mt-6 text-2xl tracking-tight">Live video, engineered for learning.</h3>
-              <p className="mt-3 max-w-md text-muted-foreground">
-                Browser-based calls with low latency, shared notes, and a pronunciation grader — all
-                in one focused workspace. No installs, no juggling apps.
-              </p>
+              <h4 className="mt-5 font-heading text-xl tracking-tight">{b.title}</h4>
+              <p className="mt-2 flex-1 text-sm text-muted-foreground">{b.desc}</p>
             </div>
-            <div className="mt-10 grid grid-cols-3 gap-3">
-              {[
-                { label: "HD video", icon: Video },
-                { label: "Shared notes", icon: MessageSquare },
-                { label: "Pronunciation AI", icon: Mic2 },
-              ].map((b) => (
-                <div
-                  key={b.label}
-                  className="rounded-xl border border-border bg-muted/40 p-3 text-center"
-                >
-                  <b.icon className="mx-auto h-4 w-4 text-primary" />
-                  <div className="mt-2 text-xs font-medium">{b.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Reveal>
-
-        {/* Compact card */}
-        <Reveal delay={80}>
-          <div className="flex h-full flex-col rounded-[1.75rem] border border-border/80 bg-brand-gradient p-7 text-white shadow-lift">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-              <Flame className="h-5 w-5" />
-            </span>
-            <h4 className="mt-5 text-xl tracking-tight">Streaks that matter</h4>
-            <p className="mt-2 text-sm text-white/85">
-              Real-session streaks, adaptive goals, and milestones that keep you motivated.
-            </p>
-            <div className="mt-auto pt-6 text-3xl font-display text-white/90">
-              42<span className="text-lg text-white/70"> day streak</span>
-            </div>
-          </div>
-        </Reveal>
-
-        {/* Compact card */}
-        <Reveal delay={140}>
-          <div className="flex h-full flex-col rounded-[1.75rem] border border-border/80 bg-card p-7 shadow-sm transition-shadow hover:shadow-lift">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-electric/10 text-electric">
-              <ShieldCheck className="h-5 w-5" />
-            </span>
-            <h4 className="mt-5 text-xl tracking-tight">Mentor trust</h4>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Identity & credential vetting, transparent reviews, and money-back assurance.
-            </p>
-            <div className="mt-auto flex items-center gap-1 pt-6 text-sm font-semibold">
-              <Star className="h-4 w-4 fill-warning text-warning" /> 4.9 · 12k reviews
-            </div>
-          </div>
-        </Reveal>
-      </div>
-
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-        <Reveal delay={80}>
-          <div className="flex items-center gap-5 rounded-[1.5rem] border border-border/80 bg-card p-6 shadow-sm">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success/10 text-success">
-              <CalendarClock className="h-5 w-5" />
-            </span>
-            <div>
-              <div className="font-semibold">Book in under 30 seconds</div>
-              <p className="text-sm text-muted-foreground">
-                Real-time availability, instant confirmation.
-              </p>
-            </div>
-          </div>
-        </Reveal>
-        <Reveal delay={140}>
-          <div className="flex items-center gap-5 rounded-[1.5rem] border border-border/80 bg-card p-6 shadow-sm">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ArrowRight className="h-5 w-5" />
-            </span>
-            <div>
-              <div className="font-semibold">Start today, no setup</div>
-              <p className="text-sm text-muted-foreground">
-                Create an account and join a session in minutes.
-              </p>
-            </div>
-          </div>
-        </Reveal>
+          </Reveal>
+        ))}
       </div>
     </section>
   );
@@ -356,7 +294,7 @@ export function Features() {
     <>
       <SplitFeature />
       <StrengthFeature />
-      <MethodBento />
+      <Benefits />
     </>
   );
 }

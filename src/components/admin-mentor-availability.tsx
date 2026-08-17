@@ -118,25 +118,20 @@ export function AdminMentorAvailability({
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
-      setSlots((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, is_available: !current } : s)),
-      );
+      setSlots((prev) => prev.map((s) => (s.id === id ? { ...s, is_available: !current } : s)));
       toast.success(current ? "Slot disabled" : "Slot enabled");
     } catch (e) {
       toast.error((e as Error).message);
     }
   }
 
-    const activeCount = slots.filter((s) => s.is_available !== false).length;
+  const activeCount = slots.filter((s) => s.is_available !== false).length;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>
-            Availability{" "}
-            {mentorName ? `- ${mentorName}` : ""}
-          </span>
+          <span>Availability {mentorName ? `- ${mentorName}` : ""}</span>
           <Badge variant="secondary" className="text-xs">
             {activeCount} active slot{activeCount !== 1 ? "s" : ""}
           </Badge>
@@ -146,8 +141,9 @@ export function AdminMentorAvailability({
         {/* Add new slot form */}
         <div className="flex flex-wrap gap-2 items-end">
           <div className="space-y-1">
-            <Label>Day</Label>
+            <Label htmlFor="slot-day">Day</Label>
             <select
+              id="slot-day"
               className="h-10 rounded-md border border-input bg-background px-3 text-sm"
               value={newDay}
               onChange={(e) => setNewDay(e.target.value)}
@@ -160,8 +156,9 @@ export function AdminMentorAvailability({
             </select>
           </div>
           <div className="space-y-1">
-            <Label>Start</Label>
+            <Label htmlFor="slot-start">Start</Label>
             <Input
+              id="slot-start"
               type="time"
               value={newStart}
               onChange={(e) => setNewStart(e.target.value)}
@@ -169,8 +166,9 @@ export function AdminMentorAvailability({
             />
           </div>
           <div className="space-y-1">
-            <Label>End</Label>
+            <Label htmlFor="slot-end">End</Label>
             <Input
+              id="slot-end"
               type="time"
               value={newEnd}
               onChange={(e) => setNewEnd(e.target.value)}
@@ -178,16 +176,18 @@ export function AdminMentorAvailability({
             />
           </div>
           <div className="space-y-1 flex-1 min-w-[120px]">
-            <Label>Label (optional)</Label>
+            <Label htmlFor="slot-label">Label (optional)</Label>
             <Input
+              id="slot-label"
               placeholder="e.g., Evening batch"
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
             />
           </div>
           <div className="space-y-1 w-40">
-            <Label>Timezone</Label>
+            <Label htmlFor="slot-timezone">Timezone</Label>
             <Input
+              id="slot-timezone"
               value={newTimezone}
               onChange={(e) => setNewTimezone(e.target.value)}
               placeholder="Asia/Kolkata"
@@ -195,14 +195,12 @@ export function AdminMentorAvailability({
           </div>
           <Button onClick={handleAdd} size="sm" className="mt-auto">
             <Plus className="h-4 w-4 mr-1" /> Add
-                    </Button>
+          </Button>
         </div>
 
         {/* Slot list */}
         <div className="space-y-2">
-          {isLoading && (
-            <div className="text-sm text-muted-foreground py-2">Loading...</div>
-          )}
+          {isLoading && <div className="text-sm text-muted-foreground py-2">Loading...</div>}
           {slots.length === 0 && !isLoading && (
             <div className="text-sm text-muted-foreground py-2">
               No availability slots configured.
@@ -226,31 +224,23 @@ export function AdminMentorAvailability({
                 <div className="flex items-center gap-3">
                   <Switch
                     checked={s.is_available !== false}
-                    onCheckedChange={() =>
-                      handleToggle(s.id, s.is_available !== false)
-                    }
+                    onCheckedChange={() => handleToggle(s.id, s.is_available !== false)}
                   />
                   <div>
                     <div className="text-sm font-medium flex items-center gap-2">
                       <span>
-                        {DAY_LABELS[DAY_KEYS.indexOf(s.day_of_week)]} —{" "}
-                        {s.start_time?.slice(0, 5)} – {s.end_time?.slice(0, 5)}
+                        {DAY_LABELS[DAY_KEYS.indexOf(s.day_of_week)]} — {s.start_time?.slice(0, 5)}{" "}
+                        – {s.end_time?.slice(0, 5)}
                       </span>
                       <Clock className="h-3 w-3 text-muted-foreground" />
                       {s.timezone && (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] flex items-center gap-1"
-                        >
+                        <Badge variant="outline" className="text-[10px] flex items-center gap-1">
                           <Globe className="h-3 w-3" />
                           {s.timezone}
                         </Badge>
                       )}
                       {s.is_available === false ? (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] text-muted-foreground"
-                        >
+                        <Badge variant="outline" className="text-[10px] text-muted-foreground">
                           Disabled
                         </Badge>
                       ) : (
@@ -262,17 +252,13 @@ export function AdminMentorAvailability({
                         </Badge>
                       )}
                     </div>
-                    {s.label && (
-                      <div className="text-xs text-muted-foreground">
-                        {s.label}
-                      </div>
-                    )}
+                    {s.label && <div className="text-xs text-muted-foreground">{s.label}</div>}
                   </div>
                 </div>
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  className="h-9 w-9 text-destructive hover:text-destructive"
                   onClick={() => handleDelete(s.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />

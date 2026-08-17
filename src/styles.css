@@ -39,11 +39,12 @@
   --color-electric: var(--electric);
   --color-electric-foreground: var(--electric-foreground);
   --color-primary-soft: var(--primary-soft);
+  --color-heading: var(--heading);
 
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-display: "Aref Ruqaa", ui-serif, Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --shadow-soft: 0 4px 20px -8px oklch(0.4 0.15 260 / 0.15);
+  --shadow-soft: 0 1px 2px oklch(0.2 0.04 265 / 0.04), 0 4px 16px -8px oklch(0.3 0.08 265 / 0.08);
   --shadow-lift: 0 1px 1px oklch(0.2 0.04 265 / 0.03), 0 8px 30px -10px oklch(0.35 0.12 265 / 0.18);
   --shadow-glow: 0 0 60px -18px var(--primary);
   --shadow-glow-electric: 0 0 60px -14px var(--electric);
@@ -93,7 +94,7 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.5rem;
   --background: oklch(0.99 0.005 260);
   --foreground: oklch(0.18 0.03 265);
   --card: oklch(1 0 0);
@@ -121,6 +122,7 @@
   --electric: oklch(0.5 0.2 250);
   --electric-foreground: oklch(0.99 0 0);
   --primary-soft: oklch(0.95 0.03 265);
+  --heading: oklch(0.18 0.03 265);
 
   --student: oklch(0.55 0.2 260);
   --mentor: oklch(0.6 0.18 155);
@@ -170,6 +172,7 @@
   --electric: oklch(0.66 0.18 245);
   --electric-foreground: oklch(0.15 0.02 245);
   --primary-soft: oklch(0.28 0.05 265);
+  --heading: oklch(0.97 0.01 260);
 
   --sidebar: oklch(0.18 0.03 265);
   --sidebar-foreground: oklch(0.97 0.01 260);
@@ -191,12 +194,19 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  h1,
-  h2,
-  h3,
   .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    color: var(--color-heading);
+  }
+  .font-heading {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    color: var(--color-heading);
   }
 }
 
@@ -242,4 +252,142 @@
 @utility mask-fade-b {
   -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+}
+@utility font-heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  color: var(--color-heading);
+}
+@utility text-editorial {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--color-heading);
+}
+@utility text-body {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-foreground);
+}
+@utility border-subtle {
+  border-color: var(--color-border);
+}
+@utility surface-raised {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+@utility text-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+@utility tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+@utility text-muted-foreground {
+  color: var(--color-muted-foreground);
+}
+@utility bg-background {
+  background-color: var(--color-background);
+}
+@utility bg-card {
+  background-color: var(--color-card);
+}
+@utility bg-muted {
+  background-color: var(--color-muted);
+}
+@utility bg-accent {
+  background-color: var(--color-accent);
+}
+@utility bg-primary {
+  background-color: var(--color-primary);
+}
+@utility bg-destructive {
+  background-color: var(--color-destructive);
+}
+@utility text-foreground {
+  color: var(--color-foreground);
+}
+@utility text-primary {
+  color: var(--color-primary);
+}
+@utility text-destructive {
+  color: var(--color-destructive);
+}
+@utility border-border {
+  border-color: var(--color-border);
+}
+@utility border-input {
+  border-color: var(--color-input);
+}
+@utility text-hero {
+  font-size: clamp(2.5rem, 11vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+@utility text-hero-md {
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+@utility text-hero-lg {
+  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+@utility text-section {
+  font-size: clamp(2.25rem, 10vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+@utility text-section-lg {
+  font-size: clamp(2.75rem, 5vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+@utility animate-aurora {
+  animation: aurora 20s ease-in-out infinite;
+}
+@keyframes aurora {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+@utility animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-aurora,
+  .animate-shimmer,
+  .animate-marquee,
+  .animate-float,
+  .animate-float-slow,
+  .animate-pulse-soft {
+    animation: none !important;
+  }
+  .will-change-transform {
+    will-change: auto !important;
+  }
 }

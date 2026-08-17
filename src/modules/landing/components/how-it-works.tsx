@@ -37,7 +37,7 @@ export function HowItWorks() {
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 How it works
               </p>
-              <h2 className="mt-4 text-4xl leading-tight tracking-tight sm:text-5xl">
+              <h2 className="mt-4 font-heading text-section sm:text-section-lg">
                 From first search to fluent, in four steps.
               </h2>
               <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
@@ -71,7 +71,7 @@ export function HowItWorks() {
                         STEP {i + 1}
                       </span>
                     </div>
-                    <h3 className="mt-1.5 text-xl tracking-tight">{step.title}</h3>
+                     <h3 className="mt-1.5 font-heading text-xl tracking-tight">{step.title}</h3>
                     <p className="mt-2 max-w-lg text-muted-foreground">{step.desc}</p>
                   </div>
                 </div>

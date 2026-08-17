@@ -45,7 +45,7 @@ function FaqItem({ item, index }: { item: (typeof FAQS)[number]; index: number }
         >
           <span
             className={cn(
-              "text-lg font-medium tracking-tight transition-colors",
+              "text-lg font-heading tracking-tight transition-colors",
               open ? "text-primary" : "text-foreground",
             )}
           >
@@ -83,11 +83,11 @@ export function Faq() {
       <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <Reveal>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">FAQ</p>
-          <h2 className="mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">
+          <h2 className="mt-3 font-heading text-section sm:text-section-lg">
             Questions, answered.
           </h2>
           <p className="mt-4 max-w-sm text-lg text-muted-foreground">
-            Everything you need to know before your first session. Can't find it?
+            Everything you need to know before your first session. Can&rsquo;t find it?
           </p>
           <Link
             to="/auth"

@@ -271,6 +271,26 @@ function AdminDashboard() {
     },
   });
 
+  // ── Booking Attention Center Query ───────────────────────────────────────
+  const bookingAttentionQuery = useQuery({
+    queryKey: ["admin-dashboard", "booking-attention"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const res = await fetch("/api/admin/booking/attention");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Failed to load attention center");
+      return json as {
+        success: boolean;
+        counts: Record<string, number>;
+        attentionItems: Array<{ level: string; label: string; action: string }>;
+        expiringRequests: any[];
+        upcomingConfirmed: any[];
+        noMentorBookings: any[];
+      };
+    },
+    refetchInterval: 30000,
+  });
+
   // ── Today's Operations Query ─────────────────────────────────────────────
   const todayOpsQuery = useQuery({
     queryKey: ["admin-dashboard", "today-ops"],
@@ -649,6 +669,98 @@ function AdminDashboard() {
             </motion.div>
           ))}
         </div>
+
+        {/* Booking Attention Center */}
+        <Section title="Booking Attention Center" description="Real-time booking queue status">
+          {bookingAttentionQuery.isLoading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+              Loading...
+            </div>
+          ) : bookingAttentionQuery.error ? (
+            <SectionError message={bookingAttentionQuery.error.message} onRetry={() => bookingAttentionQuery.refetch()} />
+          ) : (() => {
+            const data = bookingAttentionQuery.data;
+            if (!data) return null;
+            return (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
+                  {[
+                    { label: "Awaiting mentor", value: data.counts?.awaitingMentor ?? 0, color: "text-red-600", bg: "bg-red-50" },
+                    { label: "Mentor assigned", value: data.counts?.mentorAssigned ?? 0, color: "text-amber-600", bg: "bg-amber-50" },
+                    { label: "Confirmed", value: data.counts?.confirmed ?? 0, color: "text-emerald-600", bg: "bg-emerald-50" },
+                    { label: "Completed", value: data.counts?.completed ?? 0, color: "text-blue-600", bg: "bg-blue-50" },
+                    { label: "Cancelled", value: data.counts?.cancelled ?? 0, color: "text-slate-600", bg: "bg-slate-50" },
+                    { label: "No-show", value: data.counts?.noShow ?? 0, color: "text-orange-600", bg: "bg-orange-50" },
+                    { label: "Expiring requests", value: data.counts?.expiringRequests ?? 0, color: "text-red-600", bg: "bg-red-50" },
+                  ].map((item) => (
+                    <div key={item.label} className={`rounded-lg border p-3 ${item.bg}`}>
+                      <div className={`text-2xl font-display ${item.color}`}>{item.value}</div>
+                      <div className="text-xs text-muted-foreground truncate">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {data.attentionItems?.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-muted-foreground">Attention Required</div>
+                    {data.attentionItems.map((item: any, idx: number) => (
+                      <div key={idx} className={`flex items-center justify-between rounded-lg border p-3 ${
+                        item.level === "critical" ? "border-red-200 bg-red-50/50" :
+                        item.level === "warning" ? "border-amber-200 bg-amber-50/50" :
+                        "border-blue-200 bg-blue-50/50"
+                      }`}>
+                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className="text-xs text-muted-foreground ml-4">{item.action}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {(data.noMentorBookings?.length ?? 0) > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-muted-foreground">No Eligible Mentor</div>
+                    {data.noMentorBookings.slice(0, 5).map((b: any) => (
+                      <div key={b.id} className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/30 p-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium truncate">{b.topic || "Session"}</div>
+                          <div className="text-xs text-muted-foreground">{b.language || "No language"}</div>
+                        </div>
+                        <Badge variant="secondary">Needs manual review</Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {(data.expiringRequests?.length ?? 0) > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-muted-foreground">Expiring Mentor Requests</div>
+                    {data.expiringRequests.slice(0, 5).map((req: any) => (
+                      <div key={req.id} className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50/30 p-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium">Request to mentor {(req as any).mentor_id?.slice(0, 8)}...</div>
+                          <div className="text-xs text-muted-foreground">
+                            Expires: {new Date((req as any).response_deadline).toLocaleTimeString()}
+                          </div>
+                        </div>
+                        <Badge variant="destructive">Expiring soon</Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {(!data.attentionItems?.length &&
+                  !data.noMentorBookings?.length &&
+                  !data.expiringRequests?.length) && (
+                  <div className="flex flex-col items-center justify-center gap-2 py-6 text-center text-muted-foreground">
+                    <ShieldCheck className="h-8 w-8 text-green-500" />
+                    <p className="text-sm">All bookings are in good shape.</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </Section>
 
         {/* Needs Attention + Quick Actions */}
         <div className="grid gap-6 lg:grid-cols-2">

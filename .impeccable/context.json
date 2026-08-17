@@ -1,0 +1,32 @@
+{
+  "project": "Lingua",
+  "type": "web_app",
+  "stack": {
+    "framework": "Next.js",
+    "language": "TypeScript",
+    "ui": "shadcn/ui + Tailwind CSS v4",
+    "database": "Supabase PostgreSQL",
+    "auth": "Supabase Auth",
+    "state": "@tanstack/react-query",
+    "routing": "@tanstack/react-router",
+    "payments": "Stripe",
+    "email": "Resend"
+  },
+  "design_system": {
+    "css": "Tailwind CSS v4",
+    "components": "shadcn/ui",
+    "theme": {
+      "variant": "light",
+      "primary": "purple",
+      "accent": "blue"
+    }
+  },
+  "conventions": {
+    "styling": "Tailwind utility classes, avoid inline styles",
+    "components": "Client components under src/components",
+    "pages": "TanStack Router file-based routes under src/routes",
+    "server_actions": "Supabase server-side calls under src/lib/actions",
+    "database": "Migrations in supabase/migrations",
+    "types": "TypeScript strict mode"
+  }
+}

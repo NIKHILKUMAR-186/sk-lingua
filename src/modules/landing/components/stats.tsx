@@ -57,7 +57,7 @@ function AnimatedStat({ stat, index }: { stat: Stat; index: number }) {
 
   return (
     <Reveal delay={index * 90} className="flex flex-col items-center gap-2 text-center">
-      <div ref={ref} className="text-4xl font-display tracking-tight text-foreground sm:text-5xl">
+      <div ref={ref} className="text-4xl tracking-tight text-foreground sm:text-5xl">
         {stat.prefix}
         {value.toFixed(stat.decimals ?? 0)}
         <span className="text-primary">{stat.suffix}</span>

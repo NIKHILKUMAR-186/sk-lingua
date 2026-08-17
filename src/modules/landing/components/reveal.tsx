@@ -44,12 +44,25 @@ export function Reveal({ children, className, delay = 0, y = 24, as = "div" }: R
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!visible) return;
+    const node = ref.current;
+    if (!node) return;
+
+    const handleTransitionEnd = () => {
+      node.classList.remove("will-change-transform");
+    };
+
+    node.addEventListener("transitionend", handleTransitionEnd, { once: true });
+    return () => node.removeEventListener("transitionend", handleTransitionEnd);
+  }, [visible]);
+
   const Tag = as as "div";
 
   return (
     <Tag
       ref={ref as never}
-      className={cn("will-change-transform", className)}
+      className={cn(visible ? undefined : "will-change-transform", className)}
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0px)" : `translateY(${y}px)`,

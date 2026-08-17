@@ -5,9 +5,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
 import { SectionCard } from "@/components/mentor/section-card";
-import { StatusBadge } from "@/components/mentor/status-badge";
-import { ProfileCompletion } from "@/components/mentor/profile-completion";
-import { PreviewDialog } from "@/components/mentor/preview-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,9 +20,7 @@ import {
   ExternalLink,
   Upload,
   CheckCircle2,
-  AlertCircle,
-  Save,
-  X,
+  ChevronRight,
   Star,
   Globe,
   Clock,
@@ -35,6 +30,7 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { uploadStorageFile } from "@/lib/storage";
+import { PreviewDialog } from "@/components/mentor/preview-dialog";
 import { getProfileCompletionPercent, type ProfileCompletionValues } from "@/lib/profile";
 import { LANGUAGES } from "@/lib/languages";
 
@@ -244,6 +240,24 @@ function MentorProfileEdit() {
     };
   }, [values, mp]);
 
+  const missingFields = useMemo(() => {
+    const checks: { field: string; label: string; done: boolean }[] = [
+      { field: "avatar_url", label: "Add a profile photo", done: !!values.avatar_url },
+      { field: "full_name", label: "Complete your full name", done: !!values.full_name },
+      { field: "headline", label: "Add a headline", done: !!values.headline },
+      { field: "bio", label: "Add a short bio", done: !!values.bio },
+      { field: "state", label: "Add your location", done: !!values.state },
+      { field: "languages_taught", label: "Add languages you teach", done: values.languages_taught.length > 0 },
+      { field: "years_experience", label: "Add years of experience", done: Number(values.years_experience) > 0 },
+      { field: "teaching_style", label: "Describe your teaching style", done: !!values.teaching_style },
+      { field: "certifications", label: "Add certifications", done: values.certifications.trim().length > 0 },
+      { field: "education", label: "Add education background", done: !!values.education },
+    ];
+    return checks;
+  }, [values]);
+
+  const completedCount = missingFields.filter((f) => f.done).length;
+
   return (
     <MentorLayout>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -259,21 +273,10 @@ function MentorProfileEdit() {
               {activeTab === "edit" && isDirty && (
                 <>
                   <Button variant="ghost" size="sm" onClick={discardChanges}>
-                    <X className="mr-1.5 h-4 w-4" />
                     Discard
                   </Button>
                   <Button size="sm" onClick={saveProfile} disabled={saving}>
-                    {saving ? (
-                      <>
-                        <Save className="mr-1.5 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-1.5 h-4 w-4" />
-                        Save changes
-                      </>
-                    )}
+                    {saving ? "Saving..." : "Save changes"}
                   </Button>
                 </>
               )}
@@ -288,25 +291,17 @@ function MentorProfileEdit() {
           </TabsList>
 
           <TabsContent value="preview" className="space-y-6">
-            <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
-              <div className="relative h-32 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+              <div className="relative h-32 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
                 {values.cover_url && (
-                  <img
-                    src={values.cover_url}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
+                  <img src={values.cover_url} alt="" className="h-full w-full object-cover" />
                 )}
               </div>
               <div className="px-6 pb-6">
                 <div className="relative -mt-12 mb-4">
                   <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-muted shadow-sm">
                     {values.avatar_url ? (
-                      <img
-                        src={values.avatar_url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
+                      <img src={values.avatar_url} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <User className="h-8 w-8 text-muted-foreground" />
                     )}
@@ -328,7 +323,9 @@ function MentorProfileEdit() {
                 </div>
 
                 {previewData.bio && (
-                  <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{previewData.bio}</p>
+                  <p className="mt-4 text-sm text-foreground/80 leading-relaxed">
+                    {previewData.bio}
+                  </p>
                 )}
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -339,7 +336,9 @@ function MentorProfileEdit() {
                   {previewData.rating !== null && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                      <span>{Number(previewData.rating).toFixed(1)} ({previewData.totalReviews} reviews)</span>
+                      <span>
+                        {Number(previewData.rating).toFixed(1)} ({previewData.totalReviews} reviews)
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -351,7 +350,9 @@ function MentorProfileEdit() {
                 {previewData.teachingStyle && (
                   <div className="mt-6">
                     <h3 className="text-sm font-semibold text-foreground">Teaching style</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">{previewData.teachingStyle}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {previewData.teachingStyle}
+                    </p>
                   </div>
                 )}
 
@@ -360,7 +361,10 @@ function MentorProfileEdit() {
                     <h3 className="text-sm font-semibold text-foreground">Certifications</h3>
                     <ul className="mt-2 space-y-1">
                       {previewData.certifications.map((cert: string) => (
-                        <li key={cert} className="text-xs text-muted-foreground flex items-center gap-2">
+                        <li
+                          key={cert}
+                          className="text-xs text-muted-foreground flex items-center gap-2"
+                        >
                           <GraduationCap className="h-3.5 w-3.5 text-primary" />
                           {cert}
                         </li>
@@ -405,11 +409,39 @@ function MentorProfileEdit() {
           </TabsContent>
 
           <TabsContent value="edit" className="space-y-6">
-            <ProfileCompletion values={values} mode="mentor" />
+            <div className="rounded-xl border border-border/60 bg-card p-5">
+              <p className="text-xs font-medium tracking-[0.12em] uppercase text-muted-foreground mb-3">
+                Make your profile easier to trust
+              </p>
+              <div className="space-y-2">
+                {missingFields.slice(0, 4).map((rec) => (
+                  <button
+                    key={rec.field}
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById(`profile-${rec.field}`);
+                      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-lg border border-border/40 p-2.5 text-left transition hover:border-primary/30 hover:bg-accent/20",
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      {rec.done ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      )}
+                      <span className="text-xs text-foreground">{rec.label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-1 space-y-4">
-                <SectionCard title="Profile media">
+                <SectionCard title="Profile photo">
                   <div className="space-y-4">
                     <div>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">
@@ -429,7 +461,11 @@ function MentorProfileEdit() {
                         </div>
                         <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition">
                           <Upload className="h-3.5 w-3.5" />
-                          {uploadingAvatar ? "Uploading..." : values.avatar_url ? "Replace" : "Upload"}
+                          {uploadingAvatar
+                            ? "Uploading..."
+                            : values.avatar_url
+                              ? "Replace"
+                              : "Upload"}
                           <input
                             type="file"
                             accept="image/*"
@@ -443,18 +479,28 @@ function MentorProfileEdit() {
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground mb-1.5 block">Cover photo</Label>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">
+                        Cover photo
+                      </Label>
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-24 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
                           {values.cover_url ? (
-                            <img src={values.cover_url} alt="" className="h-full w-full object-cover" />
+                            <img
+                              src={values.cover_url}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             <Upload className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
                         <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition">
                           <Upload className="h-3.5 w-3.5" />
-                          {uploadingCover ? "Uploading..." : values.cover_url ? "Replace" : "Upload"}
+                          {uploadingCover
+                            ? "Uploading..."
+                            : values.cover_url
+                              ? "Replace"
+                              : "Upload"}
                           <input
                             type="file"
                             accept="image/*"
@@ -469,24 +515,28 @@ function MentorProfileEdit() {
                     </div>
                   </div>
                 </SectionCard>
-
-                <ProfileCompletion values={values} mode="mentor" />
               </div>
 
               <div className="lg:col-span-2 space-y-6">
-                <SectionCard title="Basic information">
+                <SectionCard title="Public profile">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Full name</Label>
+                      <Label htmlFor="profile-full-name" className="text-xs text-muted-foreground">
+                        Full name
+                      </Label>
                       <Input
+                        id="profile-full-name"
                         value={values.full_name}
                         onChange={(e) => updateField("full_name", e.target.value)}
                         placeholder="Your full name"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">State</Label>
+                      <Label htmlFor="profile-state" className="text-xs text-muted-foreground">
+                        Location
+                      </Label>
                       <Input
+                        id="profile-state"
                         value={values.state}
                         onChange={(e) => updateField("state", e.target.value)}
                         placeholder="e.g., California"
@@ -494,19 +544,22 @@ function MentorProfileEdit() {
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
-                    <Label className="text-xs text-muted-foreground">Headline</Label>
+                    <Label htmlFor="profile-headline" className="text-xs text-muted-foreground">
+                      Headline
+                    </Label>
                     <Input
+                      id="profile-headline"
                       value={values.headline}
                       onChange={(e) => updateField("headline", e.target.value)}
                       placeholder="e.g., Certified English conversation coach"
                     />
                   </div>
-                </SectionCard>
-
-                <SectionCard title="About you">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Bio</Label>
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="profile-bio" className="text-xs text-muted-foreground">
+                      Bio
+                    </Label>
                     <Textarea
+                      id="profile-bio"
                       rows={4}
                       value={values.bio}
                       onChange={(e) => updateField("bio", e.target.value)}
@@ -515,11 +568,43 @@ function MentorProfileEdit() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title="Teaching identity">
+                <SectionCard title="Teaching approach">
+                  <div className="space-y-2">
+                    <Label htmlFor="profile-about" className="text-xs text-muted-foreground">
+                      About you
+                    </Label>
+                    <Textarea
+                      id="profile-about"
+                      rows={4}
+                      value={values.about}
+                      onChange={(e) => updateField("about", e.target.value)}
+                      placeholder="Share your teaching philosophy and what drives you..."
+                    />
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="profile-teaching-style" className="text-xs text-muted-foreground">
+                      Teaching style
+                    </Label>
+                    <Input
+                      id="profile-teaching-style"
+                      value={values.teaching_style}
+                      onChange={(e) => updateField("teaching_style", e.target.value)}
+                      placeholder="e.g., Conversation-focused, structured lessons"
+                    />
+                  </div>
+                </SectionCard>
+
+                <SectionCard title="Expertise">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Native language</Label>
+                      <Label
+                        htmlFor="profile-native-language"
+                        className="text-xs text-muted-foreground"
+                      >
+                        Native language
+                      </Label>
                       <select
+                        id="profile-native-language"
                         className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
                         value={values.native_language}
                         onChange={(e) => updateField("native_language", e.target.value)}
@@ -551,7 +636,9 @@ function MentorProfileEdit() {
                             type="button"
                             onClick={() => {
                               const next = selected
-                                ? values.languages_taught.filter((item: string) => item !== language.code)
+                                ? values.languages_taught.filter(
+                                    (item: string) => item !== language.code,
+                                  )
                                 : [...values.languages_taught, language.code];
                               updateField("languages_taught", next);
                             }}
@@ -567,14 +654,6 @@ function MentorProfileEdit() {
                         );
                       })}
                     </div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <Label className="text-xs text-muted-foreground">Teaching style</Label>
-                    <Input
-                      value={values.teaching_style}
-                      onChange={(e) => updateField("teaching_style", e.target.value)}
-                      placeholder="e.g., Conversation-focused, structured lessons"
-                    />
                   </div>
                 </SectionCard>
 
@@ -639,87 +718,83 @@ function MentorProfileEdit() {
             </div>
           </div>
         )}
-      </div>
 
-      <PreviewDialog open={showPreview} onClose={() => setShowPreview(false)}>
-        <div className="relative h-32 bg-gradient-to-r from-blue-50 to-indigo-50">
-          {values.cover_url && (
-            <img src={values.cover_url} alt="" className="h-full w-full object-cover" />
-          )}
-        </div>
-        <div className="px-6 pb-6">
-          <div className="relative -mt-10 mb-4">
-            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-muted shadow-sm">
-              {previewData.avatar ? (
-                <img
-                  src={previewData.avatar}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <User className="h-8 w-8 text-muted-foreground" />
-              )}
-            </div>
+        <PreviewDialog open={showPreview} onClose={() => setShowPreview(false)}>
+          <div className="relative h-32 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+            {values.cover_url && (
+              <img src={values.cover_url} alt="" className="h-full w-full object-cover" />
+            )}
           </div>
-          <h2 className="text-lg font-display font-semibold text-foreground">{previewData.name}</h2>
-          {previewData.headline && (
-            <p className="mt-1 text-sm text-muted-foreground">{previewData.headline}</p>
-          )}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {previewData.languages.map((lang: string) => (
-              <Badge key={lang} variant="secondary" className="text-xs">
-                {lang}
-              </Badge>
-            ))}
-          </div>
-          {previewData.bio && (
-            <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{previewData.bio}</p>
-          )}
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock className="h-4 w-4 text-primary" />
-              <span>{previewData.experience} years experience</span>
+          <div className="px-6 pb-6">
+            <div className="relative -mt-10 mb-4">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-muted shadow-sm">
+                {previewData.avatar ? (
+                  <img src={previewData.avatar} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <User className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
             </div>
-            {previewData.rating !== null && (
+            <h2 className="text-lg font-display font-semibold text-foreground">{previewData.name}</h2>
+            {previewData.headline && (
+              <p className="mt-1 text-sm text-muted-foreground">{previewData.headline}</p>
+            )}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {previewData.languages.map((lang: string) => (
+                <Badge key={lang} variant="secondary" className="text-xs">
+                  {lang}
+                </Badge>
+              ))}
+            </div>
+            {previewData.bio && (
+              <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{previewData.bio}</p>
+            )}
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                <span>
-                  {Number(previewData.rating).toFixed(1)} ({previewData.totalReviews} reviews)
-                </span>
+                <Clock className="h-4 w-4 text-primary" />
+                <span>{previewData.experience} years experience</span>
+              </div>
+              {previewData.rating !== null && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                  <span>
+                    {Number(previewData.rating).toFixed(1)} ({previewData.totalReviews} reviews)
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Globe className="h-4 w-4 text-primary" />
+                <span>{values.timezone || "Timezone not set"}</span>
+              </div>
+            </div>
+            {previewData.teachingStyle && (
+              <div className="mt-4">
+                <h3 className="text-sm font-semibold text-foreground">Teaching style</h3>
+                <p className="mt-1 text-xs text-muted-foreground">{previewData.teachingStyle}</p>
               </div>
             )}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Globe className="h-4 w-4 text-primary" />
-              <span>{values.timezone || "Timezone not set"}</span>
-            </div>
+            {previewData.certifications.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-semibold text-foreground">Certifications</h3>
+                <ul className="mt-2 space-y-1">
+                  {previewData.certifications.map((cert: string) => (
+                    <li key={cert} className="text-xs text-muted-foreground flex items-center gap-2">
+                      <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                      {cert}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {previewData.education && (
+              <div className="mt-4">
+                <h3 className="text-sm font-semibold text-foreground">Education</h3>
+                <p className="mt-1 text-xs text-muted-foreground">{previewData.education}</p>
+              </div>
+            )}
           </div>
-          {previewData.teachingStyle && (
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold text-foreground">Teaching style</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{previewData.teachingStyle}</p>
-            </div>
-          )}
-          {previewData.certifications.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold text-foreground">Certifications</h3>
-              <ul className="mt-2 space-y-1">
-                {previewData.certifications.map((cert: string) => (
-                  <li key={cert} className="text-xs text-muted-foreground flex items-center gap-2">
-                    <GraduationCap className="h-3.5 w-3.5 text-primary" />
-                    {cert}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {previewData.education && (
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold text-foreground">Education</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{previewData.education}</p>
-            </div>
-          )}
-        </div>
-      </PreviewDialog>
+        </PreviewDialog>
+      </div>
     </MentorLayout>
   );
 }

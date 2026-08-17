@@ -114,7 +114,7 @@ export function NotificationList({
           animate={{ opacity: 1 }}
           className="flex items-center justify-center gap-1 pb-4"
         >
-          <span className="text-xs text-slate-400 dark:text-slate-500">
+          <span className="text-xs text-muted-foreground">
             Showing {filteredItems.length} of {items.length} notifications
           </span>
         </motion.div>

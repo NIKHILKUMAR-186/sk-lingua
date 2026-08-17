@@ -33,6 +33,10 @@ import {
   BarChart3,
   Sparkles,
   User,
+  GraduationCap,
+  CreditCard,
+  Wallet,
+  type LucideIcon,
 } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -51,19 +55,60 @@ const MENTOR_ITEMS = [
   { title: "Resources", to: "/mentor/resources", icon: BookOpenText },
 ] as const;
 
-const ADMIN_ITEMS = [
-  { title: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
-  { title: "Analytics", to: "/admin/analytics", icon: BarChart3 },
-  { title: "Booking Queue", to: "/admin/booking-queue", icon: Inbox },
-  { title: "Mentor Applications", to: "/admin/mentor-applications", icon: Users },
-  { title: "Mentors", to: "/admin/mentors", icon: Users },
-  { title: "Students", to: "/admin/students", icon: Users },
-  { title: "Demo Queue", to: "/admin/demo-queue", icon: Clock },
-  { title: "Support Tickets", to: "/admin/support-tickets", icon: MessageSquare },
-  { title: "Notification Broadcasts", to: "/admin/notification-broadcasts", icon: Bell },
-  { title: "Audit Logs", to: "/admin/audit-logs", icon: History },
-  { title: "Subscription Plans", to: "/admin/subscription-plans", icon: Crown },
-] as const;
+interface AdminNavItem {
+  title: string;
+  to: string;
+  icon: LucideIcon;
+}
+
+/** Grouped Admin navigation (MANAGE / OPERATIONS / NETWORK / FINANCE / SYSTEM). */
+const ADMIN_SECTIONS: Array<{ label: string; items: AdminNavItem[] }> = [
+  {
+    label: "Manage",
+    items: [
+      { title: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
+      { title: "Analytics", to: "/admin/analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { title: "Bookings", to: "/admin/booking-queue", icon: Inbox },
+      { title: "Sessions", to: "/admin/sessions", icon: CalendarDays },
+      { title: "Demo Queue", to: "/admin/demo-queue", icon: Clock },
+      { title: "Slot Management", to: "/admin/slot-management", icon: CalendarDays },
+    ],
+  },
+  {
+    label: "Network",
+    items: [
+      { title: "Mentor Applications", to: "/admin/mentor-applications", icon: Users },
+      { title: "Mentors", to: "/admin/mentors", icon: Users },
+      { title: "Students", to: "/admin/students", icon: GraduationCap },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { title: "Subscription Plans", to: "/admin/subscription-plans", icon: Crown },
+      { title: "Subscriptions", to: "/admin/subscription-management", icon: CreditCard },
+      {
+        title: "Student Subscription Control",
+        to: "/admin/student-subscription-control",
+        icon: Wallet,
+      },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { title: "Support Tickets", to: "/admin/support-tickets", icon: MessageSquare },
+      { title: "Notification Broadcasts", to: "/admin/notification-broadcasts", icon: Bell },
+      { title: "Audit Logs", to: "/admin/audit-logs", icon: History },
+      { title: "Settings", to: "/admin/settings", icon: Settings },
+    ],
+  },
+];
 
 const ACCOUNT_ITEMS_BASE = [
   { title: "Notifications", icon: Bell },
@@ -107,7 +152,10 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
         { title: "Discover Mentors", to: "/student/explore", icon: Compass },
         {
           title: studentLearning!.primaryCta.label,
-          to: studentLearning!.primaryCta.label === "Book a Session" ? "/student/book" : studentLearning!.primaryCta.to,
+          to:
+            studentLearning!.primaryCta.label === "Book a Session"
+              ? "/student/book"
+              : studentLearning!.primaryCta.to,
           icon: studentLearning!.primaryCta.label === "Book a Trial" ? Clock : CalendarDays,
         },
         { title: "Sessions", to: "/student/sessions", icon: CalendarDays },
@@ -123,7 +171,7 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
       ? studentItems
       : variant === "mentor"
         ? MENTOR_ITEMS
-        : ADMIN_ITEMS;
+        : ([] as Array<{ title: string; to: string; icon: LucideIcon }>);
 
   const { data: unread = 0 } = useQuery({
     queryKey: ["notifications-unread", auth?.user?.id],
@@ -192,36 +240,64 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
 
       {/* Navigation */}
       <SidebarContent className="px-3 py-2">
-        {/* Learning Section */}
-        <SidebarGroup>
-          <SidebarGroupLabel
-            className={cn(
-              "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
-              collapsed && "sr-only",
-            )}
-          >
-            {variant === "student" ? "Learning" : variant === "mentor" ? "Teaching" : "Manage"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <nav
-              aria-label={
-                variant === "student" ? "Learning" : variant === "mentor" ? "Teaching" : "Manage"
-              }
+        {/* Learning Section (student / mentor) */}
+        {variant !== "admin" && (
+          <SidebarGroup>
+            <SidebarGroupLabel
+              className={cn(
+                "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
+                collapsed && "sr-only",
+              )}
             >
-              <ul className="flex w-full min-w-0 flex-col gap-0.5">
-                {items.map((item) => (
-                  <SidebarItem
-                    key={item.to}
-                    icon={item.icon}
-                    label={item.title}
-                    to={item.to}
-                    isActive={pathname === item.to}
-                  />
-                ))}
-              </ul>
-            </nav>
-          </SidebarGroupContent>
-        </SidebarGroup>
+              {variant === "student" ? "Learning" : "Teaching"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <nav aria-label={variant === "student" ? "Learning" : "Teaching"}>
+                <ul className="flex w-full min-w-0 flex-col gap-0.5">
+                  {items.map((item) => (
+                    <SidebarItem
+                      key={item.to}
+                      icon={item.icon}
+                      label={item.title}
+                      to={item.to}
+                      isActive={pathname === item.to}
+                    />
+                  ))}
+                </ul>
+              </nav>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Admin sections (MANAGE / OPERATIONS / NETWORK / FINANCE / SYSTEM) */}
+        {variant === "admin" &&
+          ADMIN_SECTIONS.map((section) => (
+            <SidebarGroup key={section.label}>
+              <SidebarGroupLabel
+                className={cn(
+                  "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
+                  collapsed && "sr-only",
+                )}
+              >
+                {section.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <nav aria-label={section.label}>
+                  <ul className="flex w-full min-w-0 flex-col gap-0.5">
+                    {section.items.map((item) => (
+                      <SidebarItem
+                        key={item.to}
+                        icon={item.icon}
+                        label={item.title}
+                        to={item.to}
+                        isActive={pathname === item.to}
+                      />
+                    ))}
+                  </ul>
+                </nav>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
 
         {/* Account Section */}
         <SidebarGroup>
@@ -306,11 +382,8 @@ export function AppShell({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-[#FCFCFD]">
-        <Sidebar
-          collapsible="icon"
-          className="border-r border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
-        >
+      <div className="flex min-h-screen w-full bg-background">
+        <Sidebar collapsible="icon" className="border-r border-border shadow-sm">
           <SidebarContentInner variant={variant} />
         </Sidebar>
         <SidebarInset>
@@ -323,7 +396,7 @@ export function AppShell({
                   <TooltipTrigger asChild>
                     <Link
                       to="/student/streak"
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-50 transition-colors"
                       aria-label="View analytics & streaks"
                     >
                       <Flame className="h-4 w-4" />

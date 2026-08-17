@@ -1,10 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { useRef, useState, type MouseEvent } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, Flame, Video, Mic, ShieldCheck } from "lucide-react";
+import { ArrowRight, Star, Flame } from "lucide-react";
 import { LANGUAGES } from "@/lib/languages";
+import { Reveal } from "./reveal";
+import { RotatingText } from "../hooks/use-rotating-text";
+import { useMagneticButton } from "../hooks/use-magnetic-button";
 
-/** A purpose-built, hand-crafted product preview — not a stock image. */
+const HERO_WORDS = ["better.", "smarter.", "faster."];
+
 function ProductPreview() {
   const [active, setActive] = useState("Weekly");
   const times = ["9:00", "10:30", "13:00", "16:00", "18:30"];
@@ -12,49 +16,11 @@ function ProductPreview() {
 
   return (
     <div className="relative">
-      {/* Ambient glow */}
       <div className="absolute -right-10 -top-10 h-72 w-72 rounded-full bg-electric/15 blur-3xl" />
       <div className="absolute -bottom-16 -left-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
       <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/5 via-transparent to-electric/5" />
 
-      {/* Floating stat — top left */}
-      <div className="absolute -left-6 -top-6 z-20 hidden animate-float rounded-2xl border border-border/70 bg-card/95 p-3.5 shadow-lift backdrop-blur sm:block">
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-success/15 text-success">
-            <ShieldCheck className="h-4.5 w-4.5" />
-          </span>
-          <div>
-            <div className="text-sm font-semibold leading-none">Verified mentor</div>
-            <div className="mt-1 text-[11px] text-muted-foreground">
-              Identity & credentials checked
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating stat — bottom right */}
-      <div className="absolute -bottom-6 -right-4 z-20 hidden animate-float-slow rounded-2xl border border-border/70 bg-card/95 p-3.5 shadow-lift backdrop-blur sm:block">
-        <div className="flex items-center gap-2.5">
-          <div className="flex -space-x-2">
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-gradient-to-br from-primary/70 to-electric/70 text-[9px] font-bold text-white"
-              >
-                {["S", "J", "M"][i]}
-              </span>
-            ))}
-          </div>
-          <div>
-            <div className="text-sm font-semibold leading-none">1,240 sessions</div>
-            <div className="mt-1 text-[11px] text-muted-foreground">taught this month</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main preview card */}
       <div className="overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-lift">
-        {/* Card header */}
         <div className="flex items-center gap-3 border-b border-border/70 px-5 py-4">
           <div className="relative">
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-primary to-electric text-sm font-bold text-white">
@@ -70,7 +36,7 @@ function ProductPreview() {
               </span>
             </div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Mic className="h-3 w-3" /> English professor, 5 years experience
+              English professor, 5 years experience
             </div>
           </div>
           <div className="flex items-center gap-1 rounded-lg bg-warning/10 px-2 py-1 text-xs font-semibold text-warning-foreground">
@@ -78,7 +44,6 @@ function ProductPreview() {
           </div>
         </div>
 
-        {/* Booking body */}
         <div className="px-5 py-4">
           <div className="flex items-end justify-between">
             <div>
@@ -92,7 +57,6 @@ function ProductPreview() {
             </div>
           </div>
 
-          {/* Day tabs */}
           <div className="mt-4 flex gap-1.5">
             {days.map((d, i) => (
               <button
@@ -111,7 +75,6 @@ function ProductPreview() {
             ))}
           </div>
 
-          {/* Time slots */}
           <div className="mt-3 flex flex-wrap gap-1.5">
             {times.map((t, i) => (
               <span
@@ -132,7 +95,7 @@ function ProductPreview() {
 
           <Button asChild size="sm" className="mt-4 w-full">
             <Link to="/auth" search={{ mode: "signup" } as never}>
-              <Video className="h-4 w-4" /> Book live session
+              Book live session
             </Link>
           </Button>
         </div>
@@ -142,120 +105,71 @@ function ProductPreview() {
 }
 
 export function Hero() {
-  const frame = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  function handleMove(e: MouseEvent<HTMLDivElement>) {
-    const rect = frame.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x, y });
-  }
+  const magneticRef = useMagneticButton(0.12);
 
   return (
-    <section
-      className="relative overflow-hidden"
-      onMouseMove={handleMove}
-      onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-    >
-      {/* Ambient background */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-fine-grid mask-fade-b" />
-      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[40rem] w-[60rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-primary/10 via-transparent to-electric/10 blur-3xl" />
+    <section className="relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-fine-grid opacity-60" />
+      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[40rem] w-[60rem] -translate-x-1/2 animate-aurora rounded-full bg-gradient-to-br from-primary/10 via-transparent to-electric/10 blur-3xl" />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 pb-24 pt-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:pt-24">
-        {/* Left — headline */}
+      <div className="mx-auto grid min-h-screen max-w-7xl items-center gap-14 px-4 pb-20 pt-28 sm:px-6 lg:grid-cols-[1fr_1fr] lg:gap-10 lg:pt-24">
         <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-            </span>
-            Real humans, not AI chatbots
-          </div>
-
-          <h1 className="mt-6 text-5xl leading-[0.98] tracking-tight text-foreground sm:text-6xl lg:text-[4.4rem]">
-            Speak with confidence.
-            <br />
-            <span className="text-primary">Learn from a real human.</span>
-          </h1>
-
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            Book 1-on-1 video sessions with verified native mentors. Practice real conversation,
-            build a daily streak, and become fluent — on your schedule.
-          </p>
-
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button asChild size="lg" className="group h-12 px-7 text-base">
-              <Link to="/auth" search={{ mode: "signup" } as never}>
-                Start learning free
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base">
-              <Link to="/mentor-signup">Teach languages</Link>
-            </Button>
-          </div>
-
-          {/* Language chips */}
-          <div className="mt-10 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Popular
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {LANGUAGES.slice(0, 6).map((lang) => (
-                <span
-                  key={lang.code}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                >
-                  <span className="text-sm leading-none">{lang.emoji}</span>
-                  {lang.name}
-                </span>
-              ))}
+          <Reveal>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              Real humans, not AI chatbots
             </div>
-          </div>
+          </Reveal>
+
+          <Reveal delay={80}>
+            <h1 className="mt-6 font-heading text-hero text-foreground sm:text-hero-md lg:text-hero-lg">
+              Learn from
+              <br />
+              the right
+              <br />
+              <span className="text-primary">people.</span>
+            </h1>
+          </Reveal>
+
+          <Reveal delay={200}>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div ref={magneticRef}>
+                <Button
+                  asChild
+                  size="lg"
+                  className="group h-12 rounded-full px-7 text-base transition-transform"
+                >
+                  <Link to="/auth" search={{ mode: "signup" } as never}>
+                    Start Learning
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:rotate-45" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={300}>
+            <div className="mt-10 flex items-center gap-6">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Star className="h-4 w-4 fill-warning text-warning" />
+                <span className="font-medium text-foreground">4.9 / 5</span>
+              </div>
+              <div className="hidden h-4 w-px bg-border sm:block" />
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Flame className="h-4 w-4 text-flame" />
+                <span className="font-medium text-foreground">10k+</span> active streaks
+              </div>
+            </div>
+          </Reveal>
         </div>
 
-        {/* Right — product preview with mouse tilt */}
-        <div
-          ref={frame}
-          className="relative"
-          style={{
-            transform: `perspective(1100px) rotateY(${tilt.x * 6}deg) rotateX(${tilt.y * -6}deg)`,
-            transition: "transform 0.25s ease-out",
-          }}
-        >
-          <ProductPreview />
-        </div>
-      </div>
-
-      {/* Social proof strip */}
-      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        <div className="flex flex-col items-center justify-center gap-5 border-t border-border/60 pt-8 sm:flex-row sm:gap-10">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="flex -space-x-2">
-              {["A", "B", "C", "D"].map((x, i) => (
-                <span
-                  key={x}
-                  className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-gradient-to-br from-primary/60 to-electric/60 text-[9px] font-bold text-white"
-                  style={{ zIndex: 4 - i }}
-                >
-                  {x}
-                </span>
-              ))}
-            </div>
-            <span className="font-medium text-foreground">120k+ learners</span>
-          </div>
-          <div className="hidden h-4 w-px bg-border sm:block" />
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Star className="h-4 w-4 fill-warning text-warning" />
-            <span className="font-medium text-foreground">4.9 / 5</span> average mentor rating
-          </div>
-          <div className="hidden h-4 w-px bg-border sm:block" />
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Flame className="h-4 w-4 text-flame" />
-            <span className="font-medium text-foreground">10,000+</span> active streaks
-          </div>
+        <div className="relative lg:-mt-8">
+          <Reveal delay={200}>
+            <ProductPreview />
+          </Reveal>
         </div>
       </div>
     </section>

@@ -28,6 +28,7 @@ import { Route as AuthenticatedAdminDemoQueueRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminMentorApplicationsRouteImport } from './routes/_authenticated/admin/mentor-applications'
 import { Route as AuthenticatedAdminNotificationBroadcastsRouteImport } from './routes/_authenticated/admin/notification-broadcasts'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin/notifications'
+import { Route as AuthenticatedAdminSessionsRouteImport } from './routes/_authenticated/admin/sessions'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminSlotManagementRouteImport } from './routes/_authenticated/admin/slot-management'
 import { Route as AuthenticatedAdminStudentSubscriptionControlRouteImport } from './routes/_authenticated/admin/student-subscription-control'
@@ -63,6 +64,7 @@ import { Route as AuthenticatedStudentStreakRouteImport } from './routes/_authen
 import { Route as AuthenticatedStudentStudentSettingsRouteImport } from './routes/_authenticated/student/student-settings'
 import { Route as AuthenticatedStudentSubscriptionSlotsRouteImport } from './routes/_authenticated/student/subscription-slots'
 import { Route as AuthenticatedStudentSubscriptionsRouteImport } from './routes/_authenticated/student/subscriptions'
+import { Route as AuthenticatedAdminBookingsIndexRouteImport } from './routes/_authenticated/admin/bookings/index'
 import { Route as AuthenticatedAdminMentorApplicationsIdRouteImport } from './routes/_authenticated/admin/mentor-applications/$id'
 import { Route as AuthenticatedAdminMentorsIndexRouteImport } from './routes/_authenticated/admin/mentors/index'
 import { Route as AuthenticatedAdminMentorsMentorIdRouteImport } from './routes/_authenticated/admin/mentors/$mentorId'
@@ -173,6 +175,12 @@ const AuthenticatedAdminNotificationsRoute =
   AuthenticatedAdminNotificationsRouteImport.update({
     id: '/admin/notifications',
     path: '/admin/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminSessionsRoute =
+  AuthenticatedAdminSessionsRouteImport.update({
+    id: '/admin/sessions',
+    path: '/admin/sessions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminSettingsRoute =
@@ -385,6 +393,12 @@ const AuthenticatedStudentSubscriptionsRoute =
     path: '/student/subscriptions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminBookingsIndexRoute =
+  AuthenticatedAdminBookingsIndexRouteImport.update({
+    id: '/admin/bookings/',
+    path: '/admin/bookings/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminMentorApplicationsIdRoute =
   AuthenticatedAdminMentorApplicationsIdRouteImport.update({
     id: '/$id',
@@ -453,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/admin/notification-broadcasts': typeof AuthenticatedAdminNotificationBroadcastsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/slot-management': typeof AuthenticatedAdminSlotManagementRoute
   '/admin/student-subscription-control': typeof AuthenticatedAdminStudentSubscriptionControlRoute
@@ -494,6 +509,7 @@ export interface FileRoutesByFullPath {
   '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
   '/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
+  '/admin/bookings/': typeof AuthenticatedAdminBookingsIndexRoute
   '/admin/mentors/': typeof AuthenticatedAdminMentorsIndexRoute
   '/admin/students/': typeof AuthenticatedAdminStudentsIndexRoute
 }
@@ -516,6 +532,7 @@ export interface FileRoutesByTo {
   '/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/admin/notification-broadcasts': typeof AuthenticatedAdminNotificationBroadcastsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/slot-management': typeof AuthenticatedAdminSlotManagementRoute
   '/admin/student-subscription-control': typeof AuthenticatedAdminStudentSubscriptionControlRoute
@@ -557,6 +574,7 @@ export interface FileRoutesByTo {
   '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
   '/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
+  '/admin/bookings': typeof AuthenticatedAdminBookingsIndexRoute
   '/admin/mentors': typeof AuthenticatedAdminMentorsIndexRoute
   '/admin/students': typeof AuthenticatedAdminStudentsIndexRoute
 }
@@ -581,6 +599,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/mentor-applications': typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   '/_authenticated/admin/notification-broadcasts': typeof AuthenticatedAdminNotificationBroadcastsRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/_authenticated/admin/sessions': typeof AuthenticatedAdminSessionsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/slot-management': typeof AuthenticatedAdminSlotManagementRoute
   '/_authenticated/admin/student-subscription-control': typeof AuthenticatedAdminStudentSubscriptionControlRoute
@@ -622,6 +641,7 @@ export interface FileRoutesById {
   '/_authenticated/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/_authenticated/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
   '/_authenticated/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
+  '/_authenticated/admin/bookings/': typeof AuthenticatedAdminBookingsIndexRoute
   '/_authenticated/admin/mentors/': typeof AuthenticatedAdminMentorsIndexRoute
   '/_authenticated/admin/students/': typeof AuthenticatedAdminStudentsIndexRoute
 }
@@ -646,6 +666,7 @@ export interface FileRouteTypes {
     | '/admin/mentor-applications'
     | '/admin/notification-broadcasts'
     | '/admin/notifications'
+    | '/admin/sessions'
     | '/admin/settings'
     | '/admin/slot-management'
     | '/admin/student-subscription-control'
@@ -687,6 +708,7 @@ export interface FileRouteTypes {
     | '/mentor/session/$id'
     | '/student/mentor/$id'
     | '/student/session/$id'
+    | '/admin/bookings/'
     | '/admin/mentors/'
     | '/admin/students/'
   fileRoutesByTo: FileRoutesByTo
@@ -709,6 +731,7 @@ export interface FileRouteTypes {
     | '/admin/mentor-applications'
     | '/admin/notification-broadcasts'
     | '/admin/notifications'
+    | '/admin/sessions'
     | '/admin/settings'
     | '/admin/slot-management'
     | '/admin/student-subscription-control'
@@ -750,6 +773,7 @@ export interface FileRouteTypes {
     | '/mentor/session/$id'
     | '/student/mentor/$id'
     | '/student/session/$id'
+    | '/admin/bookings'
     | '/admin/mentors'
     | '/admin/students'
   id:
@@ -773,6 +797,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/mentor-applications'
     | '/_authenticated/admin/notification-broadcasts'
     | '/_authenticated/admin/notifications'
+    | '/_authenticated/admin/sessions'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/slot-management'
     | '/_authenticated/admin/student-subscription-control'
@@ -814,6 +839,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mentor/session/$id'
     | '/_authenticated/student/mentor/$id'
     | '/_authenticated/student/session/$id'
+    | '/_authenticated/admin/bookings/'
     | '/_authenticated/admin/mentors/'
     | '/_authenticated/admin/students/'
   fileRoutesById: FileRoutesById
@@ -962,6 +988,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/notifications'
       fullPath: '/admin/notifications'
       preLoaderRoute: typeof AuthenticatedAdminNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/sessions': {
+      id: '/_authenticated/admin/sessions'
+      path: '/admin/sessions'
+      fullPath: '/admin/sessions'
+      preLoaderRoute: typeof AuthenticatedAdminSessionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/settings': {
@@ -1209,6 +1242,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/bookings/': {
+      id: '/_authenticated/admin/bookings/'
+      path: '/admin/bookings'
+      fullPath: '/admin/bookings/'
+      preLoaderRoute: typeof AuthenticatedAdminBookingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/mentor-applications/$id': {
       id: '/_authenticated/admin/mentor-applications/$id'
       path: '/$id'
@@ -1294,6 +1334,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminMentorApplicationsRoute: typeof AuthenticatedAdminMentorApplicationsRouteWithChildren
   AuthenticatedAdminNotificationBroadcastsRoute: typeof AuthenticatedAdminNotificationBroadcastsRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
+  AuthenticatedAdminSessionsRoute: typeof AuthenticatedAdminSessionsRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminSlotManagementRoute: typeof AuthenticatedAdminSlotManagementRoute
   AuthenticatedAdminStudentSubscriptionControlRoute: typeof AuthenticatedAdminStudentSubscriptionControlRoute
@@ -1334,6 +1375,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMentorSessionIdRoute: typeof AuthenticatedMentorSessionIdRoute
   AuthenticatedStudentMentorIdRoute: typeof AuthenticatedStudentMentorIdRoute
   AuthenticatedStudentSessionIdRoute: typeof AuthenticatedStudentSessionIdRoute
+  AuthenticatedAdminBookingsIndexRoute: typeof AuthenticatedAdminBookingsIndexRoute
   AuthenticatedAdminMentorsIndexRoute: typeof AuthenticatedAdminMentorsIndexRoute
   AuthenticatedAdminStudentsIndexRoute: typeof AuthenticatedAdminStudentsIndexRoute
 }
@@ -1351,6 +1393,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminNotificationBroadcastsRoute:
     AuthenticatedAdminNotificationBroadcastsRoute,
   AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
+  AuthenticatedAdminSessionsRoute: AuthenticatedAdminSessionsRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminSlotManagementRoute: AuthenticatedAdminSlotManagementRoute,
   AuthenticatedAdminStudentSubscriptionControlRoute:
@@ -1401,6 +1444,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMentorSessionIdRoute: AuthenticatedMentorSessionIdRoute,
   AuthenticatedStudentMentorIdRoute: AuthenticatedStudentMentorIdRoute,
   AuthenticatedStudentSessionIdRoute: AuthenticatedStudentSessionIdRoute,
+  AuthenticatedAdminBookingsIndexRoute: AuthenticatedAdminBookingsIndexRoute,
   AuthenticatedAdminMentorsIndexRoute: AuthenticatedAdminMentorsIndexRoute,
   AuthenticatedAdminStudentsIndexRoute: AuthenticatedAdminStudentsIndexRoute,
 }

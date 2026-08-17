@@ -21,9 +21,10 @@ export function NotificationBadge({
   };
 
   const variantClasses = {
-    primary: "bg-blue-500 text-white dark:bg-blue-400 dark:text-blue-950",
-    secondary: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-    muted: "bg-slate-100 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400",
+    primary: "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground",
+    secondary:
+      "bg-secondary text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground",
+    muted: "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
   };
 
   return (
@@ -44,7 +45,7 @@ export function NotificationBadge({
 export function NotificationDot({ className }: { className?: string }) {
   return (
     <span
-      className={cn("inline-block h-2 w-2 rounded-full bg-blue-500", className)}
+      className={cn("inline-block h-2 w-2 rounded-full bg-primary", className)}
       aria-label="Unread notification"
     />
   );

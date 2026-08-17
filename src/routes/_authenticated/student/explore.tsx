@@ -15,32 +15,43 @@ import {
   Users,
   CalendarX,
   ArrowRight,
+  Clock,
+  Search,
+  SlidersHorizontal,
+  X,
+  Sparkles,
 } from "lucide-react";
 import { useAvailableMentors } from "@/hooks/use-available-mentors";
 import { useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription";
 import { DateSelector } from "@/components/date-selector";
 import {
   getRecommendedMentors,
   type BookingMentorViewModel,
   dateLabel,
+  mentorFitSignal,
+  TIME_PREFERENCE_LABEL,
+  type TimePreference,
 } from "@/lib/booking/view-models";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/student/explore")({
   component: ExplorePage,
-  component: DiscoverMentors,
 });
 
 type SortOption = "recommended" | "rating" | "experience" | "earliest";
 
 function ExplorePage() {
-function DiscoverMentors() {
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
   const [selectedDate, setSelectedDate] = useState(today);
   const [language, setLanguage] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("recommended");
+  const [query, setQuery] = useState("");
+  const [style, setStyle] = useState<string | null>(null);
+  const [timePref, setTimePref] = useState<TimePreference>("any");
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
 
   const { availableMentors, mentorsLoading, dateAvailability } = useAvailableMentors(selectedDate);
 
@@ -50,17 +61,17 @@ function DiscoverMentors() {
     event: "*",
     onInsert: () => {
       queryClient.invalidateQueries({ queryKey: ["available-mentors-list"] });
-      queryClient.invalidateQueries({ queryKey: ["availability-slots-day"] });
+      queryClient.invalidateQueries({ queryKey: ["availability-slots-all"] });
       queryClient.invalidateQueries({ queryKey: ["date-availability-preview"] });
     },
     onUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["available-mentors-list"] });
-      queryClient.invalidateQueries({ queryKey: ["availability-slots-day"] });
+      queryClient.invalidateQueries({ queryKey: ["availability-slots-all"] });
       queryClient.invalidateQueries({ queryKey: ["date-availability-preview"] });
     },
     onDelete: () => {
       queryClient.invalidateQueries({ queryKey: ["available-mentors-list"] });
-      queryClient.invalidateQueries({ queryKey: ["availability-slots-day"] });
+      queryClient.invalidateQueries({ queryKey: ["availability-slots-all"] });
       queryClient.invalidateQueries({ queryKey: ["date-availability-preview"] });
     },
     filter: undefined,
@@ -71,16 +82,16 @@ function DiscoverMentors() {
     table: "sessions",
     event: "*",
     onInsert: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions-date-all"] });
-      queryClient.invalidateQueries({ queryKey: ["sessions-date-all", selectedDate] });
+      queryClient.invalidateQueries({ queryKey: ["sessions-date-range"] });
+      queryClient.invalidateQueries({ queryKey: ["available-mentors-list"] });
     },
     onUpdate: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions-date-all"] });
-      queryClient.invalidateQueries({ queryKey: ["sessions-date-all", selectedDate] });
+      queryClient.invalidateQueries({ queryKey: ["sessions-date-range"] });
+      queryClient.invalidateQueries({ queryKey: ["available-mentors-list"] });
     },
     onDelete: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions-date-all"] });
-      queryClient.invalidateQueries({ queryKey: ["sessions-date-all", selectedDate] });
+      queryClient.invalidateQueries({ queryKey: ["sessions-date-range"] });
+      queryClient.invalidateQueries({ queryKey: ["available-mentors-list"] });
     },
     filter: undefined,
   });
@@ -95,29 +106,91 @@ function DiscoverMentors() {
     [availableMentors, criteria],
   );
 
+  const filteredAndSorted = useMemo(() => {
+    const list = [...mentors];
+    if (sortBy === "rating") {
+      list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    } else if (sortBy === "experience") {
+      list.sort((a, b) => b.yearsExperience - a.yearsExperience);
+    } else if (sortBy === "earliest") {
+      list.sort((a, b) =>
+        (a.earliestSlot?.startIso || "").localeCompare(b.earliestSlot?.startIso || ""),
+      );
+    }
+    return list;
+  }, [mentors, sortBy]);
+
   const allLanguages = useMemo(() => {
     const langs = new Set<string>();
     availableMentors.forEach((m) => m.languages_taught?.forEach((l) => langs.add(l)));
     return Array.from(langs).sort();
   }, [availableMentors]);
 
+  const allStyles = useMemo(() => {
+    const s = new Set<string>();
+    availableMentors.forEach((m) => {
+      if (m.teaching_style) s.add(m.teaching_style);
+    });
+    return Array.from(s).sort();
+  }, [availableMentors]);
+
+  const slotInPref = (group: string): boolean => {
+    if (timePref === "any") return true;
+    if (timePref === "evening") return group === "evening" || group === "night";
+    return group === timePref;
+  };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return filteredAndSorted.filter((m) => {
+      if (style && (m.teachingStyle || "") !== style) return false;
+      if (
+        timePref !== "any" &&
+        !m.availableSlots.some((s) =>
+          timePref === "evening"
+            ? s.group === "evening" || s.group === "night"
+            : s.group === timePref,
+        )
+      )
+        return false;
+      if (q) {
+        const hay = [m.name, m.headline, m.bio, m.teachingStyle, m.primaryLanguage, ...m.languages]
+          .filter((x): x is string => !!x)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [filteredAndSorted, query, style, timePref]);
+
+  const hasActiveFilters = !!query || !!language || !!style || timePref !== "any";
+
+  function clearFilters() {
+    setQuery("");
+    setLanguage(null);
+    setStyle(null);
+    setTimePref("any");
+    setShowMoreFilters(false);
+  }
+
+  const selectedDateLabel = dateLabel(selectedDate);
+
+  const nextAvailableDate = useMemo(() => {
+    const next = dateAvailability.find((a) => a.count > 0 && a.dateStr > selectedDate);
+    return next || null;
+  }, [dateAvailability, selectedDate]);
+
   return (
     <StudentLayout>
       <ExploreErrorBoundary>
         <div className="mx-auto max-w-6xl space-y-6">
           <div>
-            <h1 className="text-3xl font-display">Find your mentor</h1>
-            <p className="text-muted-foreground">
-              Choose a date and book an available session.
+            <h1 className="text-3xl font-display tracking-tight">Discover Mentors</h1>
+            <p className="mt-1 text-muted-foreground">
+              Meet the people who can help you reach your learning goals.
             </p>
           </div>
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div>
-          <h1 className="text-3xl font-display tracking-tight">Discover Mentors</h1>
-          <p className="mt-1 text-muted-foreground">
-            Meet the people who can help you reach your learning goals.
-          </p>
-        </div>
 
           <DateSelector
             selectedDate={selectedDate}
@@ -125,36 +198,76 @@ function DiscoverMentors() {
             dateAvailability={dateAvailability}
           />
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, language, style or topic…"
+              className="h-10 w-full rounded-xl border border-input bg-background pl-9 pr-9 text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Search mentors"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-accent"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground">Filter:</span>
+              <span className="text-sm text-muted-foreground">Language</span>
               {allLanguages.length > 0 ? (
                 <>
                   <Button
-                    variant={languageFilter === null ? "default" : "outline"}
+                    variant={language === null ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setLanguageFilter(null)}
+                    onClick={() => setLanguage(null)}
                   >
                     All
                   </Button>
                   {allLanguages.slice(0, 6).map((lang) => (
                     <Button
                       key={lang}
-                      variant={languageFilter === lang ? "default" : "outline"}
+                      variant={language === lang ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setLanguageFilter(lang)}
+                      onClick={() => setLanguage(lang === language ? null : lang)}
                     >
                       {lang}
                     </Button>
                   ))}
                 </>
               ) : (
-                <span className="text-sm text-muted-foreground">Loading languages...</span>
+                <span className="text-sm text-muted-foreground">Loading languages…</span>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setShowMoreFilters((v) => !v)}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                More filters
+                {(style || timePref !== "any") && (
+                  <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                )}
+              </Button>
+
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  Clear
+                </Button>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Sort:</span>
+              <span className="text-sm text-muted-foreground">Sort</span>
               <select
                 className="h-9 rounded-md border border-input bg-background px-3 text-sm"
                 value={sortBy}
@@ -167,45 +280,62 @@ function DiscoverMentors() {
               </select>
             </div>
           </div>
-        <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-3">
-          <DateSelector
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-            dateAvailability={dateAvailability}
-          />
-          {allLanguages.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Language</span>
-              <button
-                type="button"
-                onClick={() => setLanguage(null)}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-medium",
-                  language === null
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent",
-                )}
-              >
-                All
-              </button>
-              {allLanguages.slice(0, 8).map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => setLanguage(l === language ? null : l)}
-                  className={cn(
-                    "rounded-md px-2.5 py-1 text-xs font-medium",
-                    language === l
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent",
-                  )}
-                >
-                  {l}
-                </button>
-              ))}
+
+          {/* Progressive "More filters" */}
+          {showMoreFilters && (
+            <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/20 p-3">
+              {allStyles.length > 1 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">Teaching style</span>
+                  <button
+                    type="button"
+                    onClick={() => setStyle(null)}
+                    className={cn(
+                      "rounded-md px-2.5 py-1 text-xs font-medium",
+                      !style
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent",
+                    )}
+                  >
+                    All
+                  </button>
+                  {allStyles.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setStyle(s === style ? null : s)}
+                      className={cn(
+                        "rounded-md px-2.5 py-1 text-xs font-medium",
+                        style === s
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-accent",
+                      )}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Time preference</span>
+                {(["any", "morning", "afternoon", "evening"] as TimePreference[]).map((tp) => (
+                  <button
+                    key={tp}
+                    type="button"
+                    onClick={() => setTimePref(tp)}
+                    className={cn(
+                      "rounded-md px-2.5 py-1 text-xs font-medium",
+                      timePref === tp
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent",
+                    )}
+                  >
+                    {TIME_PREFERENCE_LABEL[tp]}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
-        </div>
 
           {mentorsLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -214,105 +344,76 @@ function DiscoverMentors() {
                   <CardContent className="p-4">
                     <div className="animate-pulse space-y-3">
                       <div className="flex items-center gap-3">
-                        <Skeleton className="h-12 w-12 rounded-full" />
-                        <div className="space-y-2 flex-1">
+                        <Skeleton className="h-12 w-12 rounded-xl" />
+                        <div className="flex-1 space-y-2">
                           <Skeleton className="h-4 w-3/4 rounded" />
                           <Skeleton className="h-3 w-1/2 rounded" />
                         </div>
                       </div>
                       <Skeleton className="h-3 w-full rounded" />
                       <Skeleton className="h-3 w-2/3 rounded" />
-                      <div className="space-y-2 pt-2">
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          ) : filteredAndSorted.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="rounded-2xl border border-dashed p-12 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-                <CalendarX className="h-8 w-8 text-muted-foreground/60" />
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50">
+                <CalendarX className="h-7 w-7 text-muted-foreground/60" />
               </div>
-              <h3 className="text-lg font-semibold">
-                No mentors available on {selectedDateLabel}
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Try selecting another date from the calendar above.
-              </p>
-              {nextAvailableDate && (
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => setSelectedDate(nextAvailableDate.dateStr)}
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  {nextAvailableDate.count} mentor{nextAvailableDate.count !== 1 ? "s" : ""} available on{" "}
-                  {format(parseISO(nextAvailableDate.dateStr), "d MMM")}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+              {hasActiveFilters ? (
+                <>
+                  <h3 className="text-lg font-semibold">No mentors match your filters</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Try a different search or clear your filters to see more options.
+                  </p>
+                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-lg font-semibold">
+                    No mentors with open slots on {selectedDateLabel}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Try another date, or use Book a Session for the best available options.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    {nextAvailableDate && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedDate(nextAvailableDate.dateStr)}
+                      >
+                        {format(parseISO(nextAvailableDate.dateStr), "d MMM")} ·{" "}
+                        {nextAvailableDate.count} mentor
+                        {nextAvailableDate.count !== 1 ? "s" : ""} available
+                      </Button>
+                    )}
+                    <Button asChild variant="outline">
+                      <Link to="/student/book">
+                        Book a Session <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredAndSorted.map((mentor) => (
-                <MentorCard
-                  key={mentor.user_id}
+              {filtered.map((mentor) => (
+                <DiscoverMentorCard
+                  key={mentor.id}
                   mentor={mentor}
                   selectedDate={selectedDate}
+                  fit={mentorFitSignal(mentor)}
                 />
               ))}
             </div>
           )}
         </div>
       </ExploreErrorBoundary>
-        {mentorsLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="animate-pulse space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-12 w-12 rounded-xl" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-3/4 rounded" />
-                        <Skeleton className="h-3 w-1/2 rounded" />
-                      </div>
-                    </div>
-                    <Skeleton className="h-3 w-full rounded" />
-                    <Skeleton className="h-3 w-2/3 rounded" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : mentors.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-12 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50">
-              <CalendarX className="h-7 w-7 text-muted-foreground/60" />
-            </div>
-            <h3 className="text-lg font-semibold">
-              No mentors with open slots on {dateLabel(selectedDate)}
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Try another date, or use Book a Session for the best available options.
-            </p>
-            <Button asChild variant="outline" className="mt-4">
-              <Link to="/student/book">
-                Book a Session <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {mentors.map((mentor) => (
-              <DiscoverMentorCard key={mentor.id} mentor={mentor} selectedDate={selectedDate} />
-            ))}
-          </div>
-        )}
-      </div>
     </StudentLayout>
   );
 }
@@ -320,9 +421,11 @@ function DiscoverMentors() {
 function DiscoverMentorCard({
   mentor,
   selectedDate,
+  fit,
 }: {
   mentor: BookingMentorViewModel;
   selectedDate: string;
+  fit?: string | null;
 }) {
   return (
     <Card className="flex h-full flex-col transition-shadow duration-200 hover:shadow-md">
@@ -380,6 +483,20 @@ function DiscoverMentorCard({
 
         {mentor.bio && (
           <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{mentor.bio}</p>
+        )}
+
+        {fit && (
+          <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-primary/5 px-2.5 py-2 text-xs text-foreground">
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            {fit}
+          </div>
+        )}
+
+        {mentor.earliestSlot && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <Clock className="h-3.5 w-3.5 text-primary" />
+            Next available {dateLabel(selectedDate)} at {mentor.earliestSlot.startLabel}
+          </div>
         )}
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-4">

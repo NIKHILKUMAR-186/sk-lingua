@@ -54,8 +54,8 @@ export function FeaturedMentors() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
             Meet the mentors
           </p>
-          <h2 className="mt-3 text-4xl leading-tight tracking-tight sm:text-5xl">
-            Learn with people who've lived it.
+          <h2 className="mt-3 font-heading text-section sm:text-section-lg">
+            Learn with people who&rsquo;ve lived it.
           </h2>
           <p className="mt-4 max-w-xl text-lg text-muted-foreground">
             Every mentor is verified, reviewed, and chosen for how they teach — not just what they

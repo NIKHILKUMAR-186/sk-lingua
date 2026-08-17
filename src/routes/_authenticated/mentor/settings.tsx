@@ -3,7 +3,7 @@ import { MentorLayout } from "@/components/layouts";
 import { PageHeader } from "@/components/mentor/page-header";
 import { SectionCard } from "@/components/mentor/section-card";
 import { Button } from "@/components/ui/button";
-import { User, BookOpen, Clock, Bell, Shield, ExternalLink } from "lucide-react";
+import { User, BookOpen, Clock, Bell, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/mentor/settings")({
   component: MentorSettingsHub,
@@ -18,78 +18,71 @@ function MentorSettingsHub() {
           description="Manage your mentor profile and teaching preferences."
         />
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <SectionCard
+        <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+          <SettingsRow
+            icon={<User className="h-4 w-4 text-muted-foreground" />}
             title="Profile"
-            description="Manage your public profile, bio, certifications, and teaching experience."
-            action={
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/mentor/profile">Edit Profile</Link>
-              </Button>
-            }
-          >
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <User className="h-5 w-5 text-muted-foreground" />
-              <span>Profile photo, bio, headline, and personal details.</span>
-            </div>
-          </SectionCard>
-
-          <SectionCard
+            description="Profile photo, bio, headline, and personal details."
+            href="/mentor/profile"
+          />
+          <SettingsRow
+            icon={<BookOpen className="h-4 w-4 text-muted-foreground" />}
             title="Teaching"
-            description="Manage languages taught, teaching style, and hourly rate."
-            action={
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/mentor/profile">Teaching Settings</Link>
-              </Button>
-            }
-          >
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <BookOpen className="h-5 w-5 text-muted-foreground" />
-              <span>Languages, certifications, and teaching preferences.</span>
-            </div>
-          </SectionCard>
-
-          <SectionCard
+            description="Languages taught, certifications, and teaching preferences."
+            href="/mentor/profile"
+          />
+          <SettingsRow
+            icon={<Clock className="h-4 w-4 text-muted-foreground" />}
             title="Availability"
-            description="Set your availability preferences and schedule."
-            action={
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/mentor/availability">Manage Availability</Link>
-              </Button>
-            }
-          >
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <span>Weekly schedule and time slot management.</span>
-            </div>
-          </SectionCard>
-
-          <SectionCard
+            description="Weekly schedule and time slot management."
+            href="/mentor/availability"
+          />
+          <SettingsRow
+            icon={<Bell className="h-4 w-4 text-muted-foreground" />}
             title="Notifications"
-            description="Configure notifications for bookings, demos, and session reminders."
-            action={
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/mentor/notifications">Notification Preferences</Link>
-              </Button>
-            }
-          >
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <span>Email and in-app notification preferences.</span>
-            </div>
-          </SectionCard>
-
-          <SectionCard
+            description="Email and in-app notification preferences."
+            href="/mentor/notifications"
+          />
+          <SettingsRow
+            icon={<Shield className="h-4 w-4 text-muted-foreground" />}
             title="Account"
-            description="Manage your account security and sign-out preferences."
-          >
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Shield className="h-5 w-5 text-muted-foreground" />
-              <span>Password, email, and account security.</span>
-            </div>
-          </SectionCard>
+            description="Password, email, and account security."
+            href="#"
+          />
         </div>
       </div>
     </MentorLayout>
+  );
+}
+
+function SettingsRow({
+  icon,
+  title,
+  description,
+  href,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  href: string;
+}) {
+  return (
+    <Link
+      to={href}
+      className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-accent/10 transition-colors"
+    >
+      <div className="flex items-center gap-3.5 min-w-0">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">{title}</p>
+          <p className="text-xs text-muted-foreground truncate">{description}</p>
+        </div>
+      </div>
+      <Button variant="ghost" size="sm" className="shrink-0 h-8 text-xs">
+        Open
+      </Button>
+    </Link>
   );
 }

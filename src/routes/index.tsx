@@ -1,15 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LandingNavbar } from "@/modules/landing/components/landing-navbar";
 import { Hero } from "@/modules/landing/components/hero";
-import { Stats } from "@/modules/landing/components/stats";
-import { Features } from "@/modules/landing/components/features";
-import { HowItWorks } from "@/modules/landing/components/how-it-works";
-import { Languages } from "@/modules/landing/components/languages";
-import { FeaturedMentors } from "@/modules/landing/components/featured-mentors";
+import { ProductCinema } from "@/modules/landing/components/product-cinema";
+import { ProductJourney } from "@/modules/landing/components/product-journey";
+import { Benefits } from "@/modules/landing/components/benefits";
 import { Testimonials } from "@/modules/landing/components/testimonials";
-import { Pricing } from "@/modules/landing/components/pricing";
-import { Faq } from "@/modules/landing/components/faq";
-import { MentorCta } from "@/modules/landing/components/mentor-cta";
+import { FinalCta } from "@/modules/landing/components/final-cta";
 import { LandingFooter } from "@/modules/landing/components/landing-footer";
 
 export const Route = createFileRoute("/")({
@@ -36,7 +32,7 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <a
-        href="#method"
+        href="#home"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-sm focus:text-background"
       >
         Skip to content
@@ -44,15 +40,11 @@ function Landing() {
       <LandingNavbar />
       <main>
         <Hero />
-        <Stats />
-        <Features />
-        <HowItWorks />
-        <Languages />
-        <FeaturedMentors />
+        <ProductCinema />
+        <ProductJourney />
+        <Benefits />
         <Testimonials />
-        <Pricing />
-        <Faq />
-        <MentorCta />
+        <FinalCta />
       </main>
       <LandingFooter />
     </div>

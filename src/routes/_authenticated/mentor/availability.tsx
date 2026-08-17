@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MentorLayout } from "@/components/layouts";
-import { MentorAvailability } from "@/components/mentor-availability";
 import { PageHeader } from "@/components/mentor/page-header";
+import { MentorAvailability } from "@/components/mentor-availability";
 
 export const Route = createFileRoute("/_authenticated/mentor/availability")({
   component: MentorAvailabilityPage,

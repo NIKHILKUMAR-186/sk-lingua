@@ -17,6 +17,8 @@ import {
   Sparkles,
   CalendarX,
   Check,
+  Clock,
+  ArrowRight,
   GraduationCap,
   Languages as LanguagesIcon,
 } from "lucide-react";
@@ -33,6 +35,7 @@ import {
   type TimePreference,
   TIME_PREFERENCE_LABEL,
   dateLabel,
+  timestampLabel,
 } from "@/lib/booking/view-models";
 import { toast } from "sonner";
 
@@ -102,6 +105,20 @@ export function SessionBookingFlow() {
     () => dateAvailability.filter((a) => a.count > 0),
     [dateAvailability],
   );
+
+  // Smart "next available" discovery — the earliest real slot across the ranked
+  // results, surfaced as a quick-pick so students never have to hunt.
+  const nextSuggestion = useMemo(() => {
+    let best: { mentor: BookingMentorViewModel; slot: BookingSlotViewModel } | null = null;
+    for (const m of recommended) {
+      for (const s of m.availableSlots) {
+        if (!best || new Date(s.startIso).getTime() < new Date(best.slot.startIso).getTime()) {
+          best = { mentor: m, slot: s };
+        }
+      }
+    }
+    return best;
+  }, [recommended]);
 
   // When the recommended set no longer contains the chosen mentor (e.g. date
   // changed), drop the stale selection.
@@ -260,6 +277,27 @@ export function SessionBookingFlow() {
                 {dateLabel(selectedDate)} matching your criteria
               </span>
             </div>
+          )}
+
+          {!mentorsLoading && nextSuggestion && (
+            <button
+              type="button"
+              onClick={() => selectSlot(nextSuggestion.mentor, nextSuggestion.slot)}
+              className="group flex w-full items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-3 text-left transition hover:border-primary/40 hover:bg-primary/10"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Clock className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-semibold uppercase tracking-wide text-primary">
+                  Next available
+                </span>
+                <span className="block font-semibold">
+                  {timestampLabel(nextSuggestion.slot.startIso)} · with {nextSuggestion.mentor.name}
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
+            </button>
           )}
 
           {mentorsLoading ? (

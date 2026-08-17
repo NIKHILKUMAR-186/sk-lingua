@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-18T02:13:52+05:30",
+  "title": "Design System: Lingua",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Twilight Auth",
+        "canonical": "oklch(0.55 0.2 260)",
+        "tonalRamp": [
+          "oklch(0.98 0.005 260)",
+          "oklch(0.94 0.02 260)",
+          "oklch(0.88 0.04 260)",
+          "oklch(0.78 0.08 260)",
+          "oklch(0.65 0.15 260)",
+          "oklch(0.55 0.2 260)",
+          "oklch(0.45 0.22 260)",
+          "oklch(0.35 0.2 260)"
+        ]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Soft Violet Glow",
+        "canonical": "oklch(0.94 0.04 285)",
+        "tonalRamp": [
+          "oklch(0.98 0.005 285)",
+          "oklch(0.96 0.01 285)",
+          "oklch(0.94 0.02 285)",
+          "oklch(0.9 0.03 285)",
+          "oklch(0.85 0.04 285)",
+          "oklch(0.78 0.05 285)",
+          "oklch(0.7 0.06 285)",
+          "oklch(0.6 0.06 285)"
+        ]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "oklch(0.99 0.005 260)",
+        "tonalRamp": [
+          "oklch(1 0 0)",
+          "oklch(0.99 0.003 260)",
+          "oklch(0.96 0.005 260)",
+          "oklch(0.92 0.008 260)",
+          "oklch(0.85 0.01 260)",
+          "oklch(0.7 0.02 260)",
+          "oklch(0.5 0.03 260)",
+          "oklch(0.18 0.03 265)"
+        ]
+      },
+      "semantic-electric": {
+        "role": "accent",
+        "displayName": "Electric Blue-Violet",
+        "canonical": "oklch(0.5 0.2 250)",
+        "tonalRamp": [
+          "oklch(0.95 0.01 250)",
+          "oklch(0.85 0.05 250)",
+          "oklch(0.7 0.1 250)",
+          "oklch(0.6 0.15 250)",
+          "oklch(0.5 0.2 250)",
+          "oklch(0.4 0.2 250)",
+          "oklch(0.3 0.18 250)",
+          "oklch(0.2 0.15 250)"
+        ]
+      },
+      "semantic-success": {
+        "role": "success",
+        "displayName": "Vital Green",
+        "canonical": "oklch(0.65 0.16 155)",
+        "tonalRamp": [
+          "oklch(0.95 0.01 155)",
+          "oklch(0.88 0.04 155)",
+          "oklch(0.78 0.08 155)",
+          "oklch(0.68 0.12 155)",
+          "oklch(0.65 0.16 155)",
+          "oklch(0.5 0.14 155)",
+          "oklch(0.35 0.1 155)",
+          "oklch(0.2 0.06 155)"
+        ]
+      },
+      "semantic-destructive": {
+        "role": "destructive",
+        "displayName": "Signal Red",
+        "canonical": "oklch(0.6 0.22 25)",
+        "tonalRamp": [
+          "oklch(0.95 0.01 25)",
+          "oklch(0.88 0.04 25)",
+          "oklch(0.78 0.08 25)",
+          "oklch(0.68 0.14 25)",
+          "oklch(0.6 0.22 25)",
+          "oklch(0.5 0.2 25)",
+          "oklch(0.4 0.16 25)",
+          "oklch(0.3 0.12 25)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headlines and landing page titles."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles, dashboard headers, and card titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Reading content, session descriptions, and long-form text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Button text, form labels, navigation, and status badges."
+      }
+    },
+    "shadows": [
+      {
+        "name": "soft-hover",
+        "value": "0 4px 20px -8px oklch(0.4 0.15 260 / 0.15)",
+        "purpose": "Diffuse hover glow under buttons and interactive cards."
+      },
+      {
+        "name": "lifted-card",
+        "value": "0 1px 1px oklch(0.2 0.04 265 / 0.03), 0 8px 30px -10px oklch(0.35 0.12 265 / 0.18)",
+        "purpose": "Elevated cards and modals. Creates separation without harsh edges."
+      },
+      {
+        "name": "brand-glow",
+        "value": "0 0 60px -18px var(--primary)",
+        "purpose": "Primary CTAs and active streak indicators."
+      },
+      {
+        "name": "electric-glow",
+        "value": "0 0 60px -14px var(--electric)",
+        "purpose": "Live session indicators and presence dots."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default easing for state transitions."
+      },
+      {
+        "name": "marquee",
+        "value": "marquee 44s linear infinite",
+        "purpose": "Infinite horizontal scroll for marquee sections."
+      },
+      {
+        "name": "float",
+        "value": "float 7s ease-in-out infinite",
+        "purpose": "Gentle vertical float for decorative elements."
+      },
+      {
+        "name": "pulse-soft",
+        "value": "pulse-soft 3.2s ease-in-out infinite",
+        "purpose": "Subtle breathing animation for status indicators."
+      },
+      {
+        "name": "aurora",
+        "value": "aurora 20s ease-in-out infinite",
+        "purpose": "Slow background movement for immersive landing sections."
+      },
+      {
+        "name": "shimmer",
+        "value": "shimmer 3s ease-in-out infinite",
+        "purpose": "Loading shimmer for skeleton and placeholder states."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action. Used for primary actions like booking, confirming, and continuing.",
+      "html": "<button class=\"ds-btn-primary\">Book a Trial</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; border-radius: 8px; background: oklch(0.55 0.2 260); color: oklch(0.99 0 0); padding: 8px 16px; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1.4; cursor: pointer; border: none; transition: background 0.2s ease, transform 0.15s ease; } .ds-btn-primary:hover { background: oklch(0.5 0.2 260); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 1px oklch(0.55 0.2 260); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Lower-emphasis action. Used for secondary actions like cancel, back, or skip.",
+      "html": "<button class=\"ds-btn-secondary\">Back to Dashboard</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; border-radius: 8px; background: oklch(0.96 0.01 260); color: oklch(0.22 0.04 265); padding: 8px 16px; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1.4; cursor: pointer; border: none; box-shadow: 0 1px 2px oklch(0.2 0.04 265 / 0.04); transition: background 0.2s ease; } .ds-btn-secondary:hover { background: oklch(0.92 0.01 260); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 1px oklch(0.55 0.2 260); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Content container for sessions, mentor profiles, and feature blocks.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h3 class=\"ds-card-title\">Session with Maria</h3><p class=\"ds-card-desc\">Tomorrow at 3:00 PM</p></div><div class=\"ds-card-content\"><p>Spanish conversation practice</p></div></div>",
+      "css": ".ds-card { border-radius: 16px; border: 1px solid oklch(0.92 0.01 260 / 0.4); background: oklch(1 0 0); color: oklch(0.18 0.03 265); box-shadow: 0 1px 1px oklch(0.2 0.04 265 / 0.03); transition: box-shadow 0.2s ease; } .ds-card:hover { box-shadow: 0 1px 1px oklch(0.2 0.04 265 / 0.03), 0 8px 30px -10px oklch(0.35 0.12 265 / 0.18); } .ds-card-header { display: flex; flex-direction: column; gap: 4px; padding: 16px; } .ds-card-title { font-family: Sora, system-ui, sans-serif; font-size: 16px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; margin: 0; } .ds-card-desc { font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 400; line-height: 1.4; color: oklch(0.5 0.03 260); margin: 0; } .ds-card-content { padding: 0 16px 16px; } .ds-card-content p { font-family: Inter, system-ui, sans-serif; font-size: 14px; line-height: 1.5; margin: 0; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text field for forms, search, and data entry.",
+      "html": "<input class=\"ds-input\" placeholder=\"Enter your email\" />",
+      "css": ".ds-input { display: flex; width: 100%; height: 36px; border-radius: 8px; border: 1px solid oklch(0.92 0.01 260); background: transparent; padding: 8px 12px; font-family: Inter, system-ui, sans-serif; font-size: 14px; line-height: 1.5; color: oklch(0.18 0.03 265); box-shadow: 0 1px 2px oklch(0.2 0.04 265 / 0.04); transition: border-color 0.2s ease, box-shadow 0.2s ease; } .ds-input::placeholder { color: oklch(0.5 0.03 260); } .ds-input:hover { border-color: oklch(0.85 0.02 260); } .ds-input:focus { outline: none; border-color: oklch(0.55 0.2 260); box-shadow: 0 0 0 1px oklch(0.55 0.2 260); } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-primary",
+      "description": "Status indicator for session state, streak count, and mentor availability.",
+      "html": "<span class=\"ds-badge-primary\">Active</span>",
+      "css": ".ds-badge-primary { display: inline-flex; align-items: center; border-radius: 8px; border: none; padding: 2px 10px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; line-height: 1.4; background: oklch(0.55 0.2 260); color: oklch(0.99 0 0); transition: background 0.2s ease; } .ds-badge-primary:hover { background: oklch(0.5 0.2 260); } .ds-badge-secondary { display: inline-flex; align-items: center; border-radius: 8px; border: none; padding: 2px 10px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; line-height: 1.4; background: oklch(0.96 0.01 260); color: oklch(0.22 0.04 265); transition: background 0.2s ease; } .ds-badge-secondary:hover { background: oklch(0.92 0.01 260); } .ds-badge-outline { display: inline-flex; align-items: center; border-radius: 8px; border: none; padding: 2px 10px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; line-height: 1.4; background: transparent; color: oklch(0.18 0.03 265); }"
+    },
+    {
+      "name": "Sidebar Navigation Item",
+      "kind": "nav",
+      "refersTo": "sidebar-item",
+      "description": "Navigation entry in the authenticated app shell sidebar.",
+      "html": "<a class=\"ds-nav-item\" href=\"#\"><svg class=\"ds-nav-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/></svg><span class=\"ds-nav-label\">Dashboard</span></a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px; color: oklch(0.5 0.03 260); text-decoration: none; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1.4; transition: background 0.15s ease, color 0.15s ease; } .ds-nav-item:hover { background: oklch(0.94 0.04 285 / 0.5); color: oklch(0.28 0.1 285); } .ds-nav-item.active { background: oklch(0.95 0.03 265); color: oklch(0.55 0.2 260); } .ds-nav-icon { width: 16px; height: 16px; flex-shrink: 0; } .ds-nav-label { white-space: nowrap; }"
+    },
+    {
+      "name": "Dialog",
+      "kind": "custom",
+      "refersTo": "dialog",
+      "description": "Modal overlay for confirmations, forms, and focused tasks.",
+      "html": "<div class=\"ds-dialog-overlay\"></div><div class=\"ds-dialog\"><div class=\"ds-dialog-header\"><h3 class=\"ds-dialog-title\">Confirm Booking</h3></div><div class=\"ds-dialog-body\"><p>Are you sure you want to book this session?</p></div><div class=\"ds-dialog-footer\"><button class=\"ds-btn-secondary\">Cancel</button><button class=\"ds-btn-primary\">Confirm</button></div></div>",
+      "css": ".ds-dialog-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, 0.8); } .ds-dialog { position: fixed; left: 50%; top: 50%; z-index: 50; width: 100%; max-width: 448px; transform: translate(-50%, -50%); display: grid; gap: 16px; border: 1px solid oklch(0.92 0.01 260 / 0.4); background: oklch(0.99 0.005 260); padding: 24px; border-radius: 12px; box-shadow: 0 1px 1px oklch(0.2 0.04 265 / 0.03), 0 8px 30px -10px oklch(0.35 0.12 265 / 0.18); } .ds-dialog-header { display: flex; flex-direction: column; gap: 8px; } .ds-dialog-title { font-family: Sora, system-ui, sans-serif; font-size: 18px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; margin: 0; color: oklch(0.18 0.03 265); } .ds-dialog-body p { font-family: Inter, system-ui, sans-serif; font-size: 14px; line-height: 1.5; margin: 0; color: oklch(0.18 0.03 265); } .ds-dialog-footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 8px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Fluent Mind",
+    "overview": "Lingua's design language is built around clarity, flow, and intellectual warmth. Every interface decision serves the student's focus: the palette stays cool and breathable, typography balances editorial authority with operational readability, and motion supports comprehension without distraction. The system treats language learning as an act of thinking and connection, not transaction.\n\nBrand lives in restraint. The Twilight Auth primary appears sparingly to guide attention, while the bulk of the surface remains on Cool Paper. Depth is conveyed through subtle tonal layering and restrained elevation rather than heavy ornamentation.",
+    "keyCharacteristics": [
+      "Cool-paper surfaces with ink-dark text",
+      "Deep violet-primary used as directional signal, not decoration",
+      "Generous whitespace with 8/16/24px rhythm",
+      "Typography pairing of Instrument Serif, Sora, and Inter",
+      "Subtle motion that supports comprehension without distraction"
+    ],
+    "rules": [
+      {
+        "name": "The Twilight Auth Rule",
+        "body": "Primary appears on ≤15% of any given screen. Its rarity is the point; overuse dilutes direction into decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Voice Rule",
+        "body": "Every screen uses at most two type families. Instrument Serif is reserved for display; Sora and Inter share the operational voice.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Surfaces are flat at rest. Shadows appear only as a response to state (hover, elevation, focus).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use Twilight Auth on primary actions only. Let its rarity create urgency.",
+      "Do keep body text on Cool Paper or Pure Surface. Never place long-form text on tinted backgrounds.",
+      "Do use the 8px spacing grid. 4px increments exist for tight controls; 24px and 32px for section breathing room.",
+      "Do pair Instrument Serif with Sora or Inter, never alone. Serif is display-only.",
+      "Do use the shadow vocabulary as described. Do not invent new shadows."
+    ],
+    "donts": [
+      "Don't place Twilight Auth text on non-white backgrounds without verifying contrast.",
+      "Don't stack multiple accent colors in a single component. One accent per element.",
+      "Don't use border-heavy outlines for primary interaction. Use shadow and tonal shift instead.",
+      "Don't break the 8px rhythm with arbitrary spacing values like 7px, 13px, or 19px.",
+      "Don't use decorative gradients on operational surfaces. Gradients are reserved for landing page hero moments only."
+    ]
+  }
+}

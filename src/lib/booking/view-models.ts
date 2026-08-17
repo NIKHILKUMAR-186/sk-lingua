@@ -281,3 +281,54 @@ export function timestampLabel(iso: string): string {
   const timePart = safeFormatSlotTime(d);
   return `${datePart}${timePart ? ` · ${timePart}` : ""}`;
 }
+
+/**
+ * Deterministic "mentor fit" signal, derived ONLY from real mentor data
+ * (teaching_style / headline keywords). Returns `null` when the mentor has no
+ * data that confidently supports a claim — never invents unsupported claims.
+ */
+const FIT_KEYWORDS: Array<{ keywords: string[]; signal: string }> = [
+  {
+    keywords: ["conversation", "speak", "dialogue", "spoken", "fluency", "pronunciation", "accent"],
+    signal: "Great for conversation practice",
+  },
+  {
+    keywords: ["interview", "job", "career", "resume", "cv"],
+    signal: "Best for interview preparation",
+  },
+  {
+    keywords: ["grammar", "foundation", "beginner", "basics", "structure"],
+    signal: "Builds strong foundations",
+  },
+  {
+    keywords: ["business", "professional", "work", "corporate", "office"],
+    signal: "Great for professional communication",
+  },
+  {
+    keywords: ["ielts", "toefl", "exam", "test", "preparation"],
+    signal: "Focused on exam preparation",
+  },
+  {
+    keywords: ["children", "kids", "teen", "young", "school"],
+    signal: "Experienced with younger learners",
+  },
+  {
+    keywords: ["trav", "travel", "cultural", "everyday", "daily"],
+    signal: "Great for everyday, travel-ready communication",
+  },
+];
+
+export function mentorFitSignal(mentor: BookingMentorViewModel): string | null {
+  const haystack = [mentor.teachingStyle ?? "", mentor.headline ?? ""]
+    .join(" ")
+    .toLowerCase();
+
+  if (!haystack.trim()) return null;
+
+  for (const { keywords, signal } of FIT_KEYWORDS) {
+    if (keywords.some((k) => haystack.includes(k))) {
+      return signal;
+    }
+  }
+  return null;
+}

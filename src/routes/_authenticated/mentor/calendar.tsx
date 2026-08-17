@@ -4,7 +4,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
-import { RequestCard } from "@/components/mentor/request-card";
 import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -15,8 +14,9 @@ import {
   Clock3,
   Video,
   CalendarClock,
+  ChevronRight,
 } from "lucide-react";
-import { format, parseISO, formatDistanceToNow } from "date-fns";
+import { format, parseISO, formatDistanceToNow, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import { useMentorRespondDemoAssignment } from "@/hooks/use-demo-bookings";
@@ -148,7 +148,7 @@ function MentorCalendarRequests() {
       <div className="mx-auto max-w-5xl space-y-6">
         <PageHeader
           title="Calendar & Requests"
-          description="Manage your schedule, bookings, and student requests."
+          description="Your schedule and booking requests."
         />
 
         <Tabs value={topTab} onValueChange={(v) => setTopTab(v as TopTab)}>
@@ -157,7 +157,7 @@ function MentorCalendarRequests() {
             <TabsTrigger value="requests">
               Requests
               {totalPending > 0 && (
-                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1.5 text-[11px] font-semibold text-blue-700">
+                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/10 px-1.5 text-[11px] font-semibold text-primary">
                   {totalPending}
                 </span>
               )}
@@ -165,12 +165,12 @@ function MentorCalendarRequests() {
           </TabsList>
 
           {topTab === "calendar" && (
-            <div className="mt-6 space-y-6">
+            <div className="mt-6">
               {isLoading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, i) => (
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex gap-4">
-                      <Skeleton className="h-12 w-12 shrink-0 rounded-xl" />
+                      <Skeleton className="h-12 w-12 shrink-0 rounded-lg" />
                       <div className="flex-1 space-y-2">
                         <Skeleton className="h-4 w-48" />
                         <Skeleton className="h-3 w-32" />
@@ -185,19 +185,28 @@ function MentorCalendarRequests() {
                   description="Accepted and confirmed sessions will appear here."
                 />
               ) : (
-                <div className="space-y-3">
+                <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
                   {upcomingSessions.map((session: any) => {
                     const start = parseISO(session.scheduled_time);
                     const student = studentMap.get(session.student_id);
+                    const dayLabel = isToday(start)
+                      ? "Today"
+                      : isTomorrow(start)
+                        ? "Tomorrow"
+                        : format(start, "EEE, MMM d");
+
                     return (
                       <motion.div
                         key={session.id}
-                        initial={{ opacity: 0, y: 8 }}
+                        initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-4 rounded-xl border border-border/60 p-4 transition hover:border-primary/20 hover:bg-accent/20"
+                        className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                        onClick={() =>
+                          navigate({ to: "/mentor/session/$id", params: { id: session.id } } as any)
+                        }
                       >
-                        <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/10 text-primary">
-                          <span className="text-[10px] font-semibold uppercase leading-none">
+                        <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg border border-border/60 bg-background">
+                          <span className="text-[10px] font-medium uppercase leading-none text-muted-foreground">
                             {format(start, "MMM")}
                           </span>
                           <span className="text-lg font-display font-bold leading-tight">
@@ -205,23 +214,14 @@ function MentorCalendarRequests() {
                           </span>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-foreground truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {student?.full_name || "Student"}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {format(start, "h:mm a")} · {session.duration_mins} min
+                            {dayLabel} · {format(start, "h:mm a")} · {session.duration_mins} min
                           </p>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 text-xs"
-                          onClick={() =>
-                            navigate({ to: "/mentor/session/$id", params: { id: session.id } } as any)
-                          }
-                        >
-                          Open
-                        </Button>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                       </motion.div>
                     );
                   })}
@@ -235,7 +235,7 @@ function MentorCalendarRequests() {
               <Tabs value={requestTab} onValueChange={(v) => setRequestTab(v as RequestTab)}>
                 <TabsList className="w-full justify-start">
                   <TabsTrigger value="pending">
-                    Pending {totalPending > 0 && `(${totalPending})`}
+                    Pending {totalPending > 0 ? `(${totalPending})` : ""}
                   </TabsTrigger>
                   <TabsTrigger value="upcoming">Upcoming ({upcomingSessions.length})</TabsTrigger>
                   <TabsTrigger value="past">Past ({pastSessions.length})</TabsTrigger>
@@ -268,51 +268,117 @@ function MentorCalendarRequests() {
                       {demoRequests.map((r: any) => {
                         const student = studentMap.get(r.user_id);
                         const start = parseISO(r.booking_date);
+                        const dayLabel = isToday(start)
+                          ? "Today"
+                          : isTomorrow(start)
+                            ? "Tomorrow"
+                            : format(start, "EEE, MMM d");
+
                         return (
                           <motion.div
                             key={`demo-${r.id}`}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
+                            className="rounded-xl border border-border/60 bg-card overflow-hidden"
                           >
-                            <RequestCard
-                              studentName={student?.full_name || "Student"}
-                              studentAvatar={student?.avatar_url}
-                              topic="Demo Session"
-                              date={format(start, "MMM d, yyyy")}
-                              time={`${r.booking_time_start} — ${r.booking_time_end}`}
-                              duration={r.duration_mins}
-                              message={r.notes}
-                              status="pending"
-                              requestAge={formatDistanceToNow(parseISO(r.created_at), { addSuffix: true })}
-                              language={r.language}
-                              onAccept={() => respondDemo(r.id, "accept")}
-                              onReject={() => respondDemo(r.id, "reject")}
-                            />
+                            <div className="p-5">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start gap-3 min-w-0">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                                    {student?.full_name?.charAt(0) || "S"}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-foreground truncate">
+                                      {student?.full_name || "Student"}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      Demo Session · {dayLabel} · {r.duration_mins} min
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {r.booking_time_start} — {r.booking_time_end}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex shrink-0 gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => respondDemo(r.id, "accept")}
+                                    className="h-8 text-xs"
+                                  >
+                                    Accept
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => respondDemo(r.id, "reject")}
+                                    className="h-8 text-xs"
+                                  >
+                                    Decline
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
                           </motion.div>
                         );
                       })}
-                      {pendingSessions.map((r: any) => (
-                        <motion.div
-                          key={r.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
-                          <RequestCard
-                            studentName={r.student?.full_name ?? "Student"}
-                            studentAvatar={r.student?.avatar_url}
-                            topic={r.gig?.title || "Session request"}
-                            date={format(parseISO(r.scheduled_time), "MMM d, yyyy")}
-                            time={format(parseISO(r.scheduled_time), "h:mm a")}
-                            duration={r.duration_mins}
-                            message={r.student_message}
-                            status="pending"
-                            requestAge={formatDistanceToNow(parseISO(r.created_at), { addSuffix: true })}
-                            language={r.language}
-                            onAccept={() => updateStatus(r.id, "accepted")}
-                            onReject={() => updateStatus(r.id, "rejected")}
-                          />
-                        </motion.div>
-                      ))}
+                      {pendingSessions.map((r: any) => {
+                        const start = parseISO(r.scheduled_time);
+                        const student = studentMap.get(r.student_id);
+                        const dayLabel = isToday(start)
+                          ? "Today"
+                          : isTomorrow(start)
+                            ? "Tomorrow"
+                            : format(start, "EEE, MMM d");
+
+                        return (
+                          <motion.div
+                            key={r.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="rounded-xl border border-border/60 bg-card overflow-hidden"
+                          >
+                            <div className="p-5">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start gap-3 min-w-0">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                                    {(r.student?.full_name || "S").charAt(0)}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-foreground truncate">
+                                      {r.student?.full_name || "Student"}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      {r.gig?.title || "Session request"} · {dayLabel} · {format(start, "h:mm a")} · {r.duration_mins} min
+                                    </p>
+                                    {r.student_message && (
+                                      <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">
+                                        &ldquo;{r.student_message}&rdquo;
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex shrink-0 gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateStatus(r.id, "accepted")}
+                                    className="h-8 text-xs"
+                                  >
+                                    Accept
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => updateStatus(r.id, "rejected")}
+                                    className="h-8 text-xs"
+                                  >
+                                    Decline
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   )}
                 </TabsContent>
@@ -340,24 +406,49 @@ function MentorCalendarRequests() {
                       description="Accepted sessions will appear here."
                     />
                   ) : (
-                    upcomingSessions.map((r: any) => (
-                      <motion.div
-                        key={r.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <RequestCard
-                          studentName={r.student?.full_name ?? "Student"}
-                          studentAvatar={r.student?.avatar_url}
-                          topic={r.gig?.title || "Session"}
-                          date={format(parseISO(r.scheduled_time), "MMM d, yyyy")}
-                          time={format(parseISO(r.scheduled_time), "h:mm a")}
-                          duration={r.duration_mins}
-                          status="accepted"
-                          onOpen={() => navigate({ to: "/mentor/session/$id", params: { id: r.id } })}
-                        />
-                      </motion.div>
-                    ))
+                    <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+                      {upcomingSessions.map((r: any) => {
+                        const start = parseISO(r.scheduled_time);
+                        const student = studentMap.get(r.student_id);
+                        const dayLabel = isToday(start)
+                          ? "Today"
+                          : isTomorrow(start)
+                            ? "Tomorrow"
+                            : format(start, "EEE, MMM d");
+
+                        return (
+                          <motion.div
+                            key={r.id}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                            onClick={() =>
+                              navigate({ to: "/mentor/session/$id", params: { id: r.id } } as any)
+                            }
+                          >
+                            <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg border border-border/60 bg-background">
+                              <span className="text-[10px] font-medium uppercase leading-none text-muted-foreground">
+                                {format(start, "MMM")}
+                              </span>
+                              <span className="text-lg font-display font-bold leading-tight">
+                                {format(start, "d")}
+                              </span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {student?.full_name || "Student"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {dayLabel} · {format(start, "h:mm a")} · {r.duration_mins} min
+                              </p>
+                            </div>
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {r.status === "accepted" || r.status === "confirmed" ? "Confirmed" : r.status}
+                            </span>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   )}
                 </TabsContent>
 
@@ -384,23 +475,40 @@ function MentorCalendarRequests() {
                       description="Completed and cancelled sessions appear here."
                     />
                   ) : (
-                    pastSessions.map((r: any) => (
-                      <motion.div
-                        key={r.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <RequestCard
-                          studentName={r.student?.full_name ?? "Student"}
-                          studentAvatar={r.student?.avatar_url}
-                          topic={r.gig?.title || "Session"}
-                          date={format(parseISO(r.scheduled_time), "MMM d, yyyy")}
-                          time={format(parseISO(r.scheduled_time), "h:mm a")}
-                          duration={r.duration_mins}
-                          status={r.status as any}
-                        />
-                      </motion.div>
-                    ))
+                    <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+                      {pastSessions.map((r: any) => {
+                        const start = parseISO(r.scheduled_time);
+                        const student = studentMap.get(r.student_id);
+                        return (
+                          <motion.div
+                            key={r.id}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-4 px-5 py-4"
+                          >
+                            <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg border border-border/60 bg-background opacity-60">
+                              <span className="text-[10px] font-medium uppercase leading-none text-muted-foreground">
+                                {format(start, "MMM")}
+                              </span>
+                              <span className="text-lg font-display font-bold leading-tight text-muted-foreground">
+                                {format(start, "d")}
+                              </span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {student?.full_name || "Student"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(start, "EEE, MMM d")} · {format(start, "h:mm a")} · {r.duration_mins} min
+                              </p>
+                            </div>
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {r.status}
+                            </span>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   )}
                 </TabsContent>
               </Tabs>
