@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LandingNavbar } from "@/modules/landing/components/landing-navbar";
 import { Hero } from "@/modules/landing/components/hero";
-import { ProductCinema } from "@/modules/landing/components/product-cinema";
 import { ProductJourney } from "@/modules/landing/components/product-journey";
+import { MentorShowcase } from "@/modules/landing/components/mentor-showcase";
+import { SessionPreview } from "@/modules/landing/components/session-preview";
 import { Benefits } from "@/modules/landing/components/benefits";
-import { Testimonials } from "@/modules/landing/components/testimonials";
 import { FinalCta } from "@/modules/landing/components/final-cta";
 import { LandingFooter } from "@/modules/landing/components/landing-footer";
 
@@ -40,10 +40,10 @@ function Landing() {
       <LandingNavbar />
       <main>
         <Hero />
-        <ProductCinema />
         <ProductJourney />
+        <MentorShowcase />
+        <SessionPreview />
         <Benefits />
-        <Testimonials />
         <FinalCta />
       </main>
       <LandingFooter />

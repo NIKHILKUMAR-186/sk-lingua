@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Reveal } from "./reveal";
-import { Search, CalendarCheck, Video, TrendingUp, ArrowRight } from "lucide-react";
+import { Search, UserCheck, CalendarCheck, Video, ArrowRight , Star } from "lucide-react";
 
 const STEPS = [
   {
@@ -33,12 +33,42 @@ const STEPS = [
     ),
   },
   {
-    id: "connect",
+    id: "choose",
     number: "02",
-    title: "Connect",
-    subtitle: "Book instantly",
+    title: "Choose",
+    subtitle: "Review profile",
+    icon: UserCheck,
+    description: "Read reviews, check credentials, and find the right fit.",
+    visual: (
+      <div className="space-y-4">
+        <div className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-5">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-electric text-lg font-bold text-white">
+            MG
+          </div>
+          <div>
+            <div className="text-base font-semibold">María García</div>
+            <div className="text-xs text-muted-foreground">Spanish · Conversation specialist</div>
+            <div className="mt-1 flex items-center gap-1 text-xs text-warning">
+              <Star className="h-3 w-3 fill-warning" /> 4.98 · 1,240 sessions
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <span className="rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs text-success">
+            Verified
+          </span>
+          <span className="rounded-full border border-border px-2.5 py-1 text-xs">5 years exp.</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "book",
+    number: "03",
+    title: "Book",
+    subtitle: "Pick a time",
     icon: CalendarCheck,
-    description: "Pick a time that fits your schedule. Get instant confirmation.",
+    description: "Select a time that fits your schedule. Get instant confirmation.",
     visual: (
       <div className="space-y-4">
         <div className="flex items-center justify-between rounded-xl border border-border/60 bg-card p-4">
@@ -59,9 +89,9 @@ const STEPS = [
   },
   {
     id: "learn",
-    number: "03",
+    number: "04",
     title: "Learn",
-    subtitle: "Live session",
+    subtitle: "Start session",
     icon: Video,
     description: "Join a browser-based video call with shared notes and instant feedback.",
     visual: (
@@ -84,47 +114,6 @@ const STEPS = [
       </div>
     ),
   },
-  {
-    id: "progress",
-    number: "04",
-    title: "Progress",
-    subtitle: "Track growth",
-    icon: TrendingUp,
-    description: "Watch your confidence grow with streaks, milestones, and feedback.",
-    visual: (
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-border/60 bg-card p-3 text-center">
-            <div className="text-2xl font-bold text-foreground">12</div>
-            <div className="text-xs text-muted-foreground">Day streak</div>
-          </div>
-          <div className="rounded-xl border border-border/60 bg-card p-3 text-center">
-            <div className="text-2xl font-bold text-foreground">64%</div>
-            <div className="text-xs text-muted-foreground">Confidence</div>
-          </div>
-        </div>
-        <div className="space-y-2">
-          {[
-            { label: "Speaking", pct: 72 },
-            { label: "Listening", pct: 68 },
-          ].map((skill) => (
-            <div key={skill.label}>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">{skill.label}</span>
-                <span className="text-muted-foreground">{skill.pct}%</span>
-              </div>
-              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-electric"
-                  style={{ width: `${skill.pct}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  },
 ];
 
 export function ProductJourney() {
@@ -132,7 +121,7 @@ export function ProductJourney() {
   const [isHovering, setIsHovering] = useState(false);
 
   return (
-    <section className="relative overflow-hidden">
+    <section id="how" className="relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
         <Reveal className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
@@ -141,13 +130,9 @@ export function ProductJourney() {
           <h2 className="mt-3 font-heading text-section sm:text-section-lg">
             Your journey to fluency
           </h2>
-          <p className="mt-4 mx-auto max-w-xl text-lg text-muted-foreground">
-            From first discovery to fluent conversation — a simple, visual path.
-          </p>
         </Reveal>
 
         <div className="mt-14">
-          {/* Step indicators */}
           <div className="flex items-center justify-center gap-3 sm:gap-4">
             {STEPS.map((step, i) => (
               <button
@@ -168,7 +153,6 @@ export function ProductJourney() {
             ))}
           </div>
 
-          {/* Active step content */}
           <div className="mt-10">
             <Reveal key={STEPS[activeStep].id} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
               <div>
@@ -197,7 +181,7 @@ export function ProductJourney() {
                   transform: isHovering ? "translateY(-4px)" : "translateY(0)",
                 }}
               >
-                <div className="overflow-hidden rounded-[1.75rem] border border-border/80 bg-card p-6 shadow-lift">
+                <div className="overflow-hidden rounded-[1.75rem] border border-white/30 glass shadow-lift p-6">
                   {STEPS[activeStep].visual}
                 </div>
               </div>

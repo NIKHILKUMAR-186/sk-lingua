@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
@@ -8,18 +8,376 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Video, Star, Clock, Calendar } from "lucide-react";
+import { BookOpen, Video, Star, Clock, Calendar, ArrowRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useStudentSessionRequests, useCreateSessionRequest } from "@/hooks/use-session-requests";
 import { getUserDemoBookings, getUpcomingDemoBooking } from "@/lib/demo-bookings";
+import { EmptyState } from "@/components/empty-state";
+import { ListSkeleton } from "@/components/skeleton-loader";
+import { format, isToday, isTomorrow } from "date-fns";
+import { useStudentLearningState } from "@/hooks/use-student-learning-state";
 
 export const Route = createFileRoute("/_authenticated/student/sessions")({
   component: StudentSessions,
 });
 
+const STATUS_LABELS: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  pending: { label: "Requested", variant: "secondary" },
+  accepted: { label: "Confirmed", variant: "default" },
+  confirmed: { label: "Confirmed", variant: "default" },
+  in_progress: { label: "In progress", variant: "default" },
+  completed: { label: "Completed", variant: "outline" },
+  cancelled: { label: "Cancelled", variant: "destructive" },
+  rejected: { label: "Not available", variant: "destructive" },
+  pending_admin_assignment: { label: "Awaiting confirmation", variant: "secondary" },
+  pending_mentor_response: { label: "Mentor confirmation pending", variant: "secondary" },
+};
+
+const DEMO_STATUS_LABELS: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  pending_admin_confirmation: { label: "Request received", variant: "secondary" },
+  mentor_assigned: { label: "Mentor assigned", variant: "secondary" },
+  confirmed: { label: "Demo confirmed", variant: "default" },
+  completed: { label: "Completed", variant: "outline" },
+  cancelled: { label: "Cancelled", variant: "destructive" },
+  no_show: { label: "No show", variant: "destructive" },
+};
+
+function SessionRow({
+  s,
+  mentor,
+  existingReview,
+  onRateClick,
+  onCancel,
+  resources,
+}: {
+  s: any;
+  mentor?: { full_name?: string | null; avatar_url?: string | null } | null;
+  existingReview?: { id: string; rating: number; comment: string | null } | null;
+  onRateClick?: () => void;
+  onCancel?: (id: string) => void;
+  resources?: Array<any>;
+}) {
+  const sessionDate = new Date(s.scheduled_time);
+  const dateLabel = isToday(sessionDate)
+    ? "Today"
+    : isTomorrow(sessionDate)
+      ? "Tomorrow"
+      : format(sessionDate, "d MMM yyyy");
+
+  const statusInfo = STATUS_LABELS[s.status] || { label: "Scheduled", variant: "secondary" as const };
+
+  return (
+    <Card className="overflow-hidden transition hover:shadow-md">
+      <CardContent className="p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex-1 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+              <span className="text-sm font-medium">{dateLabel}</span>
+              <span className="text-sm text-muted-foreground">
+                {format(sessionDate, "h:mm a")} · {s.duration_mins ?? 30} min
+              </span>
+            </div>
+            {mentor?.full_name && (
+              <div className="text-sm font-medium">with {mentor.full_name}</div>
+            )}
+            {s.student_message && (
+              <div className="text-sm text-muted-foreground line-clamp-1">
+                &ldquo;{s.student_message}&rdquo;
+              </div>
+            )}
+            <div className="grid gap-3 rounded-lg border bg-muted/20 p-3 lg:grid-cols-[1fr_0.9fr]">
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Session notes</div>
+                {s.notes ? (
+                  <p className="text-sm text-muted-foreground">{s.notes}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No notes yet. Your mentor can add a summary after the session.
+                  </p>
+                )}
+                {s.status === "accepted" && s.video_call_link ? (
+                  <a
+                    href={s.video_call_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex text-sm text-primary underline"
+                  >
+                    Open the meeting room
+                  </a>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Homework & resources</div>
+                {(resources ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No homework shared yet for this session.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {(resources ?? []).slice(0, 2).map((resource: any) => (
+                      <div
+                        key={resource.id}
+                        className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-2 text-sm"
+                      >
+                        <BookOpen className="h-4 w-4 text-primary" />
+                        <div className="min-w-0">
+                          <div className="truncate font-medium">{resource.title}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {resource.resource_type === "file"
+                              ? (resource.file_name ?? "File")
+                              : (resource.url ?? "Link")}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 lg:flex-col lg:items-end">
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/student/session/$id" params={{ id: s.id }}>
+                Open workspace
+              </Link>
+            </Button>
+            {s.status === "accepted" && s.video_call_link && (
+              <Button size="sm" asChild>
+                <a href={s.video_call_link ?? "#"} target="_blank" rel="noreferrer">
+                  <Video className="mr-1 h-4 w-4" />
+                  Join
+                </a>
+              </Button>
+            )}
+            {onCancel && s.status !== "completed" && s.status !== "cancelled" && (
+              <Button size="sm" variant="ghost" onClick={() => onCancel(s.id)}>
+                Cancel
+              </Button>
+            )}
+            {s.status === "completed" && existingReview && (
+              <div className="flex items-center gap-1 text-sm">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${i < existingReview.rating ? "fill-warning text-warning" : "text-muted-foreground"}`}
+                  />
+                ))}
+              </div>
+            )}
+            {s.status === "completed" && !existingReview && onRateClick && (
+              <Button size="sm" variant="secondary" onClick={onRateClick}>
+                <Star className="mr-1 h-4 w-4" />
+                Rate & Review
+              </Button>
+            )}
+            {s.status === "completed" && s.mentor_id && (
+              <Button size="sm" asChild>
+                <Link to="/student/book-session" search={{ mentor: s.mentor_id }}>
+                  Book again
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DemoSessionRow({ demo }: { demo: any }) {
+  const sessionDate = new Date(demo.booking_date);
+  const dateLabel = isToday(sessionDate)
+    ? "Today"
+    : isTomorrow(sessionDate)
+      ? "Tomorrow"
+      : format(sessionDate, "d MMM yyyy");
+
+  const isCancelled = demo.booking_status === "cancelled";
+  const isCompleted = demo.booking_status === "completed";
+  const isNoShow = demo.booking_status === "no_show";
+  const isPreSession = !isCancelled && !isCompleted && !isNoShow;
+
+  const demoStatusInfo = DEMO_STATUS_LABELS[demo.booking_status] || { label: "Upcoming", variant: "secondary" as const };
+  const hasMeetingLink = !!demo.meeting_link;
+
+  const assignmentStatus = demo.assignment_status || "unassigned";
+  const isAwaitingMentor = assignmentStatus === "pending_acceptance";
+  const isMentorAccepted = assignmentStatus === "accepted" || assignmentStatus === "confirmed";
+  const isAssignmentExpired = assignmentStatus === "expired";
+  const isMentorRejected = assignmentStatus === "rejected";
+
+  let stateLabel = "Preparing your session";
+  let stateDescription = "Your demo is being set up.";
+  let showJoin = false;
+
+  if (demo.booking_status === "pending_admin_confirmation") {
+    stateLabel = "Our team is reviewing your request";
+    stateDescription = "Your booking request has been received and is awaiting admin review.";
+  } else if (isAwaitingMentor) {
+    stateLabel = "Finding the Right Mentor";
+    stateDescription = "We're assigning a mentor to your demo session.";
+  } else if (isMentorAccepted && !hasMeetingLink) {
+    stateLabel = "Mentor Confirmed";
+    stateDescription = "Your mentor has accepted. The meeting link will be shared shortly.";
+  } else if ((isMentorAccepted && hasMeetingLink) || (demo.booking_status === "confirmed" && hasMeetingLink)) {
+    stateLabel = "Demo confirmed";
+    stateDescription = "Click below to join your session.";
+    showJoin = true;
+  } else if (isAssignmentExpired || isMentorRejected) {
+    stateLabel = "Reassigning Mentor";
+    stateDescription = "We're finding a new mentor for your session.";
+  }
+
+  return (
+    <Card className={showJoin ? "border-emerald-200 bg-emerald-50/30" : ""}>
+      <CardContent className="p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex-1 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={demoStatusInfo.variant}>
+                {demoStatusInfo.label}
+              </Badge>
+              <span className="text-sm font-medium">{dateLabel}</span>
+              <span className="text-sm text-muted-foreground">
+                {demo.booking_time_start} - {demo.booking_time_end}
+              </span>
+              <span className="text-xs text-muted-foreground">· {demo.duration_mins} min</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Language: {demo.language?.toUpperCase()}
+            </div>
+            {demo.admin_notes && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs">
+                <strong>Admin Notes:</strong> {demo.admin_notes}
+              </div>
+            )}
+            {isPreSession && (
+              <div className="rounded-lg border border-muted/60 bg-muted/20 p-3 space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <Clock className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm font-semibold">{stateLabel}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{stateDescription}</p>
+                {isAwaitingMentor && (
+                  <div className="text-xs text-muted-foreground">
+                    Mentor: {demo.mentor_id ? "Assigned" : "Finding best match..."}
+                  </div>
+                )}
+                {isMentorAccepted && !hasMeetingLink && (
+                  <div className="text-xs text-muted-foreground">
+                    Meeting link will appear here once your session is ready.
+                  </div>
+                )}
+              </div>
+            )}
+            {showJoin && (
+              <div className="mt-2">
+                <Button size="sm" asChild>
+                  <a href={demo.meeting_link} target="_blank" rel="noreferrer">
+                    <Video className="mr-2 h-4 w-4" />
+                    Join Demo Session
+                  </a>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {isCompleted && demo.mentor_id && (
+            <div className="flex flex-col gap-2">
+              <Button size="sm" asChild>
+                <Link to="/student/book-session" search={{ mentor: demo.mentor_id }}>
+                  Book Next Session
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Empty() {
+  return (
+    <Card>
+      <CardContent className="p-10 text-center text-sm text-muted-foreground">
+        Nothing here yet.
+      </CardContent>
+    </Card>
+  );
+}
+
+function RequestList({ userId }: { userId?: string | null }) {
+  const { data: requests = [], isLoading } = useStudentSessionRequests(userId ?? undefined);
+
+  if (!userId) return null;
+  if (isLoading)
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">Loading your requests…</CardContent>
+      </Card>
+    );
+  if (requests.length === 0)
+    return (
+      <Card>
+        <CardContent className="p-6 text-muted-foreground">
+          <p className="text-sm font-medium">No session requests yet</p>
+          <p className="text-xs mt-1">Requested sessions will appear here while waiting for a mentor.</p>
+        </CardContent>
+      </Card>
+    );
+
+  return (
+    <div className="space-y-3">
+      {requests.map((r: any) => (
+        <Card key={r.id}>
+          <CardContent className="pt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <div>{r.topic || "Session request"}</div>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(r.scheduled_time).toLocaleString()}
+                </div>
+              </div>
+              <Badge variant={STATUS_LABELS[r.status]?.variant || "secondary"}>
+                {STATUS_LABELS[r.status]?.label || r.status}
+              </Badge>
+            </div>
+            {r.session_id && r.status === "confirmed" && (
+              <div className="flex justify-end">
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/student/session/$id" params={{ id: r.session_id }}>
+                    Open workspace
+                  </Link>
+                </Button>
+              </div>
+            )}
+            {r.status === "pending_admin_assignment" && (
+              <p className="flex items-center gap-1 text-xs text-amber-600">
+                <Clock className="h-3 w-3" /> Pending admin assignment — a mentor will be assigned
+                soon.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 function StudentSessions() {
   const { data: auth } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [ratingModal, setRatingModal] = useState<{ sessionId: string; mentorId: string } | null>(
     null,
@@ -27,6 +385,8 @@ function StudentSessions() {
   const [ratingValue, setRatingValue] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  const learningState = useStudentLearningState();
 
   const { data: sessions = [] } = useQuery({
     queryKey: ["student-sessions", auth?.user?.id],
@@ -41,7 +401,6 @@ function StudentSessions() {
       ).data ?? [],
   });
 
-  // Fetch demo bookings for this student
   const { data: demoBookings = [] } = useQuery({
     queryKey: ["student-demo-bookings", auth?.user?.id],
     enabled: !!auth?.user,
@@ -93,7 +452,6 @@ function StudentSessions() {
   });
   const reviewBySessionId = new Map(myReviews.map((r) => [r.session_id, r]));
 
-  // Session request form state
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [reqDate, setReqDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [reqTime, setReqTime] = useState<string>("09:00");
@@ -111,8 +469,7 @@ function StudentSessions() {
     try {
       const scheduled = new Date(`${reqDate}T${reqTime}:00.000Z`).toISOString();
       const sup = supabase as any;
-      
-      // First, check if student has an active subscription
+
       const { data: subscription, error: subError } = await sup
         .from("student_subscriptions")
         .select("id, current_session_slots, bonus_slots, status, expires_at")
@@ -126,21 +483,23 @@ function StudentSessions() {
       }
 
       if (!subscription) {
-        throw new Error("You need an active subscription to book sessions. Please purchase a plan first.");
+        throw new Error(
+          "You need an active subscription to book sessions. Please purchase a plan first.",
+        );
       }
 
-      // Check if subscription is expired
       if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) {
-        throw new Error("Your subscription has expired. Please renew to continue booking sessions.");
+        throw new Error(
+          "Your subscription has expired. Please renew to continue booking sessions.",
+        );
       }
 
-      // Check if slots are available (including bonus slots)
-      const totalAvailable = (subscription.current_session_slots || 0) + (subscription.bonus_slots || 0);
+      const totalAvailable =
+        (subscription.current_session_slots || 0) + (subscription.bonus_slots || 0);
       if (totalAvailable <= 0) {
         throw new Error("No sessions remaining. Please renew your subscription.");
       }
 
-      // Use the mutation hook (this will automatically invalidate admin queries)
       const request = await createSessionRequest.mutateAsync({
         student_id: auth.user.id,
         scheduled_time: scheduled,
@@ -150,7 +509,6 @@ function StudentSessions() {
         status: "pending_admin_assignment",
       });
 
-      // Send notification to all admins
       if (request?.id) {
         try {
           const { data: admins } = await sup
@@ -179,23 +537,28 @@ function StudentSessions() {
           }
         } catch (notifError) {
           console.error("Failed to send admin notifications:", notifError);
-          // Don't fail the request if notification fails
         }
       }
 
       toast.success("Session request submitted — pending admin assignment");
       setShowRequestModal(false);
-      
-      // Reset form
       setReqTopic("");
       setReqDuration(30);
       setReqLanguage("en");
-      
     } catch (err: any) {
       console.error("Session request error:", err);
       toast.error(err?.message || "Failed to request session");
     } finally {
       setReqLoading(false);
+    }
+  }
+
+  async function cancel(id: string) {
+    const { error } = await supabase.from("sessions").update({ status: "cancelled" }).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Cancelled");
+      qc.invalidateQueries();
     }
   }
 
@@ -223,16 +586,6 @@ function StudentSessions() {
     }
   }
 
-  async function cancel(id: string) {
-    const { error } = await supabase.from("sessions").update({ status: "cancelled" }).eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Cancelled");
-      qc.invalidateQueries();
-    }
-  }
-
-  // Combine regular sessions and demo sessions for display
   const regularUpcoming = sessions.filter((s) =>
     ["pending", "accepted", "confirmed"].includes(s.status),
   );
@@ -240,7 +593,6 @@ function StudentSessions() {
     ["completed", "rejected", "cancelled"].includes(s.status),
   );
 
-  // Demo sessions: confirmed = upcoming, completed/cancelled/no_show = past
   const demoUpcoming = demoBookings.filter((d) =>
     ["pending_admin_confirmation", "confirmed"].includes(d.booking_status),
   );
@@ -257,20 +609,76 @@ function StudentSessions() {
     <StudentLayout>
       <div className="mx-auto max-w-4xl space-y-6">
         <div>
-          <h1 className="text-3xl font-display">My sessions</h1>
+          <h1 className="text-3xl font-display tracking-tight">My Sessions</h1>
           <p className="text-sm text-muted-foreground">
-            Follow up on upcoming calls, session notes, and homework in one place.
+            Your learning timeline — upcoming calls, session notes, and homework.
           </p>
         </div>
+
+        {learningState.state === "TRIAL_REQUIRED" && (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+            <CardContent className="flex flex-col gap-4 p-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <Video className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-semibold">Start with a demo</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Book a personalized demo session to begin your learning journey.
+                  </p>
+                </div>
+              </div>
+              <Button asChild size="lg" className="shrink-0 gap-2">
+                <Link to="/student/demo-session">
+                  Book a Demo
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {learningState.state === "TRIAL_COMPLETED_NO_SUBSCRIPTION" && (
+          <Card className="border-amber-500/20 bg-gradient-to-br from-amber-50/50 to-background">
+            <CardContent className="flex flex-col gap-4 p-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+                  <Sparkles className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-semibold">Choose a plan</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your demo is complete. Pick a plan to start booking regular sessions.
+                  </p>
+                </div>
+              </div>
+              <Button asChild size="lg" className="shrink-0 gap-2">
+                <Link to="/student/pricing">
+                  View Plans
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Tabs defaultValue="upcoming">
           <TabsList>
             <TabsTrigger value="upcoming">Upcoming ({upcoming.length})</TabsTrigger>
             <TabsTrigger value="requests">Requests</TabsTrigger>
             <TabsTrigger value="past">Past ({past.length})</TabsTrigger>
           </TabsList>
-          <TabsContent value="upcoming" className="mt-4 space-y-3">
+
+          <TabsContent value="upcoming" className="mt-6 space-y-4">
             {upcoming.length === 0 ? (
-              <Empty />
+              <EmptyState
+                icon={Calendar}
+                title="No upcoming sessions"
+                description="Your next session will appear here once you book one."
+                actionLabel="Book a Session"
+                onAction={() => navigate({ to: "/student/book-session" })}
+              />
             ) : (
               <>
                 {regularUpcoming.map((s) => (
@@ -282,7 +690,8 @@ function StudentSessions() {
                     resources={resources.filter(
                       (resource) =>
                         resource.session_id === s.id ||
-                        (resource.visibility === "session" && resource.student_id === auth?.user?.id),
+                        (resource.visibility === "session" &&
+                          resource.student_id === auth?.user?.id),
                     )}
                   />
                 ))}
@@ -293,23 +702,27 @@ function StudentSessions() {
             )}
           </TabsContent>
 
-          <TabsContent value="requests" className="mt-4 space-y-3">
+          <TabsContent value="requests" className="mt-6 space-y-4">
             <div>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold mb-4">Session requests</h2>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" onClick={() => setShowRequestModal(true)}>
-                    Request session
-                  </Button>
-                </div>
+                <h2 className="text-lg font-semibold">Session requests</h2>
+                <Button size="sm" onClick={() => setShowRequestModal(true)}>
+                  Request session
+                </Button>
               </div>
-              <RequestList userId={auth?.user?.id} />
+              <div className="mt-4">
+                <RequestList userId={auth?.user?.id} />
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="past" className="mt-4 space-y-3">
+          <TabsContent value="past" className="mt-6 space-y-4">
             {past.length === 0 ? (
-              <Empty />
+              <EmptyState
+                icon={Clock}
+                title="No past sessions"
+                description="Completed sessions will appear here."
+              />
             ) : (
               <>
                 {regularPast.map((s) => (
@@ -326,7 +739,8 @@ function StudentSessions() {
                     resources={resources.filter(
                       (resource) =>
                         resource.session_id === s.id ||
-                        (resource.visibility === "session" && resource.student_id === auth?.user?.id),
+                        (resource.visibility === "session" &&
+                          resource.student_id === auth?.user?.id),
                     )}
                   />
                 ))}
@@ -392,6 +806,7 @@ function StudentSessions() {
           </Card>
         </div>
       )}
+
       {/* Request Modal */}
       {showRequestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -459,283 +874,5 @@ function StudentSessions() {
         </div>
       )}
     </StudentLayout>
-  );
-}
-
-function RequestList({ userId }: { userId?: string | null }) {
-  const { data: requests = [], isLoading } = useStudentSessionRequests(userId ?? undefined);
-
-  if (!userId) return null;
-  if (isLoading)
-    return (
-      <Card>
-        <CardContent className="p-6 text-center text-muted-foreground">Loading...</CardContent>
-      </Card>
-    );
-  if (requests.length === 0)
-    return (
-      <Card>
-        <CardContent className="p-6 text-muted-foreground">No requests yet</CardContent>
-      </Card>
-    );
-
-  const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-    pending_admin_assignment: "secondary",
-    pending_mentor_response: "default",
-    confirmed: "default",
-    completed: "outline",
-    cancelled: "destructive",
-    unassigned: "outline",
-  };
-
-  return (
-    <div className="space-y-3">
-      {requests.map((r: any) => (
-        <Card key={r.id}>
-          <CardContent className="pt-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <div>{r.topic || "Session request"}</div>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(r.scheduled_time).toLocaleString()}
-                </div>
-              </div>
-              <Badge variant={statusVariant[r.status] ?? "secondary"}>{r.status}</Badge>
-            </div>
-            {r.session_id && r.status === "confirmed" && (
-              <div className="flex justify-end">
-                <Button size="sm" variant="outline" asChild>
-                  <Link to="/student/session/$id" params={{ id: r.session_id }}>
-                    Open workspace
-                  </Link>
-                </Button>
-              </div>
-            )}
-            {r.status === "pending_admin_assignment" && (
-              <p className="flex items-center gap-1 text-xs text-amber-600">
-                <Clock className="h-3 w-3" /> Pending admin assignment - a mentor will be assigned
-                soon.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function Empty() {
-  return (
-    <Card>
-      <CardContent className="p-10 text-center text-sm text-muted-foreground">
-        Nothing here yet.
-      </CardContent>
-    </Card>
-  );
-}
-
-function SessionRow({
-  s,
-  onCancel,
-  mentor,
-  resources,
-  existingReview,
-  onRateClick,
-}: {
-  s: {
-    id: string;
-    scheduled_time: string;
-    duration_mins: number;
-    status: string;
-    video_call_link: string | null;
-    notes: string | null;
-    mentor_id?: string | null;
-    student_id?: string | null;
-  };
-  onCancel?: (id: string) => void;
-  mentor?: { full_name?: string | null; avatar_url?: string | null } | null;
-  resources?: Array<{
-    id: string;
-    title: string;
-    description?: string | null;
-    visibility?: string | null;
-    resource_type?: string | null;
-    url?: string | null;
-    storage_url?: string | null;
-    file_name?: string | null;
-  }>;
-  existingReview?: { id: string; rating: number; comment: string | null } | null;
-  onRateClick?: () => void;
-}) {
-  const badgeVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-    pending: "secondary",
-    accepted: "default",
-    completed: "outline",
-    rejected: "destructive",
-    cancelled: "outline",
-  };
-  return (
-    <Card>
-      <CardContent className="space-y-4 p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="font-medium">{new Date(s.scheduled_time).toLocaleString()}</div>
-            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant={badgeVariant[s.status] ?? "secondary"}>{s.status}</Badge>
-              <span>{s.duration_mins} min</span>
-              {mentor?.full_name ? <span>• {mentor.full_name}</span> : null}
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/student/session/$id" params={{ id: s.id }}>
-                Open workspace
-              </Link>
-            </Button>
-            {s.status === "accepted" && (
-              <Button size="sm" asChild>
-                <a href={s.video_call_link ?? "#"} target="_blank" rel="noreferrer">
-                  <Video className="mr-1 h-4 w-4" />
-                  Join
-                </a>
-              </Button>
-            )}
-            {onCancel && s.status !== "completed" && s.status !== "cancelled" && (
-              <Button size="sm" variant="outline" onClick={() => onCancel(s.id)}>
-                Cancel
-              </Button>
-            )}
-            {s.status === "completed" && existingReview && (
-              <div className="flex items-center gap-1 text-sm">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${i < existingReview.rating ? "fill-warning text-warning" : "text-muted-foreground"}`}
-                  />
-                ))}
-              </div>
-            )}
-            {s.status === "completed" && !existingReview && onRateClick && (
-              <Button size="sm" variant="secondary" onClick={onRateClick}>
-                <Star className="mr-1 h-4 w-4" />
-                Rate & Review
-              </Button>
-            )}
-          </div>
-        </div>
-        <div className="grid gap-3 rounded-lg border bg-muted/20 p-3 md:grid-cols-[1fr_0.9fr]">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Session notes</div>
-            {s.notes ? (
-              <p className="text-sm text-muted-foreground">{s.notes}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No notes yet. Your mentor can add a summary after the session.
-              </p>
-            )}
-            {s.status === "accepted" && s.video_call_link ? (
-              <a
-                href={s.video_call_link}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex text-sm text-primary underline"
-              >
-                Open the meeting room
-              </a>
-            ) : null}
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Homework & resources</div>
-            {(resources ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No homework shared yet for this session.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {(resources ?? []).slice(0, 2).map((resource) => (
-                  <div
-                    key={resource.id}
-                    className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-2 text-sm"
-                  >
-                    <BookOpen className="h-4 w-4 text-primary" />
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">{resource.title}</div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {resource.resource_type === "file"
-                          ? (resource.file_name ?? "File")
-                          : (resource.url ?? "Link")}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function DemoSessionRow({ demo }: { demo: any }) {
-  const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-    pending_admin_confirmation: "secondary",
-    confirmed: "default",
-    completed: "outline",
-    cancelled: "destructive",
-    no_show: "destructive",
-  };
-
-  const isUpcoming = ["pending_admin_confirmation", "confirmed"].includes(demo.booking_status);
-  const isConfirmed = demo.booking_status === "confirmed";
-
-  return (
-    <Card className={isConfirmed ? "border-green-200 bg-green-50/30" : ""}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              <h3 className="font-semibold text-base">Demo Session</h3>
-              <Badge variant={statusColors[demo.booking_status] || "secondary"}>
-                {demo.booking_status.replace(/_/g, " ")}
-              </Badge>
-            </div>
-            <div className="space-y-1.5 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5" />
-                <span>
-                  {new Date(demo.booking_date).toLocaleDateString()} • {demo.booking_time_start} - {demo.booking_time_end}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs">Duration: {demo.duration_mins} min</span>
-                <span className="text-xs">Language: {demo.language?.toUpperCase()}</span>
-              </div>
-              {demo.admin_notes && (
-                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs">
-                  <strong>Admin Notes:</strong> {demo.admin_notes}
-                </div>
-              )}
-              {isConfirmed && demo.meeting_link && (
-                <div className="mt-2">
-                  <Button size="sm" asChild>
-                    <a href={demo.meeting_link} target="_blank" rel="noreferrer">
-                      <Video className="mr-2 h-4 w-4" />
-                      Join Demo Session
-                    </a>
-                  </Button>
-                </div>
-              )}
-              {isUpcoming && !isConfirmed && (
-                <p className="text-xs text-amber-600 mt-2">
-                  Waiting for admin confirmation...
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

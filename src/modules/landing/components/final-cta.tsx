@@ -18,8 +18,7 @@ export function FinalCta() {
             Ready to start your journey?
           </h2>
           <p className="mt-5 text-lg text-muted-foreground">
-            Join 120,000+ learners already building fluency with real human mentors.
-            Your first step is one click away.
+            Your next conversation is one click away.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-12 rounded-full px-8 text-base">

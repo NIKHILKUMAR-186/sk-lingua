@@ -8,18 +8,14 @@ import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import {
-  CalendarDays,
-  Clock3,
-  Video,
-  CalendarClock,
-  ChevronRight,
-} from "lucide-react";
+import { CalendarDays, Clock3, Video, CalendarClock, ChevronRight } from "lucide-react";
 import { format, parseISO, formatDistanceToNow, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
-import { useMentorRespondDemoAssignment } from "@/hooks/use-demo-bookings";
+import { useMentorRespondDemoAssignment, useAddDemoMeetingLink } from "@/hooks/use-demo-bookings";
 
 export const Route = createFileRoute("/_authenticated/mentor/calendar")({
   component: MentorCalendarRequests,
@@ -54,10 +50,7 @@ function MentorCalendarRequests() {
     },
   });
 
-  const {
-    data: demoRequests = [],
-    isLoading: demoLoading,
-  } = useQuery({
+  const { data: demoRequests = [], isLoading: demoLoading } = useQuery({
     queryKey: ["mentor-demo-requests", uid],
     enabled: !!uid,
     queryFn: async () => {
@@ -95,12 +88,18 @@ function MentorCalendarRequests() {
   const studentMap = useMemo(() => new Map(students.map((s: any) => [s.id, s])), [students]);
 
   const pendingSessions = sessions.filter((r: any) => r.status === "pending");
-  const upcomingSessions = sessions.filter((r: any) => r.status === "accepted" || r.status === "confirmed");
-  const pastSessions = sessions.filter((r: any) => ["completed", "rejected", "cancelled"].includes(r.status));
+  const upcomingSessions = sessions.filter(
+    (r: any) => r.status === "accepted" || r.status === "confirmed",
+  );
+  const pastSessions = sessions.filter((r: any) =>
+    ["completed", "rejected", "cancelled"].includes(r.status),
+  );
 
   const totalPending = pendingSessions.length + demoRequests.length;
 
   const respondMutation = useMentorRespondDemoAssignment();
+  const addLinkMutation = useAddDemoMeetingLink();
+  const [linkInput, setLinkInput] = useState<Record<string, string>>({});
 
   async function updateStatus(id: string, status: "accepted" | "rejected" | "completed") {
     const patch: any = { status };
@@ -121,9 +120,29 @@ function MentorCalendarRequests() {
     }
   }
 
-  async function respondDemo(bookingId: string, action: "accept" | "reject") {
+  async function respondDemo(bookingId: string, action: "accept" | "reject", version?: number) {
     try {
-      await respondMutation.mutateAsync({ bookingId, mentorId: uid!, action });
+      await respondMutation.mutateAsync({
+        bookingId,
+        mentorId: uid!,
+        action,
+        clientVersion: version,
+      });
+      qc.invalidateQueries({ queryKey: ["mentor-demo-requests", uid] });
+    } catch (err: any) {
+      toast.error(err.message || String(err));
+    }
+  }
+
+  async function addMeetingLink(bookingId: string, link: string) {
+    if (!uid) return;
+    try {
+      await addLinkMutation.mutateAsync({
+        bookingId,
+        meetingLink: link,
+        userId: uid,
+        isMentor: true,
+      });
       qc.invalidateQueries({ queryKey: ["mentor-demo-requests", uid] });
     } catch (err: any) {
       toast.error(err.message || String(err));
@@ -146,10 +165,7 @@ function MentorCalendarRequests() {
   return (
     <MentorLayout>
       <div className="mx-auto max-w-5xl space-y-6">
-        <PageHeader
-          title="Calendar & Requests"
-          description="Your schedule and booking requests."
-        />
+        <PageHeader title="Calendar & Requests" description="Your schedule and booking requests." />
 
         <Tabs value={topTab} onValueChange={(v) => setTopTab(v as TopTab)}>
           <TabsList className="w-full justify-start">
@@ -274,6 +290,30 @@ function MentorCalendarRequests() {
                             ? "Tomorrow"
                             : format(start, "EEE, MMM d");
 
+                        const isAwaiting = r.assignment_status === "pending_acceptance";
+                        const isAccepted = r.assignment_status === "accepted";
+                        const hasLink = !!r.meeting_link;
+                        const timeRemaining =
+                          isAwaiting && r.acceptance_deadline
+                            ? Math.max(
+                                0,
+                                Math.floor(
+                                  (new Date(r.acceptance_deadline).getTime() - Date.now()) / 1000,
+                                ),
+                              )
+                            : null;
+
+                        let countdownLabel = "";
+                        if (isAwaiting && timeRemaining !== null) {
+                          if (timeRemaining <= 0) {
+                            countdownLabel = "Expired";
+                          } else {
+                            const mins = Math.floor(timeRemaining / 60);
+                            const secs = timeRemaining % 60;
+                            countdownLabel = `${mins}:${secs.toString().padStart(2, "0")} remaining`;
+                          }
+                        }
+
                         return (
                           <motion.div
                             key={`demo-${r.id}`}
@@ -281,7 +321,7 @@ function MentorCalendarRequests() {
                             animate={{ opacity: 1, y: 0 }}
                             className="rounded-xl border border-border/60 bg-card overflow-hidden"
                           >
-                            <div className="p-5">
+                            <div className="p-4">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-start gap-3 min-w-0">
                                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
@@ -297,24 +337,70 @@ function MentorCalendarRequests() {
                                     <p className="text-xs text-muted-foreground mt-1">
                                       {r.booking_time_start} — {r.booking_time_end}
                                     </p>
+                                    {isAwaiting && (
+                                      <p className="text-xs text-orange-600 mt-1 font-medium">
+                                        Accept within: {countdownLabel}
+                                      </p>
+                                    )}
+                                    {isAccepted && !hasLink && (
+                                      <p className="text-xs text-blue-600 mt-1">
+                                        Add a Google Meet link to make this session ready
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
-                                <div className="flex shrink-0 gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => respondDemo(r.id, "accept")}
-                                    className="h-8 text-xs"
-                                  >
-                                    Accept
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => respondDemo(r.id, "reject")}
-                                    className="h-8 text-xs"
-                                  >
-                                    Decline
-                                  </Button>
+                                <div className="flex shrink-0 flex-col gap-2">
+                                  {isAwaiting && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          respondDemo(r.id, "accept", r.assignment_version)
+                                        }
+                                        disabled={respondMutation.isPending}
+                                        className="h-8 text-xs"
+                                      >
+                                        Accept
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                          respondDemo(r.id, "reject", r.assignment_version)
+                                        }
+                                        disabled={respondMutation.isPending}
+                                        className="h-8 text-xs"
+                                      >
+                                        Decline
+                                      </Button>
+                                    </>
+                                  )}
+                                  {isAccepted && !hasLink && (
+                                    <div className="flex flex-col gap-2">
+                                      <Input
+                                        type="url"
+                                        placeholder="https://meet.google.com/..."
+                                        value={linkInput[r.id] || ""}
+                                        onChange={(e) =>
+                                          setLinkInput({ ...linkInput, [r.id]: e.target.value })
+                                        }
+                                        className="text-xs h-8"
+                                      />
+                                      <Button
+                                        size="sm"
+                                        onClick={() => addMeetingLink(r.id, linkInput[r.id] || "")}
+                                        disabled={!linkInput[r.id] || addLinkMutation.isPending}
+                                        className="h-8 text-xs"
+                                      >
+                                        Save Link
+                                      </Button>
+                                    </div>
+                                  )}
+                                  {isAccepted && hasLink && (
+                                    <Badge variant="default" className="h-8 text-xs">
+                                      Ready
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -348,7 +434,8 @@ function MentorCalendarRequests() {
                                       {r.student?.full_name || "Student"}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-0.5">
-                                      {r.gig?.title || "Session request"} · {dayLabel} · {format(start, "h:mm a")} · {r.duration_mins} min
+                                      {r.gig?.title || "Session request"} · {dayLabel} ·{" "}
+                                      {format(start, "h:mm a")} · {r.duration_mins} min
                                     </p>
                                     {r.student_message && (
                                       <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">
@@ -443,7 +530,9 @@ function MentorCalendarRequests() {
                               </p>
                             </div>
                             <span className="text-xs text-muted-foreground capitalize">
-                              {r.status === "accepted" || r.status === "confirmed" ? "Confirmed" : r.status}
+                              {r.status === "accepted" || r.status === "confirmed"
+                                ? "Confirmed"
+                                : r.status}
                             </span>
                           </motion.div>
                         );
@@ -499,7 +588,8 @@ function MentorCalendarRequests() {
                                 {student?.full_name || "Student"}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {format(start, "EEE, MMM d")} · {format(start, "h:mm a")} · {r.duration_mins} min
+                                {format(start, "EEE, MMM d")} · {format(start, "h:mm a")} ·{" "}
+                                {r.duration_mins} min
                               </p>
                             </div>
                             <span className="text-xs text-muted-foreground capitalize">

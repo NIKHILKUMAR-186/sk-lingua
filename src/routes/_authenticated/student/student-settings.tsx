@@ -22,7 +22,6 @@ const initialStudentValues: ProfileEditorValues = {
   native_language: "en",
   languages_taught: [],
   years_experience: "0",
-  hourly_rate: "0",
   teaching_style: "",
   certifications: "",
   education: "",

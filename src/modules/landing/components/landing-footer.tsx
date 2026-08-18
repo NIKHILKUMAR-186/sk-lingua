@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 
 const COLUMNS = [
   {
@@ -15,27 +14,20 @@ const COLUMNS = [
   {
     title: "Company",
     links: [
-      { label: "About", to: "/auth", hash: undefined },
-      { label: "Careers", to: "/auth", hash: undefined },
-      { label: "Blog", to: "/auth", hash: undefined },
+      { label: "About", to: "/auth" },
+      { label: "Careers", to: "/auth" },
+      { label: "Blog", to: "/auth" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy", to: "/auth", hash: undefined },
-      { label: "Terms", to: "/auth", hash: undefined },
-      { label: "Contact", to: "/auth", hash: undefined },
+      { label: "Privacy", to: "/auth" },
+      { label: "Terms", to: "/auth" },
+      { label: "Contact", to: "/auth" },
     ],
   },
 ] as const;
-
-const SOCIALS = [
-  { icon: Twitter, label: "Twitter / X" },
-  { icon: Instagram, label: "Instagram" },
-  { icon: Linkedin, label: "LinkedIn" },
-  { icon: Youtube, label: "YouTube" },
-];
 
 export function LandingFooter() {
   const [year, setYear] = useState<number | null>(null);
@@ -56,18 +48,6 @@ export function LandingFooter() {
               Learn any language from a real human. Verified mentors, live sessions, and streaks
               that turn practice into fluency.
             </p>
-            <div className="mt-6 flex gap-2">
-              {SOCIALS.map((s) => (
-                <a
-                  key={s.label}
-                  href="#"
-                  aria-label={s.label}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                >
-                  <s.icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
           </div>
 
           {COLUMNS.map((col) => (

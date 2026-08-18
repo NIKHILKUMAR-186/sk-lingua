@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   Compass,
   CalendarDays,
+  CalendarClock,
   BookOpenText,
   Flame,
   Bell,
@@ -136,33 +137,28 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
           { title: "Notifications", to: "/mentor/notifications", icon: Bell },
           { title: "Settings", to: "/mentor/settings", icon: Settings },
         ]
-      : ACCOUNT_ITEMS_BASE.map((item) => ({
-          ...item,
-          to: `/${variant}/${item.title.toLowerCase()}`,
-        }));
+      : variant === "student"
+        ? [
+            { title: "Wallet", to: "/student/subscriptions", icon: Wallet },
+            { title: "Notifications", to: "/student/notifications", icon: Bell },
+            { title: "Settings", to: "/student/settings", icon: Settings },
+          ]
+        : ACCOUNT_ITEMS_BASE.map((item) => ({
+            ...item,
+            to: `/${variant}/${item.title.toLowerCase()}`,
+          }));
 
   // ── Dynamic student nav items (P1 lifecycle-aware) ─────────────────
   const isStudentVariant = variant === "student";
-  const studentLearning = isStudentVariant ? useStudentLearningState() : null;
+  const studentLearning = useStudentLearningState();
 
   const studentItems = isStudentVariant
     ? [
         { title: "Dashboard", to: "/student/dashboard", icon: LayoutDashboard },
-        { title: "Book a Session", to: "/student/book", icon: CalendarDays },
-        { title: "Discover Mentors", to: "/student/explore", icon: Compass },
-        {
-          title: studentLearning!.primaryCta.label,
-          to:
-            studentLearning!.primaryCta.label === "Book a Session"
-              ? "/student/book"
-              : studentLearning!.primaryCta.to,
-          icon: studentLearning!.primaryCta.label === "Book a Trial" ? Clock : CalendarDays,
-        },
-        { title: "Sessions", to: "/student/sessions", icon: CalendarDays },
-        { title: "Resources", to: "/student/resources", icon: BookOpenText },
-        { title: "Pricing Plans", to: "/student/pricing", icon: Crown },
-        { title: "My Subscriptions", to: "/student/subscriptions", icon: Crown },
-        { title: "History", to: "/student/history", icon: History },
+        { title: "Find a Mentor", to: "/student/explore", icon: Compass },
+        { title: "Book a Session", to: "/student/book-session", icon: CalendarClock },
+        { title: "My Sessions", to: "/student/sessions", icon: CalendarDays },
+        { title: "Learning Library", to: "/student/resources", icon: BookOpenText },
       ]
     : [];
 
@@ -226,13 +222,21 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
               <span className="text-lg font-display leading-tight tracking-tight text-foreground">
                 Lingua
               </span>
-              <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                {variant === "student"
-                  ? "Student Workspace"
-                  : variant === "mentor"
-                    ? "Mentor Workspace"
-                    : "Admin Workspace"}
-              </span>
+              {!collapsed && variant === "student" && (
+                <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  Student
+                </span>
+              )}
+              {!collapsed && variant === "mentor" && (
+                <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  Mentor
+                </span>
+              )}
+              {!collapsed && variant === "admin" && (
+                <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  Admin
+                </span>
+              )}
             </motion.div>
           )}
         </Link>

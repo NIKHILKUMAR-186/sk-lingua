@@ -41,20 +41,17 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
 
-  // Fetch real available slots from the database for the selected date/language
   const { data: slots = [], isLoading: slotsLoading } = useSlotsByDate(
     date || null,
     language || undefined,
   );
 
-  // Group slots by date for the date picker
   const availableDates = useMemo(() => {
     const dateSet = new Set<string>();
     const start = new Date(tomorrow);
     const end = new Date();
-    end.setDate(end.getDate() + 30); // Show next 30 days
+    end.setDate(end.getDate() + 30);
 
-    // Add tomorrow onwards
     while (start <= end) {
       dateSet.add(start.toISOString().split("T")[0]);
       start.setDate(start.getDate() + 1);
@@ -106,19 +103,18 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
       )}
 
       <div className="space-y-4">
-        {/* Date Selection */}
         <div className="space-y-2">
-          <Label htmlFor="date" className="flex items-center gap-2">
+          <Label htmlFor="demo-date" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Select Date
           </Label>
           <Input
-            id="date"
+            id="demo-date"
             type="date"
             value={date}
             onChange={(e) => {
               setDate(e.target.value);
-              setTimeStart(""); // reset time when date changes
+              setTimeStart("");
             }}
             min={minDate}
             max={availableDates[availableDates.length - 1]}
@@ -128,9 +124,8 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
           <p className="text-xs text-muted-foreground">Choose any date from tomorrow onwards</p>
         </div>
 
-        {/* Language Selection (moved before time so slots can filter by language) */}
         <div className="space-y-2">
-          <Label htmlFor="language" className="flex items-center gap-2">
+          <Label htmlFor="demo-language" className="flex items-center gap-2">
             <Languages className="h-4 w-4" />
             Learning Language
           </Label>
@@ -138,11 +133,11 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
             value={language}
             onValueChange={(val) => {
               setLanguage(val);
-              setTimeStart(""); // reset time when language changes
+              setTimeStart("");
             }}
             disabled={loading}
           >
-            <SelectTrigger id="language">
+            <SelectTrigger id="demo-language">
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
             <SelectContent>
@@ -153,12 +148,11 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
               ))}
             </SelectContent>
           </Select>
-<p className="text-xs text-muted-foreground">Your session will be conducted in this language</p>
+          <p className="text-xs text-muted-foreground">Your session will be conducted in this language</p>
         </div>
 
-        {/* Time Selection - populated from real available slots */}
         <div className="space-y-2">
-          <Label htmlFor="time" className="flex items-center gap-2">
+          <Label htmlFor="demo-time" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Select Time (IST)
           </Label>
@@ -182,7 +176,7 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
             </Alert>
           ) : (
             <Select value={timeStart} onValueChange={setTimeStart} disabled={loading || !date || !language}>
-              <SelectTrigger id="time">
+              <SelectTrigger id="demo-time">
                 <SelectValue placeholder={date && language ? "Choose a time slot" : "Select date & language first"} />
               </SelectTrigger>
               <SelectContent>
@@ -205,26 +199,24 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
           <p className="text-xs text-muted-foreground">Session duration: 30 minutes</p>
         </div>
 
-        {/* Optional Notes */}
         <div className="space-y-2">
-          <Label htmlFor="notes" className="flex items-center gap-2">
+          <Label htmlFor="demo-notes" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             Additional Notes (Optional)
           </Label>
           <Textarea
-            id="notes"
+            id="demo-notes"
             placeholder="E.g., 'I'm a complete beginner', 'I want to focus on conversational skills', etc."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             disabled={loading}
             rows={4}
           />
-<p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Share any specific goals or concerns with our expert team
           </p>
         </div>
 
-        {/* Summary */}
         {date && timeStart && language && (
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="pt-4">
@@ -239,7 +231,7 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
                     {availableTimes.find((t) => t.start === timeStart)?.label}
                   </span>
                 </div>
-<div className="flex justify-between">
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">Conducted by:</span>
                   <span className="font-medium">Our expert team</span>
                 </div>
@@ -260,13 +252,12 @@ export function DemoBookingForm({ onSubmit, loading, error, price = 9 }: DemoBoo
           </Card>
         )}
 
-        {/* CTA */}
         <Button onClick={handleSubmit} disabled={!isValid || loading} size="lg" className="w-full">
           {loading ? "Processing..." : "Continue to Payment"}
         </Button>
 
         <p className="text-center text-xs text-muted-foreground">
-          ✓ Secure payment • ✓ Money-back guarantee • ✓ No commitment
+          Secure payment • Demo request sent to our team after payment
         </p>
       </div>
     </div>

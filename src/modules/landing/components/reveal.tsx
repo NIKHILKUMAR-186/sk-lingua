@@ -1,78 +1,42 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
-type RevealProps = {
-  children: ReactNode;
+export function Reveal({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: React.ReactNode;
   className?: string;
   delay?: number;
-  y?: number;
-  as?: "div" | "section" | "li" | "figure" | "article";
-};
-
-/**
- * A lightweight, GPU-friendly scroll reveal.
- * Uses IntersectionObserver + transform/opacity (GPU accelerated).
- * Respects prefers-reduced-motion.
- */
-export function Reveal({ children, className, delay = 0, y = 24, as = "div" }: RevealProps) {
-  const ref = useRef<HTMLElement | null>(null);
-  const [visible, setVisible] = useState(false);
+}) {
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
 
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) {
-      setVisible(true);
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (media.matches) {
+      node.style.opacity = "1";
+      node.style.transform = "none";
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisible(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
-    );
+    node.style.opacity = "0";
+    node.style.transform = "translateY(16px)";
 
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+    const timeout = setTimeout(() => {
+      node.style.transition = `opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`;
+      node.style.opacity = "1";
+      node.style.transform = "translateY(0)";
+    }, 50);
 
-  useEffect(() => {
-    if (!visible) return;
-    const node = ref.current;
-    if (!node) return;
-
-    const handleTransitionEnd = () => {
-      node.classList.remove("will-change-transform");
-    };
-
-    node.addEventListener("transitionend", handleTransitionEnd, { once: true });
-    return () => node.removeEventListener("transitionend", handleTransitionEnd);
-  }, [visible]);
-
-  const Tag = as as "div";
+    return () => clearTimeout(timeout);
+  }, [delay]);
 
   return (
-    <Tag
-      ref={ref as never}
-      className={cn(visible ? undefined : "will-change-transform", className)}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0px)" : `translateY(${y}px)`,
-        transitionProperty: "opacity, transform",
-        transitionDuration: "700ms",
-        transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
-        transitionDelay: `${delay}ms`,
-      }}
-    >
+    <div ref={ref} className={className}>
       {children}
-    </Tag>
+    </div>
   );
 }

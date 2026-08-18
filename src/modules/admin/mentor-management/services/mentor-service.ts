@@ -207,7 +207,7 @@ async function adminRead<T = any>(
 }
 
 // ---------------------------------------------------------------------------
-// Typed mappers (mirror src/routes/api/admin/mentors/*.server.ts)
+// Typed mappers (mirror src/routes/api/admin/mentors/*.ts)
 // ---------------------------------------------------------------------------
 
 function buildSessionBreakdown(
@@ -837,15 +837,13 @@ export async function getMentorDetail(mentorId: string): Promise<MentorDetail> {
     column: "mentor_id",
     value: mentorId,
   });
-  let occurrences = { booked: 0, total: 0, utilization: 0 };
+  const occurrences = { booked: 0, total: 0, utilization: 0 };
   if (!occRes.error && occRes.data.length > 0) {
     const rows = occRes.data;
     occurrences.total = rows.length;
     occurrences.booked = rows.filter((r) => r.is_booked).length;
     occurrences.utilization =
-      occurrences.total > 0
-        ? Math.round((occurrences.booked / occurrences.total) * 100)
-        : 0;
+      occurrences.total > 0 ? Math.round((occurrences.booked / occurrences.total) * 100) : 0;
   } else if (occRes.error) {
     degraded.push({ section: "availability_occurrences", error: occRes.error });
   }

@@ -18,6 +18,8 @@ import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as ApiMentorApplicationRouteImport } from './routes/api/mentor-application'
+import { Route as ApiSignedUrlRouteImport } from './routes/api/signed-url'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as MentorApplyRouteImport } from './routes/mentor/apply'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
@@ -48,6 +50,7 @@ import { Route as AuthenticatedMentorResourcesRouteImport } from './routes/_auth
 import { Route as AuthenticatedMentorSessionsRouteImport } from './routes/_authenticated/mentor/sessions'
 import { Route as AuthenticatedMentorSettingsRouteImport } from './routes/_authenticated/mentor/settings'
 import { Route as AuthenticatedStudentBookRouteImport } from './routes/_authenticated/student/book'
+import { Route as AuthenticatedStudentBookSessionRouteImport } from './routes/_authenticated/student/book-session'
 import { Route as AuthenticatedStudentCheckoutRouteImport } from './routes/_authenticated/student/checkout'
 import { Route as AuthenticatedStudentDashboardRouteImport } from './routes/_authenticated/student/dashboard'
 import { Route as AuthenticatedStudentDemoConversionRouteImport } from './routes/_authenticated/student/demo-conversion'
@@ -64,6 +67,44 @@ import { Route as AuthenticatedStudentStreakRouteImport } from './routes/_authen
 import { Route as AuthenticatedStudentStudentSettingsRouteImport } from './routes/_authenticated/student/student-settings'
 import { Route as AuthenticatedStudentSubscriptionSlotsRouteImport } from './routes/_authenticated/student/subscription-slots'
 import { Route as AuthenticatedStudentSubscriptionsRouteImport } from './routes/_authenticated/student/subscriptions'
+import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
+import { Route as ApiAdminAnalyticsBookingsRouteImport } from './routes/api/admin/analytics-bookings'
+import { Route as ApiAdminAnalyticsLanguagesRouteImport } from './routes/api/admin/analytics-languages'
+import { Route as ApiAdminAnalyticsMentorsRouteImport } from './routes/api/admin/analytics-mentors'
+import { Route as ApiAdminAnalyticsRegionsRouteImport } from './routes/api/admin/analytics-regions'
+import { Route as ApiAdminAnalyticsRevenueRouteImport } from './routes/api/admin/analytics-revenue'
+import { Route as ApiAdminAnalyticsSessionsRouteImport } from './routes/api/admin/analytics-sessions'
+import { Route as ApiAdminAnalyticsSubscriptionsRouteImport } from './routes/api/admin/analytics-subscriptions'
+import { Route as ApiAdminAnalyticsTopMentorsRouteImport } from './routes/api/admin/analytics-top-mentors'
+import { Route as ApiAdminAnalyticsUsersRouteImport } from './routes/api/admin/analytics-users'
+import { Route as ApiAdminApproveMentorRouteImport } from './routes/api/admin/approve-mentor'
+import { Route as ApiAdminAssignMentorRouteImport } from './routes/api/admin/assign-mentor'
+import { Route as ApiAdminAssignmentHistoryRouteImport } from './routes/api/admin/assignment-history'
+import { Route as ApiAdminAttentionRouteImport } from './routes/api/admin/attention'
+import { Route as ApiAdminAutoMatchRouteImport } from './routes/api/admin/auto-match'
+import { Route as ApiAdminAutoReassignRouteImport } from './routes/api/admin/auto-reassign'
+import { Route as ApiAdminBroadcastRouteImport } from './routes/api/admin/broadcast'
+import { Route as ApiAdminGeneratePasswordRouteImport } from './routes/api/admin/generate-password'
+import { Route as ApiAdminInterviewsRouteImport } from './routes/api/admin/interviews'
+import { Route as ApiAdminMentorAvailabilityRouteImport } from './routes/api/admin/mentor-availability'
+import { Route as ApiAdminMentorWorkloadRouteImport } from './routes/api/admin/mentor-workload'
+import { Route as ApiAdminResolveReportRouteImport } from './routes/api/admin/resolve-report'
+import { Route as ApiAdminStudentRisksRouteImport } from './routes/api/admin/student-risks'
+import { Route as ApiAdminSubscriptionPlansRouteImport } from './routes/api/admin/subscription-plans'
+import { Route as ApiAdminSupportTicketsRouteImport } from './routes/api/admin/support-tickets'
+import { Route as ApiAdminToggleMentorStatusRouteImport } from './routes/api/admin/toggle-mentor-status'
+import { Route as ApiHomeworkCreateRouteImport } from './routes/api/homework/create'
+import { Route as ApiHomeworkSubmitRouteImport } from './routes/api/homework/submit'
+import { Route as ApiMentorBookingRequestsRouteImport } from './routes/api/mentor/booking-requests'
+import { Route as ApiMentorRespondAssignmentRouteImport } from './routes/api/mentor/respond-assignment'
+import { Route as ApiMentorRespondBookingRequestRouteImport } from './routes/api/mentor/respond-booking-request'
+import { Route as ApiPaymentsCreateRouteImport } from './routes/api/payments/create'
+import { Route as ApiSessionCompleteRouteImport } from './routes/api/session/complete'
+import { Route as ApiSessionReportIssueRouteImport } from './routes/api/session/report-issue'
+import { Route as ApiSessionRestoreSlotRouteImport } from './routes/api/session/restore-slot'
+import { Route as ApiWorkspaceMessagesRouteImport } from './routes/api/workspace/messages'
+import { Route as ApiWorkspacePostMessageRouteImport } from './routes/api/workspace/post-message'
+import { Route as ApiWorkspaceTypingRouteImport } from './routes/api/workspace/typing'
 import { Route as AuthenticatedAdminBookingsIndexRouteImport } from './routes/_authenticated/admin/bookings/index'
 import { Route as AuthenticatedAdminMentorApplicationsIdRouteImport } from './routes/_authenticated/admin/mentor-applications/$id'
 import { Route as AuthenticatedAdminMentorsIndexRouteImport } from './routes/_authenticated/admin/mentors/index'
@@ -73,6 +114,31 @@ import { Route as AuthenticatedAdminStudentsStudentIdRouteImport } from './route
 import { Route as AuthenticatedMentorSessionIdRouteImport } from './routes/_authenticated/mentor/session.$id'
 import { Route as AuthenticatedStudentMentorIdRouteImport } from './routes/_authenticated/student/mentor.$id'
 import { Route as AuthenticatedStudentSessionIdRouteImport } from './routes/_authenticated/student/session.$id'
+import { Route as ApiAdminBookingAssignMentorRouteImport } from './routes/api/admin/booking/assign-mentor'
+import { Route as ApiAdminBookingAttentionRouteImport } from './routes/api/admin/booking/attention'
+import { Route as ApiAdminBookingAutoMatchRouteImport } from './routes/api/admin/booking/auto-match'
+import { Route as ApiAdminBookingCancelRouteImport } from './routes/api/admin/booking/cancel'
+import { Route as ApiAdminBookingClaimRouteImport } from './routes/api/admin/booking/claim'
+import { Route as ApiAdminBookingCompleteRouteImport } from './routes/api/admin/booking/complete'
+import { Route as ApiAdminBookingDetailRouteImport } from './routes/api/admin/booking/detail'
+import { Route as ApiAdminBookingFindMentorsRouteImport } from './routes/api/admin/booking/find-mentors'
+import { Route as ApiAdminBookingNoShowRouteImport } from './routes/api/admin/booking/no-show'
+import { Route as ApiAdminBookingRescheduleRouteImport } from './routes/api/admin/booking/reschedule'
+import { Route as ApiAdminMentorsSetStatusRouteImport } from './routes/api/admin/mentors/set-status'
+import { Route as ApiAdminMentorsSetVerificationRouteImport } from './routes/api/admin/mentors/set-verification'
+import { Route as ApiAdminMentorsUpdateProfileRouteImport } from './routes/api/admin/mentors/update-profile'
+import { Route as ApiAdminNotesDeleteRouteImport } from './routes/api/admin/notes/delete'
+import { Route as ApiAdminNotesListRouteImport } from './routes/api/admin/notes/list'
+import { Route as ApiAdminStudentSubscriptionsActivateRouteImport } from './routes/api/admin/student-subscriptions/activate'
+import { Route as ApiAdminStudentSubscriptionsAdjustSessionsRouteImport } from './routes/api/admin/student-subscriptions/adjust-sessions'
+import { Route as ApiAdminStudentSubscriptionsCreateRouteImport } from './routes/api/admin/student-subscriptions/create'
+import { Route as ApiAdminStudentSubscriptionsDeactivateRouteImport } from './routes/api/admin/student-subscriptions/deactivate'
+import { Route as ApiAdminStudentSubscriptionsDetailRouteImport } from './routes/api/admin/student-subscriptions/detail'
+import { Route as ApiAdminStudentSubscriptionsExtendExpiryRouteImport } from './routes/api/admin/student-subscriptions/extend-expiry'
+import { Route as ApiAdminStudentSubscriptionsReplacePlanRouteImport } from './routes/api/admin/student-subscriptions/replace-plan'
+import { Route as ApiAdminStudentsListRouteImport } from './routes/api/admin/students/list'
+import { Route as ApiAdminStudentsStatsRouteImport } from './routes/api/admin/students/stats'
+import { Route as ApiAdminStudentsUpdateProfileRouteImport } from './routes/api/admin/students/update-profile'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +184,16 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiMentorApplicationRoute = ApiMentorApplicationRouteImport.update({
+  id: '/api/mentor-application',
+  path: '/api/mentor-application',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSignedUrlRoute = ApiSignedUrlRouteImport.update({
+  id: '/api/signed-url',
+  path: '/api/signed-url',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
@@ -297,6 +373,12 @@ const AuthenticatedStudentBookRoute =
     path: '/student/book',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStudentBookSessionRoute =
+  AuthenticatedStudentBookSessionRouteImport.update({
+    id: '/student/book-session',
+    path: '/student/book-session',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentCheckoutRoute =
   AuthenticatedStudentCheckoutRouteImport.update({
     id: '/student/checkout',
@@ -393,6 +475,212 @@ const AuthenticatedStudentSubscriptionsRoute =
     path: '/student/subscriptions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiAdminAnalyticsRoute = ApiAdminAnalyticsRouteImport.update({
+  id: '/api/admin/analytics',
+  path: '/api/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAnalyticsBookingsRoute =
+  ApiAdminAnalyticsBookingsRouteImport.update({
+    id: '/api/admin/analytics-bookings',
+    path: '/api/admin/analytics-bookings',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsLanguagesRoute =
+  ApiAdminAnalyticsLanguagesRouteImport.update({
+    id: '/api/admin/analytics-languages',
+    path: '/api/admin/analytics-languages',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsMentorsRoute =
+  ApiAdminAnalyticsMentorsRouteImport.update({
+    id: '/api/admin/analytics-mentors',
+    path: '/api/admin/analytics-mentors',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsRegionsRoute =
+  ApiAdminAnalyticsRegionsRouteImport.update({
+    id: '/api/admin/analytics-regions',
+    path: '/api/admin/analytics-regions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsRevenueRoute =
+  ApiAdminAnalyticsRevenueRouteImport.update({
+    id: '/api/admin/analytics-revenue',
+    path: '/api/admin/analytics-revenue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsSessionsRoute =
+  ApiAdminAnalyticsSessionsRouteImport.update({
+    id: '/api/admin/analytics-sessions',
+    path: '/api/admin/analytics-sessions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsSubscriptionsRoute =
+  ApiAdminAnalyticsSubscriptionsRouteImport.update({
+    id: '/api/admin/analytics-subscriptions',
+    path: '/api/admin/analytics-subscriptions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsTopMentorsRoute =
+  ApiAdminAnalyticsTopMentorsRouteImport.update({
+    id: '/api/admin/analytics-top-mentors',
+    path: '/api/admin/analytics-top-mentors',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAnalyticsUsersRoute = ApiAdminAnalyticsUsersRouteImport.update({
+  id: '/api/admin/analytics-users',
+  path: '/api/admin/analytics-users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminApproveMentorRoute = ApiAdminApproveMentorRouteImport.update({
+  id: '/api/admin/approve-mentor',
+  path: '/api/admin/approve-mentor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAssignMentorRoute = ApiAdminAssignMentorRouteImport.update({
+  id: '/api/admin/assign-mentor',
+  path: '/api/admin/assign-mentor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAssignmentHistoryRoute =
+  ApiAdminAssignmentHistoryRouteImport.update({
+    id: '/api/admin/assignment-history',
+    path: '/api/admin/assignment-history',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminAttentionRoute = ApiAdminAttentionRouteImport.update({
+  id: '/api/admin/attention',
+  path: '/api/admin/attention',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAutoMatchRoute = ApiAdminAutoMatchRouteImport.update({
+  id: '/api/admin/auto-match',
+  path: '/api/admin/auto-match',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAutoReassignRoute = ApiAdminAutoReassignRouteImport.update({
+  id: '/api/admin/auto-reassign',
+  path: '/api/admin/auto-reassign',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBroadcastRoute = ApiAdminBroadcastRouteImport.update({
+  id: '/api/admin/broadcast',
+  path: '/api/admin/broadcast',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminGeneratePasswordRoute =
+  ApiAdminGeneratePasswordRouteImport.update({
+    id: '/api/admin/generate-password',
+    path: '/api/admin/generate-password',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminInterviewsRoute = ApiAdminInterviewsRouteImport.update({
+  id: '/api/admin/interviews',
+  path: '/api/admin/interviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMentorAvailabilityRoute =
+  ApiAdminMentorAvailabilityRouteImport.update({
+    id: '/api/admin/mentor-availability',
+    path: '/api/admin/mentor-availability',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminMentorWorkloadRoute = ApiAdminMentorWorkloadRouteImport.update({
+  id: '/api/admin/mentor-workload',
+  path: '/api/admin/mentor-workload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminResolveReportRoute = ApiAdminResolveReportRouteImport.update({
+  id: '/api/admin/resolve-report',
+  path: '/api/admin/resolve-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminStudentRisksRoute = ApiAdminStudentRisksRouteImport.update({
+  id: '/api/admin/student-risks',
+  path: '/api/admin/student-risks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSubscriptionPlansRoute =
+  ApiAdminSubscriptionPlansRouteImport.update({
+    id: '/api/admin/subscription-plans',
+    path: '/api/admin/subscription-plans',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminSupportTicketsRoute = ApiAdminSupportTicketsRouteImport.update({
+  id: '/api/admin/support-tickets',
+  path: '/api/admin/support-tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminToggleMentorStatusRoute =
+  ApiAdminToggleMentorStatusRouteImport.update({
+    id: '/api/admin/toggle-mentor-status',
+    path: '/api/admin/toggle-mentor-status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiHomeworkCreateRoute = ApiHomeworkCreateRouteImport.update({
+  id: '/api/homework/create',
+  path: '/api/homework/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHomeworkSubmitRoute = ApiHomeworkSubmitRouteImport.update({
+  id: '/api/homework/submit',
+  path: '/api/homework/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMentorBookingRequestsRoute =
+  ApiMentorBookingRequestsRouteImport.update({
+    id: '/api/mentor/booking-requests',
+    path: '/api/mentor/booking-requests',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMentorRespondAssignmentRoute =
+  ApiMentorRespondAssignmentRouteImport.update({
+    id: '/api/mentor/respond-assignment',
+    path: '/api/mentor/respond-assignment',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMentorRespondBookingRequestRoute =
+  ApiMentorRespondBookingRequestRouteImport.update({
+    id: '/api/mentor/respond-booking-request',
+    path: '/api/mentor/respond-booking-request',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPaymentsCreateRoute = ApiPaymentsCreateRouteImport.update({
+  id: '/api/payments/create',
+  path: '/api/payments/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionCompleteRoute = ApiSessionCompleteRouteImport.update({
+  id: '/api/session/complete',
+  path: '/api/session/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionReportIssueRoute = ApiSessionReportIssueRouteImport.update({
+  id: '/api/session/report-issue',
+  path: '/api/session/report-issue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionRestoreSlotRoute = ApiSessionRestoreSlotRouteImport.update({
+  id: '/api/session/restore-slot',
+  path: '/api/session/restore-slot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWorkspaceMessagesRoute = ApiWorkspaceMessagesRouteImport.update({
+  id: '/api/workspace/messages',
+  path: '/api/workspace/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWorkspacePostMessageRoute = ApiWorkspacePostMessageRouteImport.update({
+  id: '/api/workspace/post-message',
+  path: '/api/workspace/post-message',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWorkspaceTypingRoute = ApiWorkspaceTypingRouteImport.update({
+  id: '/api/workspace/typing',
+  path: '/api/workspace/typing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminBookingsIndexRoute =
   AuthenticatedAdminBookingsIndexRouteImport.update({
     id: '/admin/bookings/',
@@ -447,6 +735,147 @@ const AuthenticatedStudentSessionIdRoute =
     path: '/student/session/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiAdminBookingAssignMentorRoute =
+  ApiAdminBookingAssignMentorRouteImport.update({
+    id: '/api/admin/booking/assign-mentor',
+    path: '/api/admin/booking/assign-mentor',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminBookingAttentionRoute =
+  ApiAdminBookingAttentionRouteImport.update({
+    id: '/api/admin/booking/attention',
+    path: '/api/admin/booking/attention',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminBookingAutoMatchRoute =
+  ApiAdminBookingAutoMatchRouteImport.update({
+    id: '/api/admin/booking/auto-match',
+    path: '/api/admin/booking/auto-match',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminBookingCancelRoute = ApiAdminBookingCancelRouteImport.update({
+  id: '/api/admin/booking/cancel',
+  path: '/api/admin/booking/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBookingClaimRoute = ApiAdminBookingClaimRouteImport.update({
+  id: '/api/admin/booking/claim',
+  path: '/api/admin/booking/claim',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBookingCompleteRoute = ApiAdminBookingCompleteRouteImport.update({
+  id: '/api/admin/booking/complete',
+  path: '/api/admin/booking/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBookingDetailRoute = ApiAdminBookingDetailRouteImport.update({
+  id: '/api/admin/booking/detail',
+  path: '/api/admin/booking/detail',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBookingFindMentorsRoute =
+  ApiAdminBookingFindMentorsRouteImport.update({
+    id: '/api/admin/booking/find-mentors',
+    path: '/api/admin/booking/find-mentors',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminBookingNoShowRoute = ApiAdminBookingNoShowRouteImport.update({
+  id: '/api/admin/booking/no-show',
+  path: '/api/admin/booking/no-show',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBookingRescheduleRoute =
+  ApiAdminBookingRescheduleRouteImport.update({
+    id: '/api/admin/booking/reschedule',
+    path: '/api/admin/booking/reschedule',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminMentorsSetStatusRoute =
+  ApiAdminMentorsSetStatusRouteImport.update({
+    id: '/api/admin/mentors/set-status',
+    path: '/api/admin/mentors/set-status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminMentorsSetVerificationRoute =
+  ApiAdminMentorsSetVerificationRouteImport.update({
+    id: '/api/admin/mentors/set-verification',
+    path: '/api/admin/mentors/set-verification',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminMentorsUpdateProfileRoute =
+  ApiAdminMentorsUpdateProfileRouteImport.update({
+    id: '/api/admin/mentors/update-profile',
+    path: '/api/admin/mentors/update-profile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminNotesDeleteRoute = ApiAdminNotesDeleteRouteImport.update({
+  id: '/api/admin/notes/delete',
+  path: '/api/admin/notes/delete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminNotesListRoute = ApiAdminNotesListRouteImport.update({
+  id: '/api/admin/notes/list',
+  path: '/api/admin/notes/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminStudentSubscriptionsActivateRoute =
+  ApiAdminStudentSubscriptionsActivateRouteImport.update({
+    id: '/api/admin/student-subscriptions/activate',
+    path: '/api/admin/student-subscriptions/activate',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminStudentSubscriptionsAdjustSessionsRoute =
+  ApiAdminStudentSubscriptionsAdjustSessionsRouteImport.update({
+    id: '/api/admin/student-subscriptions/adjust-sessions',
+    path: '/api/admin/student-subscriptions/adjust-sessions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminStudentSubscriptionsCreateRoute =
+  ApiAdminStudentSubscriptionsCreateRouteImport.update({
+    id: '/api/admin/student-subscriptions/create',
+    path: '/api/admin/student-subscriptions/create',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminStudentSubscriptionsDeactivateRoute =
+  ApiAdminStudentSubscriptionsDeactivateRouteImport.update({
+    id: '/api/admin/student-subscriptions/deactivate',
+    path: '/api/admin/student-subscriptions/deactivate',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminStudentSubscriptionsDetailRoute =
+  ApiAdminStudentSubscriptionsDetailRouteImport.update({
+    id: '/api/admin/student-subscriptions/detail',
+    path: '/api/admin/student-subscriptions/detail',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminStudentSubscriptionsExtendExpiryRoute =
+  ApiAdminStudentSubscriptionsExtendExpiryRouteImport.update({
+    id: '/api/admin/student-subscriptions/extend-expiry',
+    path: '/api/admin/student-subscriptions/extend-expiry',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminStudentSubscriptionsReplacePlanRoute =
+  ApiAdminStudentSubscriptionsReplacePlanRouteImport.update({
+    id: '/api/admin/student-subscriptions/replace-plan',
+    path: '/api/admin/student-subscriptions/replace-plan',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAdminStudentsListRoute = ApiAdminStudentsListRouteImport.update({
+  id: '/api/admin/students/list',
+  path: '/api/admin/students/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminStudentsStatsRoute = ApiAdminStudentsStatsRouteImport.update({
+  id: '/api/admin/students/stats',
+  path: '/api/admin/students/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminStudentsUpdateProfileRoute =
+  ApiAdminStudentsUpdateProfileRouteImport.update({
+    id: '/api/admin/students/update-profile',
+    path: '/api/admin/students/update-profile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -457,6 +886,8 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/mentor-application': typeof ApiMentorApplicationRoute
+  '/api/signed-url': typeof ApiSignedUrlRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/mentor/apply': typeof MentorApplyRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -487,6 +918,7 @@ export interface FileRoutesByFullPath {
   '/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
   '/mentor/settings': typeof AuthenticatedMentorSettingsRoute
   '/student/book': typeof AuthenticatedStudentBookRoute
+  '/student/book-session': typeof AuthenticatedStudentBookSessionRoute
   '/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/student/dashboard': typeof AuthenticatedStudentDashboardRoute
   '/student/demo-conversion': typeof AuthenticatedStudentDemoConversionRoute
@@ -503,12 +935,75 @@ export interface FileRoutesByFullPath {
   '/student/student-settings': typeof AuthenticatedStudentStudentSettingsRoute
   '/student/subscription-slots': typeof AuthenticatedStudentSubscriptionSlotsRoute
   '/student/subscriptions': typeof AuthenticatedStudentSubscriptionsRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/analytics-bookings': typeof ApiAdminAnalyticsBookingsRoute
+  '/api/admin/analytics-languages': typeof ApiAdminAnalyticsLanguagesRoute
+  '/api/admin/analytics-mentors': typeof ApiAdminAnalyticsMentorsRoute
+  '/api/admin/analytics-regions': typeof ApiAdminAnalyticsRegionsRoute
+  '/api/admin/analytics-revenue': typeof ApiAdminAnalyticsRevenueRoute
+  '/api/admin/analytics-sessions': typeof ApiAdminAnalyticsSessionsRoute
+  '/api/admin/analytics-subscriptions': typeof ApiAdminAnalyticsSubscriptionsRoute
+  '/api/admin/analytics-top-mentors': typeof ApiAdminAnalyticsTopMentorsRoute
+  '/api/admin/analytics-users': typeof ApiAdminAnalyticsUsersRoute
+  '/api/admin/approve-mentor': typeof ApiAdminApproveMentorRoute
+  '/api/admin/assign-mentor': typeof ApiAdminAssignMentorRoute
+  '/api/admin/assignment-history': typeof ApiAdminAssignmentHistoryRoute
+  '/api/admin/attention': typeof ApiAdminAttentionRoute
+  '/api/admin/auto-match': typeof ApiAdminAutoMatchRoute
+  '/api/admin/auto-reassign': typeof ApiAdminAutoReassignRoute
+  '/api/admin/broadcast': typeof ApiAdminBroadcastRoute
+  '/api/admin/generate-password': typeof ApiAdminGeneratePasswordRoute
+  '/api/admin/interviews': typeof ApiAdminInterviewsRoute
+  '/api/admin/mentor-availability': typeof ApiAdminMentorAvailabilityRoute
+  '/api/admin/mentor-workload': typeof ApiAdminMentorWorkloadRoute
+  '/api/admin/resolve-report': typeof ApiAdminResolveReportRoute
+  '/api/admin/student-risks': typeof ApiAdminStudentRisksRoute
+  '/api/admin/subscription-plans': typeof ApiAdminSubscriptionPlansRoute
+  '/api/admin/support-tickets': typeof ApiAdminSupportTicketsRoute
+  '/api/admin/toggle-mentor-status': typeof ApiAdminToggleMentorStatusRoute
+  '/api/homework/create': typeof ApiHomeworkCreateRoute
+  '/api/homework/submit': typeof ApiHomeworkSubmitRoute
+  '/api/mentor/booking-requests': typeof ApiMentorBookingRequestsRoute
+  '/api/mentor/respond-assignment': typeof ApiMentorRespondAssignmentRoute
+  '/api/mentor/respond-booking-request': typeof ApiMentorRespondBookingRequestRoute
+  '/api/payments/create': typeof ApiPaymentsCreateRoute
+  '/api/session/complete': typeof ApiSessionCompleteRoute
+  '/api/session/report-issue': typeof ApiSessionReportIssueRoute
+  '/api/session/restore-slot': typeof ApiSessionRestoreSlotRoute
+  '/api/workspace/messages': typeof ApiWorkspaceMessagesRoute
+  '/api/workspace/post-message': typeof ApiWorkspacePostMessageRoute
+  '/api/workspace/typing': typeof ApiWorkspaceTypingRoute
   '/admin/mentor-applications/$id': typeof AuthenticatedAdminMentorApplicationsIdRoute
   '/admin/mentors/$mentorId': typeof AuthenticatedAdminMentorsMentorIdRoute
   '/admin/students/$studentId': typeof AuthenticatedAdminStudentsStudentIdRoute
   '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
   '/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
+  '/api/admin/booking/assign-mentor': typeof ApiAdminBookingAssignMentorRoute
+  '/api/admin/booking/attention': typeof ApiAdminBookingAttentionRoute
+  '/api/admin/booking/auto-match': typeof ApiAdminBookingAutoMatchRoute
+  '/api/admin/booking/cancel': typeof ApiAdminBookingCancelRoute
+  '/api/admin/booking/claim': typeof ApiAdminBookingClaimRoute
+  '/api/admin/booking/complete': typeof ApiAdminBookingCompleteRoute
+  '/api/admin/booking/detail': typeof ApiAdminBookingDetailRoute
+  '/api/admin/booking/find-mentors': typeof ApiAdminBookingFindMentorsRoute
+  '/api/admin/booking/no-show': typeof ApiAdminBookingNoShowRoute
+  '/api/admin/booking/reschedule': typeof ApiAdminBookingRescheduleRoute
+  '/api/admin/mentors/set-status': typeof ApiAdminMentorsSetStatusRoute
+  '/api/admin/mentors/set-verification': typeof ApiAdminMentorsSetVerificationRoute
+  '/api/admin/mentors/update-profile': typeof ApiAdminMentorsUpdateProfileRoute
+  '/api/admin/notes/delete': typeof ApiAdminNotesDeleteRoute
+  '/api/admin/notes/list': typeof ApiAdminNotesListRoute
+  '/api/admin/student-subscriptions/activate': typeof ApiAdminStudentSubscriptionsActivateRoute
+  '/api/admin/student-subscriptions/adjust-sessions': typeof ApiAdminStudentSubscriptionsAdjustSessionsRoute
+  '/api/admin/student-subscriptions/create': typeof ApiAdminStudentSubscriptionsCreateRoute
+  '/api/admin/student-subscriptions/deactivate': typeof ApiAdminStudentSubscriptionsDeactivateRoute
+  '/api/admin/student-subscriptions/detail': typeof ApiAdminStudentSubscriptionsDetailRoute
+  '/api/admin/student-subscriptions/extend-expiry': typeof ApiAdminStudentSubscriptionsExtendExpiryRoute
+  '/api/admin/student-subscriptions/replace-plan': typeof ApiAdminStudentSubscriptionsReplacePlanRoute
+  '/api/admin/students/list': typeof ApiAdminStudentsListRoute
+  '/api/admin/students/stats': typeof ApiAdminStudentsStatsRoute
+  '/api/admin/students/update-profile': typeof ApiAdminStudentsUpdateProfileRoute
   '/admin/bookings/': typeof AuthenticatedAdminBookingsIndexRoute
   '/admin/mentors/': typeof AuthenticatedAdminMentorsIndexRoute
   '/admin/students/': typeof AuthenticatedAdminStudentsIndexRoute
@@ -522,6 +1017,8 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/mentor-application': typeof ApiMentorApplicationRoute
+  '/api/signed-url': typeof ApiSignedUrlRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/mentor/apply': typeof MentorApplyRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -552,6 +1049,7 @@ export interface FileRoutesByTo {
   '/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
   '/mentor/settings': typeof AuthenticatedMentorSettingsRoute
   '/student/book': typeof AuthenticatedStudentBookRoute
+  '/student/book-session': typeof AuthenticatedStudentBookSessionRoute
   '/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/student/dashboard': typeof AuthenticatedStudentDashboardRoute
   '/student/demo-conversion': typeof AuthenticatedStudentDemoConversionRoute
@@ -568,12 +1066,75 @@ export interface FileRoutesByTo {
   '/student/student-settings': typeof AuthenticatedStudentStudentSettingsRoute
   '/student/subscription-slots': typeof AuthenticatedStudentSubscriptionSlotsRoute
   '/student/subscriptions': typeof AuthenticatedStudentSubscriptionsRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/analytics-bookings': typeof ApiAdminAnalyticsBookingsRoute
+  '/api/admin/analytics-languages': typeof ApiAdminAnalyticsLanguagesRoute
+  '/api/admin/analytics-mentors': typeof ApiAdminAnalyticsMentorsRoute
+  '/api/admin/analytics-regions': typeof ApiAdminAnalyticsRegionsRoute
+  '/api/admin/analytics-revenue': typeof ApiAdminAnalyticsRevenueRoute
+  '/api/admin/analytics-sessions': typeof ApiAdminAnalyticsSessionsRoute
+  '/api/admin/analytics-subscriptions': typeof ApiAdminAnalyticsSubscriptionsRoute
+  '/api/admin/analytics-top-mentors': typeof ApiAdminAnalyticsTopMentorsRoute
+  '/api/admin/analytics-users': typeof ApiAdminAnalyticsUsersRoute
+  '/api/admin/approve-mentor': typeof ApiAdminApproveMentorRoute
+  '/api/admin/assign-mentor': typeof ApiAdminAssignMentorRoute
+  '/api/admin/assignment-history': typeof ApiAdminAssignmentHistoryRoute
+  '/api/admin/attention': typeof ApiAdminAttentionRoute
+  '/api/admin/auto-match': typeof ApiAdminAutoMatchRoute
+  '/api/admin/auto-reassign': typeof ApiAdminAutoReassignRoute
+  '/api/admin/broadcast': typeof ApiAdminBroadcastRoute
+  '/api/admin/generate-password': typeof ApiAdminGeneratePasswordRoute
+  '/api/admin/interviews': typeof ApiAdminInterviewsRoute
+  '/api/admin/mentor-availability': typeof ApiAdminMentorAvailabilityRoute
+  '/api/admin/mentor-workload': typeof ApiAdminMentorWorkloadRoute
+  '/api/admin/resolve-report': typeof ApiAdminResolveReportRoute
+  '/api/admin/student-risks': typeof ApiAdminStudentRisksRoute
+  '/api/admin/subscription-plans': typeof ApiAdminSubscriptionPlansRoute
+  '/api/admin/support-tickets': typeof ApiAdminSupportTicketsRoute
+  '/api/admin/toggle-mentor-status': typeof ApiAdminToggleMentorStatusRoute
+  '/api/homework/create': typeof ApiHomeworkCreateRoute
+  '/api/homework/submit': typeof ApiHomeworkSubmitRoute
+  '/api/mentor/booking-requests': typeof ApiMentorBookingRequestsRoute
+  '/api/mentor/respond-assignment': typeof ApiMentorRespondAssignmentRoute
+  '/api/mentor/respond-booking-request': typeof ApiMentorRespondBookingRequestRoute
+  '/api/payments/create': typeof ApiPaymentsCreateRoute
+  '/api/session/complete': typeof ApiSessionCompleteRoute
+  '/api/session/report-issue': typeof ApiSessionReportIssueRoute
+  '/api/session/restore-slot': typeof ApiSessionRestoreSlotRoute
+  '/api/workspace/messages': typeof ApiWorkspaceMessagesRoute
+  '/api/workspace/post-message': typeof ApiWorkspacePostMessageRoute
+  '/api/workspace/typing': typeof ApiWorkspaceTypingRoute
   '/admin/mentor-applications/$id': typeof AuthenticatedAdminMentorApplicationsIdRoute
   '/admin/mentors/$mentorId': typeof AuthenticatedAdminMentorsMentorIdRoute
   '/admin/students/$studentId': typeof AuthenticatedAdminStudentsStudentIdRoute
   '/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
   '/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
+  '/api/admin/booking/assign-mentor': typeof ApiAdminBookingAssignMentorRoute
+  '/api/admin/booking/attention': typeof ApiAdminBookingAttentionRoute
+  '/api/admin/booking/auto-match': typeof ApiAdminBookingAutoMatchRoute
+  '/api/admin/booking/cancel': typeof ApiAdminBookingCancelRoute
+  '/api/admin/booking/claim': typeof ApiAdminBookingClaimRoute
+  '/api/admin/booking/complete': typeof ApiAdminBookingCompleteRoute
+  '/api/admin/booking/detail': typeof ApiAdminBookingDetailRoute
+  '/api/admin/booking/find-mentors': typeof ApiAdminBookingFindMentorsRoute
+  '/api/admin/booking/no-show': typeof ApiAdminBookingNoShowRoute
+  '/api/admin/booking/reschedule': typeof ApiAdminBookingRescheduleRoute
+  '/api/admin/mentors/set-status': typeof ApiAdminMentorsSetStatusRoute
+  '/api/admin/mentors/set-verification': typeof ApiAdminMentorsSetVerificationRoute
+  '/api/admin/mentors/update-profile': typeof ApiAdminMentorsUpdateProfileRoute
+  '/api/admin/notes/delete': typeof ApiAdminNotesDeleteRoute
+  '/api/admin/notes/list': typeof ApiAdminNotesListRoute
+  '/api/admin/student-subscriptions/activate': typeof ApiAdminStudentSubscriptionsActivateRoute
+  '/api/admin/student-subscriptions/adjust-sessions': typeof ApiAdminStudentSubscriptionsAdjustSessionsRoute
+  '/api/admin/student-subscriptions/create': typeof ApiAdminStudentSubscriptionsCreateRoute
+  '/api/admin/student-subscriptions/deactivate': typeof ApiAdminStudentSubscriptionsDeactivateRoute
+  '/api/admin/student-subscriptions/detail': typeof ApiAdminStudentSubscriptionsDetailRoute
+  '/api/admin/student-subscriptions/extend-expiry': typeof ApiAdminStudentSubscriptionsExtendExpiryRoute
+  '/api/admin/student-subscriptions/replace-plan': typeof ApiAdminStudentSubscriptionsReplacePlanRoute
+  '/api/admin/students/list': typeof ApiAdminStudentsListRoute
+  '/api/admin/students/stats': typeof ApiAdminStudentsStatsRoute
+  '/api/admin/students/update-profile': typeof ApiAdminStudentsUpdateProfileRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsIndexRoute
   '/admin/mentors': typeof AuthenticatedAdminMentorsIndexRoute
   '/admin/students': typeof AuthenticatedAdminStudentsIndexRoute
@@ -589,6 +1150,8 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/api/mentor-application': typeof ApiMentorApplicationRoute
+  '/api/signed-url': typeof ApiSignedUrlRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/mentor/apply': typeof MentorApplyRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -619,6 +1182,7 @@ export interface FileRoutesById {
   '/_authenticated/mentor/sessions': typeof AuthenticatedMentorSessionsRoute
   '/_authenticated/mentor/settings': typeof AuthenticatedMentorSettingsRoute
   '/_authenticated/student/book': typeof AuthenticatedStudentBookRoute
+  '/_authenticated/student/book-session': typeof AuthenticatedStudentBookSessionRoute
   '/_authenticated/student/checkout': typeof AuthenticatedStudentCheckoutRoute
   '/_authenticated/student/dashboard': typeof AuthenticatedStudentDashboardRoute
   '/_authenticated/student/demo-conversion': typeof AuthenticatedStudentDemoConversionRoute
@@ -635,12 +1199,75 @@ export interface FileRoutesById {
   '/_authenticated/student/student-settings': typeof AuthenticatedStudentStudentSettingsRoute
   '/_authenticated/student/subscription-slots': typeof AuthenticatedStudentSubscriptionSlotsRoute
   '/_authenticated/student/subscriptions': typeof AuthenticatedStudentSubscriptionsRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/analytics-bookings': typeof ApiAdminAnalyticsBookingsRoute
+  '/api/admin/analytics-languages': typeof ApiAdminAnalyticsLanguagesRoute
+  '/api/admin/analytics-mentors': typeof ApiAdminAnalyticsMentorsRoute
+  '/api/admin/analytics-regions': typeof ApiAdminAnalyticsRegionsRoute
+  '/api/admin/analytics-revenue': typeof ApiAdminAnalyticsRevenueRoute
+  '/api/admin/analytics-sessions': typeof ApiAdminAnalyticsSessionsRoute
+  '/api/admin/analytics-subscriptions': typeof ApiAdminAnalyticsSubscriptionsRoute
+  '/api/admin/analytics-top-mentors': typeof ApiAdminAnalyticsTopMentorsRoute
+  '/api/admin/analytics-users': typeof ApiAdminAnalyticsUsersRoute
+  '/api/admin/approve-mentor': typeof ApiAdminApproveMentorRoute
+  '/api/admin/assign-mentor': typeof ApiAdminAssignMentorRoute
+  '/api/admin/assignment-history': typeof ApiAdminAssignmentHistoryRoute
+  '/api/admin/attention': typeof ApiAdminAttentionRoute
+  '/api/admin/auto-match': typeof ApiAdminAutoMatchRoute
+  '/api/admin/auto-reassign': typeof ApiAdminAutoReassignRoute
+  '/api/admin/broadcast': typeof ApiAdminBroadcastRoute
+  '/api/admin/generate-password': typeof ApiAdminGeneratePasswordRoute
+  '/api/admin/interviews': typeof ApiAdminInterviewsRoute
+  '/api/admin/mentor-availability': typeof ApiAdminMentorAvailabilityRoute
+  '/api/admin/mentor-workload': typeof ApiAdminMentorWorkloadRoute
+  '/api/admin/resolve-report': typeof ApiAdminResolveReportRoute
+  '/api/admin/student-risks': typeof ApiAdminStudentRisksRoute
+  '/api/admin/subscription-plans': typeof ApiAdminSubscriptionPlansRoute
+  '/api/admin/support-tickets': typeof ApiAdminSupportTicketsRoute
+  '/api/admin/toggle-mentor-status': typeof ApiAdminToggleMentorStatusRoute
+  '/api/homework/create': typeof ApiHomeworkCreateRoute
+  '/api/homework/submit': typeof ApiHomeworkSubmitRoute
+  '/api/mentor/booking-requests': typeof ApiMentorBookingRequestsRoute
+  '/api/mentor/respond-assignment': typeof ApiMentorRespondAssignmentRoute
+  '/api/mentor/respond-booking-request': typeof ApiMentorRespondBookingRequestRoute
+  '/api/payments/create': typeof ApiPaymentsCreateRoute
+  '/api/session/complete': typeof ApiSessionCompleteRoute
+  '/api/session/report-issue': typeof ApiSessionReportIssueRoute
+  '/api/session/restore-slot': typeof ApiSessionRestoreSlotRoute
+  '/api/workspace/messages': typeof ApiWorkspaceMessagesRoute
+  '/api/workspace/post-message': typeof ApiWorkspacePostMessageRoute
+  '/api/workspace/typing': typeof ApiWorkspaceTypingRoute
   '/_authenticated/admin/mentor-applications/$id': typeof AuthenticatedAdminMentorApplicationsIdRoute
   '/_authenticated/admin/mentors/$mentorId': typeof AuthenticatedAdminMentorsMentorIdRoute
   '/_authenticated/admin/students/$studentId': typeof AuthenticatedAdminStudentsStudentIdRoute
   '/_authenticated/mentor/session/$id': typeof AuthenticatedMentorSessionIdRoute
   '/_authenticated/student/mentor/$id': typeof AuthenticatedStudentMentorIdRoute
   '/_authenticated/student/session/$id': typeof AuthenticatedStudentSessionIdRoute
+  '/api/admin/booking/assign-mentor': typeof ApiAdminBookingAssignMentorRoute
+  '/api/admin/booking/attention': typeof ApiAdminBookingAttentionRoute
+  '/api/admin/booking/auto-match': typeof ApiAdminBookingAutoMatchRoute
+  '/api/admin/booking/cancel': typeof ApiAdminBookingCancelRoute
+  '/api/admin/booking/claim': typeof ApiAdminBookingClaimRoute
+  '/api/admin/booking/complete': typeof ApiAdminBookingCompleteRoute
+  '/api/admin/booking/detail': typeof ApiAdminBookingDetailRoute
+  '/api/admin/booking/find-mentors': typeof ApiAdminBookingFindMentorsRoute
+  '/api/admin/booking/no-show': typeof ApiAdminBookingNoShowRoute
+  '/api/admin/booking/reschedule': typeof ApiAdminBookingRescheduleRoute
+  '/api/admin/mentors/set-status': typeof ApiAdminMentorsSetStatusRoute
+  '/api/admin/mentors/set-verification': typeof ApiAdminMentorsSetVerificationRoute
+  '/api/admin/mentors/update-profile': typeof ApiAdminMentorsUpdateProfileRoute
+  '/api/admin/notes/delete': typeof ApiAdminNotesDeleteRoute
+  '/api/admin/notes/list': typeof ApiAdminNotesListRoute
+  '/api/admin/student-subscriptions/activate': typeof ApiAdminStudentSubscriptionsActivateRoute
+  '/api/admin/student-subscriptions/adjust-sessions': typeof ApiAdminStudentSubscriptionsAdjustSessionsRoute
+  '/api/admin/student-subscriptions/create': typeof ApiAdminStudentSubscriptionsCreateRoute
+  '/api/admin/student-subscriptions/deactivate': typeof ApiAdminStudentSubscriptionsDeactivateRoute
+  '/api/admin/student-subscriptions/detail': typeof ApiAdminStudentSubscriptionsDetailRoute
+  '/api/admin/student-subscriptions/extend-expiry': typeof ApiAdminStudentSubscriptionsExtendExpiryRoute
+  '/api/admin/student-subscriptions/replace-plan': typeof ApiAdminStudentSubscriptionsReplacePlanRoute
+  '/api/admin/students/list': typeof ApiAdminStudentsListRoute
+  '/api/admin/students/stats': typeof ApiAdminStudentsStatsRoute
+  '/api/admin/students/update-profile': typeof ApiAdminStudentsUpdateProfileRoute
   '/_authenticated/admin/bookings/': typeof AuthenticatedAdminBookingsIndexRoute
   '/_authenticated/admin/mentors/': typeof AuthenticatedAdminMentorsIndexRoute
   '/_authenticated/admin/students/': typeof AuthenticatedAdminStudentsIndexRoute
@@ -656,6 +1283,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/notifications'
     | '/settings'
+    | '/api/mentor-application'
+    | '/api/signed-url'
     | '/auth/callback'
     | '/mentor/apply'
     | '/admin/analytics'
@@ -686,6 +1315,7 @@ export interface FileRouteTypes {
     | '/mentor/sessions'
     | '/mentor/settings'
     | '/student/book'
+    | '/student/book-session'
     | '/student/checkout'
     | '/student/dashboard'
     | '/student/demo-conversion'
@@ -702,12 +1332,75 @@ export interface FileRouteTypes {
     | '/student/student-settings'
     | '/student/subscription-slots'
     | '/student/subscriptions'
+    | '/api/admin/analytics'
+    | '/api/admin/analytics-bookings'
+    | '/api/admin/analytics-languages'
+    | '/api/admin/analytics-mentors'
+    | '/api/admin/analytics-regions'
+    | '/api/admin/analytics-revenue'
+    | '/api/admin/analytics-sessions'
+    | '/api/admin/analytics-subscriptions'
+    | '/api/admin/analytics-top-mentors'
+    | '/api/admin/analytics-users'
+    | '/api/admin/approve-mentor'
+    | '/api/admin/assign-mentor'
+    | '/api/admin/assignment-history'
+    | '/api/admin/attention'
+    | '/api/admin/auto-match'
+    | '/api/admin/auto-reassign'
+    | '/api/admin/broadcast'
+    | '/api/admin/generate-password'
+    | '/api/admin/interviews'
+    | '/api/admin/mentor-availability'
+    | '/api/admin/mentor-workload'
+    | '/api/admin/resolve-report'
+    | '/api/admin/student-risks'
+    | '/api/admin/subscription-plans'
+    | '/api/admin/support-tickets'
+    | '/api/admin/toggle-mentor-status'
+    | '/api/homework/create'
+    | '/api/homework/submit'
+    | '/api/mentor/booking-requests'
+    | '/api/mentor/respond-assignment'
+    | '/api/mentor/respond-booking-request'
+    | '/api/payments/create'
+    | '/api/session/complete'
+    | '/api/session/report-issue'
+    | '/api/session/restore-slot'
+    | '/api/workspace/messages'
+    | '/api/workspace/post-message'
+    | '/api/workspace/typing'
     | '/admin/mentor-applications/$id'
     | '/admin/mentors/$mentorId'
     | '/admin/students/$studentId'
     | '/mentor/session/$id'
     | '/student/mentor/$id'
     | '/student/session/$id'
+    | '/api/admin/booking/assign-mentor'
+    | '/api/admin/booking/attention'
+    | '/api/admin/booking/auto-match'
+    | '/api/admin/booking/cancel'
+    | '/api/admin/booking/claim'
+    | '/api/admin/booking/complete'
+    | '/api/admin/booking/detail'
+    | '/api/admin/booking/find-mentors'
+    | '/api/admin/booking/no-show'
+    | '/api/admin/booking/reschedule'
+    | '/api/admin/mentors/set-status'
+    | '/api/admin/mentors/set-verification'
+    | '/api/admin/mentors/update-profile'
+    | '/api/admin/notes/delete'
+    | '/api/admin/notes/list'
+    | '/api/admin/student-subscriptions/activate'
+    | '/api/admin/student-subscriptions/adjust-sessions'
+    | '/api/admin/student-subscriptions/create'
+    | '/api/admin/student-subscriptions/deactivate'
+    | '/api/admin/student-subscriptions/detail'
+    | '/api/admin/student-subscriptions/extend-expiry'
+    | '/api/admin/student-subscriptions/replace-plan'
+    | '/api/admin/students/list'
+    | '/api/admin/students/stats'
+    | '/api/admin/students/update-profile'
     | '/admin/bookings/'
     | '/admin/mentors/'
     | '/admin/students/'
@@ -721,6 +1414,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/notifications'
     | '/settings'
+    | '/api/mentor-application'
+    | '/api/signed-url'
     | '/auth/callback'
     | '/mentor/apply'
     | '/admin/analytics'
@@ -751,6 +1446,7 @@ export interface FileRouteTypes {
     | '/mentor/sessions'
     | '/mentor/settings'
     | '/student/book'
+    | '/student/book-session'
     | '/student/checkout'
     | '/student/dashboard'
     | '/student/demo-conversion'
@@ -767,12 +1463,75 @@ export interface FileRouteTypes {
     | '/student/student-settings'
     | '/student/subscription-slots'
     | '/student/subscriptions'
+    | '/api/admin/analytics'
+    | '/api/admin/analytics-bookings'
+    | '/api/admin/analytics-languages'
+    | '/api/admin/analytics-mentors'
+    | '/api/admin/analytics-regions'
+    | '/api/admin/analytics-revenue'
+    | '/api/admin/analytics-sessions'
+    | '/api/admin/analytics-subscriptions'
+    | '/api/admin/analytics-top-mentors'
+    | '/api/admin/analytics-users'
+    | '/api/admin/approve-mentor'
+    | '/api/admin/assign-mentor'
+    | '/api/admin/assignment-history'
+    | '/api/admin/attention'
+    | '/api/admin/auto-match'
+    | '/api/admin/auto-reassign'
+    | '/api/admin/broadcast'
+    | '/api/admin/generate-password'
+    | '/api/admin/interviews'
+    | '/api/admin/mentor-availability'
+    | '/api/admin/mentor-workload'
+    | '/api/admin/resolve-report'
+    | '/api/admin/student-risks'
+    | '/api/admin/subscription-plans'
+    | '/api/admin/support-tickets'
+    | '/api/admin/toggle-mentor-status'
+    | '/api/homework/create'
+    | '/api/homework/submit'
+    | '/api/mentor/booking-requests'
+    | '/api/mentor/respond-assignment'
+    | '/api/mentor/respond-booking-request'
+    | '/api/payments/create'
+    | '/api/session/complete'
+    | '/api/session/report-issue'
+    | '/api/session/restore-slot'
+    | '/api/workspace/messages'
+    | '/api/workspace/post-message'
+    | '/api/workspace/typing'
     | '/admin/mentor-applications/$id'
     | '/admin/mentors/$mentorId'
     | '/admin/students/$studentId'
     | '/mentor/session/$id'
     | '/student/mentor/$id'
     | '/student/session/$id'
+    | '/api/admin/booking/assign-mentor'
+    | '/api/admin/booking/attention'
+    | '/api/admin/booking/auto-match'
+    | '/api/admin/booking/cancel'
+    | '/api/admin/booking/claim'
+    | '/api/admin/booking/complete'
+    | '/api/admin/booking/detail'
+    | '/api/admin/booking/find-mentors'
+    | '/api/admin/booking/no-show'
+    | '/api/admin/booking/reschedule'
+    | '/api/admin/mentors/set-status'
+    | '/api/admin/mentors/set-verification'
+    | '/api/admin/mentors/update-profile'
+    | '/api/admin/notes/delete'
+    | '/api/admin/notes/list'
+    | '/api/admin/student-subscriptions/activate'
+    | '/api/admin/student-subscriptions/adjust-sessions'
+    | '/api/admin/student-subscriptions/create'
+    | '/api/admin/student-subscriptions/deactivate'
+    | '/api/admin/student-subscriptions/detail'
+    | '/api/admin/student-subscriptions/extend-expiry'
+    | '/api/admin/student-subscriptions/replace-plan'
+    | '/api/admin/students/list'
+    | '/api/admin/students/stats'
+    | '/api/admin/students/update-profile'
     | '/admin/bookings'
     | '/admin/mentors'
     | '/admin/students'
@@ -787,6 +1546,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/notifications'
     | '/_authenticated/settings'
+    | '/api/mentor-application'
+    | '/api/signed-url'
     | '/auth/callback'
     | '/mentor/apply'
     | '/_authenticated/admin/analytics'
@@ -817,6 +1578,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mentor/sessions'
     | '/_authenticated/mentor/settings'
     | '/_authenticated/student/book'
+    | '/_authenticated/student/book-session'
     | '/_authenticated/student/checkout'
     | '/_authenticated/student/dashboard'
     | '/_authenticated/student/demo-conversion'
@@ -833,12 +1595,75 @@ export interface FileRouteTypes {
     | '/_authenticated/student/student-settings'
     | '/_authenticated/student/subscription-slots'
     | '/_authenticated/student/subscriptions'
+    | '/api/admin/analytics'
+    | '/api/admin/analytics-bookings'
+    | '/api/admin/analytics-languages'
+    | '/api/admin/analytics-mentors'
+    | '/api/admin/analytics-regions'
+    | '/api/admin/analytics-revenue'
+    | '/api/admin/analytics-sessions'
+    | '/api/admin/analytics-subscriptions'
+    | '/api/admin/analytics-top-mentors'
+    | '/api/admin/analytics-users'
+    | '/api/admin/approve-mentor'
+    | '/api/admin/assign-mentor'
+    | '/api/admin/assignment-history'
+    | '/api/admin/attention'
+    | '/api/admin/auto-match'
+    | '/api/admin/auto-reassign'
+    | '/api/admin/broadcast'
+    | '/api/admin/generate-password'
+    | '/api/admin/interviews'
+    | '/api/admin/mentor-availability'
+    | '/api/admin/mentor-workload'
+    | '/api/admin/resolve-report'
+    | '/api/admin/student-risks'
+    | '/api/admin/subscription-plans'
+    | '/api/admin/support-tickets'
+    | '/api/admin/toggle-mentor-status'
+    | '/api/homework/create'
+    | '/api/homework/submit'
+    | '/api/mentor/booking-requests'
+    | '/api/mentor/respond-assignment'
+    | '/api/mentor/respond-booking-request'
+    | '/api/payments/create'
+    | '/api/session/complete'
+    | '/api/session/report-issue'
+    | '/api/session/restore-slot'
+    | '/api/workspace/messages'
+    | '/api/workspace/post-message'
+    | '/api/workspace/typing'
     | '/_authenticated/admin/mentor-applications/$id'
     | '/_authenticated/admin/mentors/$mentorId'
     | '/_authenticated/admin/students/$studentId'
     | '/_authenticated/mentor/session/$id'
     | '/_authenticated/student/mentor/$id'
     | '/_authenticated/student/session/$id'
+    | '/api/admin/booking/assign-mentor'
+    | '/api/admin/booking/attention'
+    | '/api/admin/booking/auto-match'
+    | '/api/admin/booking/cancel'
+    | '/api/admin/booking/claim'
+    | '/api/admin/booking/complete'
+    | '/api/admin/booking/detail'
+    | '/api/admin/booking/find-mentors'
+    | '/api/admin/booking/no-show'
+    | '/api/admin/booking/reschedule'
+    | '/api/admin/mentors/set-status'
+    | '/api/admin/mentors/set-verification'
+    | '/api/admin/mentors/update-profile'
+    | '/api/admin/notes/delete'
+    | '/api/admin/notes/list'
+    | '/api/admin/student-subscriptions/activate'
+    | '/api/admin/student-subscriptions/adjust-sessions'
+    | '/api/admin/student-subscriptions/create'
+    | '/api/admin/student-subscriptions/deactivate'
+    | '/api/admin/student-subscriptions/detail'
+    | '/api/admin/student-subscriptions/extend-expiry'
+    | '/api/admin/student-subscriptions/replace-plan'
+    | '/api/admin/students/list'
+    | '/api/admin/students/stats'
+    | '/api/admin/students/update-profile'
     | '/_authenticated/admin/bookings/'
     | '/_authenticated/admin/mentors/'
     | '/_authenticated/admin/students/'
@@ -852,7 +1677,72 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MentorSignupRoute: typeof MentorSignupRoute
   SignupRoute: typeof SignupRoute
+  ApiMentorApplicationRoute: typeof ApiMentorApplicationRoute
+  ApiSignedUrlRoute: typeof ApiSignedUrlRoute
   MentorApplyRoute: typeof MentorApplyRoute
+  ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
+  ApiAdminAnalyticsBookingsRoute: typeof ApiAdminAnalyticsBookingsRoute
+  ApiAdminAnalyticsLanguagesRoute: typeof ApiAdminAnalyticsLanguagesRoute
+  ApiAdminAnalyticsMentorsRoute: typeof ApiAdminAnalyticsMentorsRoute
+  ApiAdminAnalyticsRegionsRoute: typeof ApiAdminAnalyticsRegionsRoute
+  ApiAdminAnalyticsRevenueRoute: typeof ApiAdminAnalyticsRevenueRoute
+  ApiAdminAnalyticsSessionsRoute: typeof ApiAdminAnalyticsSessionsRoute
+  ApiAdminAnalyticsSubscriptionsRoute: typeof ApiAdminAnalyticsSubscriptionsRoute
+  ApiAdminAnalyticsTopMentorsRoute: typeof ApiAdminAnalyticsTopMentorsRoute
+  ApiAdminAnalyticsUsersRoute: typeof ApiAdminAnalyticsUsersRoute
+  ApiAdminApproveMentorRoute: typeof ApiAdminApproveMentorRoute
+  ApiAdminAssignMentorRoute: typeof ApiAdminAssignMentorRoute
+  ApiAdminAssignmentHistoryRoute: typeof ApiAdminAssignmentHistoryRoute
+  ApiAdminAttentionRoute: typeof ApiAdminAttentionRoute
+  ApiAdminAutoMatchRoute: typeof ApiAdminAutoMatchRoute
+  ApiAdminAutoReassignRoute: typeof ApiAdminAutoReassignRoute
+  ApiAdminBroadcastRoute: typeof ApiAdminBroadcastRoute
+  ApiAdminGeneratePasswordRoute: typeof ApiAdminGeneratePasswordRoute
+  ApiAdminInterviewsRoute: typeof ApiAdminInterviewsRoute
+  ApiAdminMentorAvailabilityRoute: typeof ApiAdminMentorAvailabilityRoute
+  ApiAdminMentorWorkloadRoute: typeof ApiAdminMentorWorkloadRoute
+  ApiAdminResolveReportRoute: typeof ApiAdminResolveReportRoute
+  ApiAdminStudentRisksRoute: typeof ApiAdminStudentRisksRoute
+  ApiAdminSubscriptionPlansRoute: typeof ApiAdminSubscriptionPlansRoute
+  ApiAdminSupportTicketsRoute: typeof ApiAdminSupportTicketsRoute
+  ApiAdminToggleMentorStatusRoute: typeof ApiAdminToggleMentorStatusRoute
+  ApiHomeworkCreateRoute: typeof ApiHomeworkCreateRoute
+  ApiHomeworkSubmitRoute: typeof ApiHomeworkSubmitRoute
+  ApiMentorBookingRequestsRoute: typeof ApiMentorBookingRequestsRoute
+  ApiMentorRespondAssignmentRoute: typeof ApiMentorRespondAssignmentRoute
+  ApiMentorRespondBookingRequestRoute: typeof ApiMentorRespondBookingRequestRoute
+  ApiPaymentsCreateRoute: typeof ApiPaymentsCreateRoute
+  ApiSessionCompleteRoute: typeof ApiSessionCompleteRoute
+  ApiSessionReportIssueRoute: typeof ApiSessionReportIssueRoute
+  ApiSessionRestoreSlotRoute: typeof ApiSessionRestoreSlotRoute
+  ApiWorkspaceMessagesRoute: typeof ApiWorkspaceMessagesRoute
+  ApiWorkspacePostMessageRoute: typeof ApiWorkspacePostMessageRoute
+  ApiWorkspaceTypingRoute: typeof ApiWorkspaceTypingRoute
+  ApiAdminBookingAssignMentorRoute: typeof ApiAdminBookingAssignMentorRoute
+  ApiAdminBookingAttentionRoute: typeof ApiAdminBookingAttentionRoute
+  ApiAdminBookingAutoMatchRoute: typeof ApiAdminBookingAutoMatchRoute
+  ApiAdminBookingCancelRoute: typeof ApiAdminBookingCancelRoute
+  ApiAdminBookingClaimRoute: typeof ApiAdminBookingClaimRoute
+  ApiAdminBookingCompleteRoute: typeof ApiAdminBookingCompleteRoute
+  ApiAdminBookingDetailRoute: typeof ApiAdminBookingDetailRoute
+  ApiAdminBookingFindMentorsRoute: typeof ApiAdminBookingFindMentorsRoute
+  ApiAdminBookingNoShowRoute: typeof ApiAdminBookingNoShowRoute
+  ApiAdminBookingRescheduleRoute: typeof ApiAdminBookingRescheduleRoute
+  ApiAdminMentorsSetStatusRoute: typeof ApiAdminMentorsSetStatusRoute
+  ApiAdminMentorsSetVerificationRoute: typeof ApiAdminMentorsSetVerificationRoute
+  ApiAdminMentorsUpdateProfileRoute: typeof ApiAdminMentorsUpdateProfileRoute
+  ApiAdminNotesDeleteRoute: typeof ApiAdminNotesDeleteRoute
+  ApiAdminNotesListRoute: typeof ApiAdminNotesListRoute
+  ApiAdminStudentSubscriptionsActivateRoute: typeof ApiAdminStudentSubscriptionsActivateRoute
+  ApiAdminStudentSubscriptionsAdjustSessionsRoute: typeof ApiAdminStudentSubscriptionsAdjustSessionsRoute
+  ApiAdminStudentSubscriptionsCreateRoute: typeof ApiAdminStudentSubscriptionsCreateRoute
+  ApiAdminStudentSubscriptionsDeactivateRoute: typeof ApiAdminStudentSubscriptionsDeactivateRoute
+  ApiAdminStudentSubscriptionsDetailRoute: typeof ApiAdminStudentSubscriptionsDetailRoute
+  ApiAdminStudentSubscriptionsExtendExpiryRoute: typeof ApiAdminStudentSubscriptionsExtendExpiryRoute
+  ApiAdminStudentSubscriptionsReplacePlanRoute: typeof ApiAdminStudentSubscriptionsReplacePlanRoute
+  ApiAdminStudentsListRoute: typeof ApiAdminStudentsListRoute
+  ApiAdminStudentsStatsRoute: typeof ApiAdminStudentsStatsRoute
+  ApiAdminStudentsUpdateProfileRoute: typeof ApiAdminStudentsUpdateProfileRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -919,6 +1809,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/mentor-application': {
+      id: '/api/mentor-application'
+      path: '/api/mentor-application'
+      fullPath: '/api/mentor-application'
+      preLoaderRoute: typeof ApiMentorApplicationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/signed-url': {
+      id: '/api/signed-url'
+      path: '/api/signed-url'
+      fullPath: '/api/signed-url'
+      preLoaderRoute: typeof ApiSignedUrlRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
       id: '/auth/callback'
@@ -1130,6 +2034,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentBookRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/student/book-session': {
+      id: '/_authenticated/student/book-session'
+      path: '/student/book-session'
+      fullPath: '/student/book-session'
+      preLoaderRoute: typeof AuthenticatedStudentBookSessionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/student/checkout': {
       id: '/_authenticated/student/checkout'
       path: '/student/checkout'
@@ -1242,6 +2153,272 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/admin/analytics': {
+      id: '/api/admin/analytics'
+      path: '/api/admin/analytics'
+      fullPath: '/api/admin/analytics'
+      preLoaderRoute: typeof ApiAdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-bookings': {
+      id: '/api/admin/analytics-bookings'
+      path: '/api/admin/analytics-bookings'
+      fullPath: '/api/admin/analytics-bookings'
+      preLoaderRoute: typeof ApiAdminAnalyticsBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-languages': {
+      id: '/api/admin/analytics-languages'
+      path: '/api/admin/analytics-languages'
+      fullPath: '/api/admin/analytics-languages'
+      preLoaderRoute: typeof ApiAdminAnalyticsLanguagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-mentors': {
+      id: '/api/admin/analytics-mentors'
+      path: '/api/admin/analytics-mentors'
+      fullPath: '/api/admin/analytics-mentors'
+      preLoaderRoute: typeof ApiAdminAnalyticsMentorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-regions': {
+      id: '/api/admin/analytics-regions'
+      path: '/api/admin/analytics-regions'
+      fullPath: '/api/admin/analytics-regions'
+      preLoaderRoute: typeof ApiAdminAnalyticsRegionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-revenue': {
+      id: '/api/admin/analytics-revenue'
+      path: '/api/admin/analytics-revenue'
+      fullPath: '/api/admin/analytics-revenue'
+      preLoaderRoute: typeof ApiAdminAnalyticsRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-sessions': {
+      id: '/api/admin/analytics-sessions'
+      path: '/api/admin/analytics-sessions'
+      fullPath: '/api/admin/analytics-sessions'
+      preLoaderRoute: typeof ApiAdminAnalyticsSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-subscriptions': {
+      id: '/api/admin/analytics-subscriptions'
+      path: '/api/admin/analytics-subscriptions'
+      fullPath: '/api/admin/analytics-subscriptions'
+      preLoaderRoute: typeof ApiAdminAnalyticsSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-top-mentors': {
+      id: '/api/admin/analytics-top-mentors'
+      path: '/api/admin/analytics-top-mentors'
+      fullPath: '/api/admin/analytics-top-mentors'
+      preLoaderRoute: typeof ApiAdminAnalyticsTopMentorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics-users': {
+      id: '/api/admin/analytics-users'
+      path: '/api/admin/analytics-users'
+      fullPath: '/api/admin/analytics-users'
+      preLoaderRoute: typeof ApiAdminAnalyticsUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/approve-mentor': {
+      id: '/api/admin/approve-mentor'
+      path: '/api/admin/approve-mentor'
+      fullPath: '/api/admin/approve-mentor'
+      preLoaderRoute: typeof ApiAdminApproveMentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/assign-mentor': {
+      id: '/api/admin/assign-mentor'
+      path: '/api/admin/assign-mentor'
+      fullPath: '/api/admin/assign-mentor'
+      preLoaderRoute: typeof ApiAdminAssignMentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/assignment-history': {
+      id: '/api/admin/assignment-history'
+      path: '/api/admin/assignment-history'
+      fullPath: '/api/admin/assignment-history'
+      preLoaderRoute: typeof ApiAdminAssignmentHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/attention': {
+      id: '/api/admin/attention'
+      path: '/api/admin/attention'
+      fullPath: '/api/admin/attention'
+      preLoaderRoute: typeof ApiAdminAttentionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/auto-match': {
+      id: '/api/admin/auto-match'
+      path: '/api/admin/auto-match'
+      fullPath: '/api/admin/auto-match'
+      preLoaderRoute: typeof ApiAdminAutoMatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/auto-reassign': {
+      id: '/api/admin/auto-reassign'
+      path: '/api/admin/auto-reassign'
+      fullPath: '/api/admin/auto-reassign'
+      preLoaderRoute: typeof ApiAdminAutoReassignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/broadcast': {
+      id: '/api/admin/broadcast'
+      path: '/api/admin/broadcast'
+      fullPath: '/api/admin/broadcast'
+      preLoaderRoute: typeof ApiAdminBroadcastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/generate-password': {
+      id: '/api/admin/generate-password'
+      path: '/api/admin/generate-password'
+      fullPath: '/api/admin/generate-password'
+      preLoaderRoute: typeof ApiAdminGeneratePasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/interviews': {
+      id: '/api/admin/interviews'
+      path: '/api/admin/interviews'
+      fullPath: '/api/admin/interviews'
+      preLoaderRoute: typeof ApiAdminInterviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/mentor-availability': {
+      id: '/api/admin/mentor-availability'
+      path: '/api/admin/mentor-availability'
+      fullPath: '/api/admin/mentor-availability'
+      preLoaderRoute: typeof ApiAdminMentorAvailabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/mentor-workload': {
+      id: '/api/admin/mentor-workload'
+      path: '/api/admin/mentor-workload'
+      fullPath: '/api/admin/mentor-workload'
+      preLoaderRoute: typeof ApiAdminMentorWorkloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/resolve-report': {
+      id: '/api/admin/resolve-report'
+      path: '/api/admin/resolve-report'
+      fullPath: '/api/admin/resolve-report'
+      preLoaderRoute: typeof ApiAdminResolveReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-risks': {
+      id: '/api/admin/student-risks'
+      path: '/api/admin/student-risks'
+      fullPath: '/api/admin/student-risks'
+      preLoaderRoute: typeof ApiAdminStudentRisksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/subscription-plans': {
+      id: '/api/admin/subscription-plans'
+      path: '/api/admin/subscription-plans'
+      fullPath: '/api/admin/subscription-plans'
+      preLoaderRoute: typeof ApiAdminSubscriptionPlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/support-tickets': {
+      id: '/api/admin/support-tickets'
+      path: '/api/admin/support-tickets'
+      fullPath: '/api/admin/support-tickets'
+      preLoaderRoute: typeof ApiAdminSupportTicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/toggle-mentor-status': {
+      id: '/api/admin/toggle-mentor-status'
+      path: '/api/admin/toggle-mentor-status'
+      fullPath: '/api/admin/toggle-mentor-status'
+      preLoaderRoute: typeof ApiAdminToggleMentorStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/homework/create': {
+      id: '/api/homework/create'
+      path: '/api/homework/create'
+      fullPath: '/api/homework/create'
+      preLoaderRoute: typeof ApiHomeworkCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/homework/submit': {
+      id: '/api/homework/submit'
+      path: '/api/homework/submit'
+      fullPath: '/api/homework/submit'
+      preLoaderRoute: typeof ApiHomeworkSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mentor/booking-requests': {
+      id: '/api/mentor/booking-requests'
+      path: '/api/mentor/booking-requests'
+      fullPath: '/api/mentor/booking-requests'
+      preLoaderRoute: typeof ApiMentorBookingRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mentor/respond-assignment': {
+      id: '/api/mentor/respond-assignment'
+      path: '/api/mentor/respond-assignment'
+      fullPath: '/api/mentor/respond-assignment'
+      preLoaderRoute: typeof ApiMentorRespondAssignmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mentor/respond-booking-request': {
+      id: '/api/mentor/respond-booking-request'
+      path: '/api/mentor/respond-booking-request'
+      fullPath: '/api/mentor/respond-booking-request'
+      preLoaderRoute: typeof ApiMentorRespondBookingRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/create': {
+      id: '/api/payments/create'
+      path: '/api/payments/create'
+      fullPath: '/api/payments/create'
+      preLoaderRoute: typeof ApiPaymentsCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/session/complete': {
+      id: '/api/session/complete'
+      path: '/api/session/complete'
+      fullPath: '/api/session/complete'
+      preLoaderRoute: typeof ApiSessionCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/session/report-issue': {
+      id: '/api/session/report-issue'
+      path: '/api/session/report-issue'
+      fullPath: '/api/session/report-issue'
+      preLoaderRoute: typeof ApiSessionReportIssueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/session/restore-slot': {
+      id: '/api/session/restore-slot'
+      path: '/api/session/restore-slot'
+      fullPath: '/api/session/restore-slot'
+      preLoaderRoute: typeof ApiSessionRestoreSlotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/workspace/messages': {
+      id: '/api/workspace/messages'
+      path: '/api/workspace/messages'
+      fullPath: '/api/workspace/messages'
+      preLoaderRoute: typeof ApiWorkspaceMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/workspace/post-message': {
+      id: '/api/workspace/post-message'
+      path: '/api/workspace/post-message'
+      fullPath: '/api/workspace/post-message'
+      preLoaderRoute: typeof ApiWorkspacePostMessageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/workspace/typing': {
+      id: '/api/workspace/typing'
+      path: '/api/workspace/typing'
+      fullPath: '/api/workspace/typing'
+      preLoaderRoute: typeof ApiWorkspaceTypingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/bookings/': {
       id: '/_authenticated/admin/bookings/'
       path: '/admin/bookings'
@@ -1305,6 +2482,181 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentSessionIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/admin/booking/assign-mentor': {
+      id: '/api/admin/booking/assign-mentor'
+      path: '/api/admin/booking/assign-mentor'
+      fullPath: '/api/admin/booking/assign-mentor'
+      preLoaderRoute: typeof ApiAdminBookingAssignMentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/attention': {
+      id: '/api/admin/booking/attention'
+      path: '/api/admin/booking/attention'
+      fullPath: '/api/admin/booking/attention'
+      preLoaderRoute: typeof ApiAdminBookingAttentionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/auto-match': {
+      id: '/api/admin/booking/auto-match'
+      path: '/api/admin/booking/auto-match'
+      fullPath: '/api/admin/booking/auto-match'
+      preLoaderRoute: typeof ApiAdminBookingAutoMatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/cancel': {
+      id: '/api/admin/booking/cancel'
+      path: '/api/admin/booking/cancel'
+      fullPath: '/api/admin/booking/cancel'
+      preLoaderRoute: typeof ApiAdminBookingCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/claim': {
+      id: '/api/admin/booking/claim'
+      path: '/api/admin/booking/claim'
+      fullPath: '/api/admin/booking/claim'
+      preLoaderRoute: typeof ApiAdminBookingClaimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/complete': {
+      id: '/api/admin/booking/complete'
+      path: '/api/admin/booking/complete'
+      fullPath: '/api/admin/booking/complete'
+      preLoaderRoute: typeof ApiAdminBookingCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/detail': {
+      id: '/api/admin/booking/detail'
+      path: '/api/admin/booking/detail'
+      fullPath: '/api/admin/booking/detail'
+      preLoaderRoute: typeof ApiAdminBookingDetailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/find-mentors': {
+      id: '/api/admin/booking/find-mentors'
+      path: '/api/admin/booking/find-mentors'
+      fullPath: '/api/admin/booking/find-mentors'
+      preLoaderRoute: typeof ApiAdminBookingFindMentorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/no-show': {
+      id: '/api/admin/booking/no-show'
+      path: '/api/admin/booking/no-show'
+      fullPath: '/api/admin/booking/no-show'
+      preLoaderRoute: typeof ApiAdminBookingNoShowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/booking/reschedule': {
+      id: '/api/admin/booking/reschedule'
+      path: '/api/admin/booking/reschedule'
+      fullPath: '/api/admin/booking/reschedule'
+      preLoaderRoute: typeof ApiAdminBookingRescheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/mentors/set-status': {
+      id: '/api/admin/mentors/set-status'
+      path: '/api/admin/mentors/set-status'
+      fullPath: '/api/admin/mentors/set-status'
+      preLoaderRoute: typeof ApiAdminMentorsSetStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/mentors/set-verification': {
+      id: '/api/admin/mentors/set-verification'
+      path: '/api/admin/mentors/set-verification'
+      fullPath: '/api/admin/mentors/set-verification'
+      preLoaderRoute: typeof ApiAdminMentorsSetVerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/mentors/update-profile': {
+      id: '/api/admin/mentors/update-profile'
+      path: '/api/admin/mentors/update-profile'
+      fullPath: '/api/admin/mentors/update-profile'
+      preLoaderRoute: typeof ApiAdminMentorsUpdateProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/notes/delete': {
+      id: '/api/admin/notes/delete'
+      path: '/api/admin/notes/delete'
+      fullPath: '/api/admin/notes/delete'
+      preLoaderRoute: typeof ApiAdminNotesDeleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/notes/list': {
+      id: '/api/admin/notes/list'
+      path: '/api/admin/notes/list'
+      fullPath: '/api/admin/notes/list'
+      preLoaderRoute: typeof ApiAdminNotesListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-subscriptions/activate': {
+      id: '/api/admin/student-subscriptions/activate'
+      path: '/api/admin/student-subscriptions/activate'
+      fullPath: '/api/admin/student-subscriptions/activate'
+      preLoaderRoute: typeof ApiAdminStudentSubscriptionsActivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-subscriptions/adjust-sessions': {
+      id: '/api/admin/student-subscriptions/adjust-sessions'
+      path: '/api/admin/student-subscriptions/adjust-sessions'
+      fullPath: '/api/admin/student-subscriptions/adjust-sessions'
+      preLoaderRoute: typeof ApiAdminStudentSubscriptionsAdjustSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-subscriptions/create': {
+      id: '/api/admin/student-subscriptions/create'
+      path: '/api/admin/student-subscriptions/create'
+      fullPath: '/api/admin/student-subscriptions/create'
+      preLoaderRoute: typeof ApiAdminStudentSubscriptionsCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-subscriptions/deactivate': {
+      id: '/api/admin/student-subscriptions/deactivate'
+      path: '/api/admin/student-subscriptions/deactivate'
+      fullPath: '/api/admin/student-subscriptions/deactivate'
+      preLoaderRoute: typeof ApiAdminStudentSubscriptionsDeactivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-subscriptions/detail': {
+      id: '/api/admin/student-subscriptions/detail'
+      path: '/api/admin/student-subscriptions/detail'
+      fullPath: '/api/admin/student-subscriptions/detail'
+      preLoaderRoute: typeof ApiAdminStudentSubscriptionsDetailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-subscriptions/extend-expiry': {
+      id: '/api/admin/student-subscriptions/extend-expiry'
+      path: '/api/admin/student-subscriptions/extend-expiry'
+      fullPath: '/api/admin/student-subscriptions/extend-expiry'
+      preLoaderRoute: typeof ApiAdminStudentSubscriptionsExtendExpiryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/student-subscriptions/replace-plan': {
+      id: '/api/admin/student-subscriptions/replace-plan'
+      path: '/api/admin/student-subscriptions/replace-plan'
+      fullPath: '/api/admin/student-subscriptions/replace-plan'
+      preLoaderRoute: typeof ApiAdminStudentSubscriptionsReplacePlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/students/list': {
+      id: '/api/admin/students/list'
+      path: '/api/admin/students/list'
+      fullPath: '/api/admin/students/list'
+      preLoaderRoute: typeof ApiAdminStudentsListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/students/stats': {
+      id: '/api/admin/students/stats'
+      path: '/api/admin/students/stats'
+      fullPath: '/api/admin/students/stats'
+      preLoaderRoute: typeof ApiAdminStudentsStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/students/update-profile': {
+      id: '/api/admin/students/update-profile'
+      path: '/api/admin/students/update-profile'
+      fullPath: '/api/admin/students/update-profile'
+      preLoaderRoute: typeof ApiAdminStudentsUpdateProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1354,6 +2706,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMentorSessionsRoute: typeof AuthenticatedMentorSessionsRoute
   AuthenticatedMentorSettingsRoute: typeof AuthenticatedMentorSettingsRoute
   AuthenticatedStudentBookRoute: typeof AuthenticatedStudentBookRoute
+  AuthenticatedStudentBookSessionRoute: typeof AuthenticatedStudentBookSessionRoute
   AuthenticatedStudentCheckoutRoute: typeof AuthenticatedStudentCheckoutRoute
   AuthenticatedStudentDashboardRoute: typeof AuthenticatedStudentDashboardRoute
   AuthenticatedStudentDemoConversionRoute: typeof AuthenticatedStudentDemoConversionRoute
@@ -1416,6 +2769,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMentorSessionsRoute: AuthenticatedMentorSessionsRoute,
   AuthenticatedMentorSettingsRoute: AuthenticatedMentorSettingsRoute,
   AuthenticatedStudentBookRoute: AuthenticatedStudentBookRoute,
+  AuthenticatedStudentBookSessionRoute: AuthenticatedStudentBookSessionRoute,
   AuthenticatedStudentCheckoutRoute: AuthenticatedStudentCheckoutRoute,
   AuthenticatedStudentDashboardRoute: AuthenticatedStudentDashboardRoute,
   AuthenticatedStudentDemoConversionRoute:
@@ -1470,7 +2824,79 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MentorSignupRoute: MentorSignupRoute,
   SignupRoute: SignupRoute,
+  ApiMentorApplicationRoute: ApiMentorApplicationRoute,
+  ApiSignedUrlRoute: ApiSignedUrlRoute,
   MentorApplyRoute: MentorApplyRoute,
+  ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
+  ApiAdminAnalyticsBookingsRoute: ApiAdminAnalyticsBookingsRoute,
+  ApiAdminAnalyticsLanguagesRoute: ApiAdminAnalyticsLanguagesRoute,
+  ApiAdminAnalyticsMentorsRoute: ApiAdminAnalyticsMentorsRoute,
+  ApiAdminAnalyticsRegionsRoute: ApiAdminAnalyticsRegionsRoute,
+  ApiAdminAnalyticsRevenueRoute: ApiAdminAnalyticsRevenueRoute,
+  ApiAdminAnalyticsSessionsRoute: ApiAdminAnalyticsSessionsRoute,
+  ApiAdminAnalyticsSubscriptionsRoute: ApiAdminAnalyticsSubscriptionsRoute,
+  ApiAdminAnalyticsTopMentorsRoute: ApiAdminAnalyticsTopMentorsRoute,
+  ApiAdminAnalyticsUsersRoute: ApiAdminAnalyticsUsersRoute,
+  ApiAdminApproveMentorRoute: ApiAdminApproveMentorRoute,
+  ApiAdminAssignMentorRoute: ApiAdminAssignMentorRoute,
+  ApiAdminAssignmentHistoryRoute: ApiAdminAssignmentHistoryRoute,
+  ApiAdminAttentionRoute: ApiAdminAttentionRoute,
+  ApiAdminAutoMatchRoute: ApiAdminAutoMatchRoute,
+  ApiAdminAutoReassignRoute: ApiAdminAutoReassignRoute,
+  ApiAdminBroadcastRoute: ApiAdminBroadcastRoute,
+  ApiAdminGeneratePasswordRoute: ApiAdminGeneratePasswordRoute,
+  ApiAdminInterviewsRoute: ApiAdminInterviewsRoute,
+  ApiAdminMentorAvailabilityRoute: ApiAdminMentorAvailabilityRoute,
+  ApiAdminMentorWorkloadRoute: ApiAdminMentorWorkloadRoute,
+  ApiAdminResolveReportRoute: ApiAdminResolveReportRoute,
+  ApiAdminStudentRisksRoute: ApiAdminStudentRisksRoute,
+  ApiAdminSubscriptionPlansRoute: ApiAdminSubscriptionPlansRoute,
+  ApiAdminSupportTicketsRoute: ApiAdminSupportTicketsRoute,
+  ApiAdminToggleMentorStatusRoute: ApiAdminToggleMentorStatusRoute,
+  ApiHomeworkCreateRoute: ApiHomeworkCreateRoute,
+  ApiHomeworkSubmitRoute: ApiHomeworkSubmitRoute,
+  ApiMentorBookingRequestsRoute: ApiMentorBookingRequestsRoute,
+  ApiMentorRespondAssignmentRoute: ApiMentorRespondAssignmentRoute,
+  ApiMentorRespondBookingRequestRoute: ApiMentorRespondBookingRequestRoute,
+  ApiPaymentsCreateRoute: ApiPaymentsCreateRoute,
+  ApiSessionCompleteRoute: ApiSessionCompleteRoute,
+  ApiSessionReportIssueRoute: ApiSessionReportIssueRoute,
+  ApiSessionRestoreSlotRoute: ApiSessionRestoreSlotRoute,
+  ApiWorkspaceMessagesRoute: ApiWorkspaceMessagesRoute,
+  ApiWorkspacePostMessageRoute: ApiWorkspacePostMessageRoute,
+  ApiWorkspaceTypingRoute: ApiWorkspaceTypingRoute,
+  ApiAdminBookingAssignMentorRoute: ApiAdminBookingAssignMentorRoute,
+  ApiAdminBookingAttentionRoute: ApiAdminBookingAttentionRoute,
+  ApiAdminBookingAutoMatchRoute: ApiAdminBookingAutoMatchRoute,
+  ApiAdminBookingCancelRoute: ApiAdminBookingCancelRoute,
+  ApiAdminBookingClaimRoute: ApiAdminBookingClaimRoute,
+  ApiAdminBookingCompleteRoute: ApiAdminBookingCompleteRoute,
+  ApiAdminBookingDetailRoute: ApiAdminBookingDetailRoute,
+  ApiAdminBookingFindMentorsRoute: ApiAdminBookingFindMentorsRoute,
+  ApiAdminBookingNoShowRoute: ApiAdminBookingNoShowRoute,
+  ApiAdminBookingRescheduleRoute: ApiAdminBookingRescheduleRoute,
+  ApiAdminMentorsSetStatusRoute: ApiAdminMentorsSetStatusRoute,
+  ApiAdminMentorsSetVerificationRoute: ApiAdminMentorsSetVerificationRoute,
+  ApiAdminMentorsUpdateProfileRoute: ApiAdminMentorsUpdateProfileRoute,
+  ApiAdminNotesDeleteRoute: ApiAdminNotesDeleteRoute,
+  ApiAdminNotesListRoute: ApiAdminNotesListRoute,
+  ApiAdminStudentSubscriptionsActivateRoute:
+    ApiAdminStudentSubscriptionsActivateRoute,
+  ApiAdminStudentSubscriptionsAdjustSessionsRoute:
+    ApiAdminStudentSubscriptionsAdjustSessionsRoute,
+  ApiAdminStudentSubscriptionsCreateRoute:
+    ApiAdminStudentSubscriptionsCreateRoute,
+  ApiAdminStudentSubscriptionsDeactivateRoute:
+    ApiAdminStudentSubscriptionsDeactivateRoute,
+  ApiAdminStudentSubscriptionsDetailRoute:
+    ApiAdminStudentSubscriptionsDetailRoute,
+  ApiAdminStudentSubscriptionsExtendExpiryRoute:
+    ApiAdminStudentSubscriptionsExtendExpiryRoute,
+  ApiAdminStudentSubscriptionsReplacePlanRoute:
+    ApiAdminStudentSubscriptionsReplacePlanRoute,
+  ApiAdminStudentsListRoute: ApiAdminStudentsListRoute,
+  ApiAdminStudentsStatsRoute: ApiAdminStudentsStatsRoute,
+  ApiAdminStudentsUpdateProfileRoute: ApiAdminStudentsUpdateProfileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

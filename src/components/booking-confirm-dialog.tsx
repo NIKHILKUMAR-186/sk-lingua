@@ -22,6 +22,7 @@ interface BookingConfirmDialogProps {
   date: string;
   durationMins?: number;
   language?: string;
+  holdId?: string;
   /** Invoked when the selected slot was just taken by another student. */
   onRaceConflict?: (message: string) => void;
 }
@@ -35,6 +36,7 @@ export function BookingConfirmDialog({
   date,
   durationMins = 30,
   language = "English",
+  holdId,
   onRaceConflict,
 }: BookingConfirmDialogProps) {
   const [isPending, setIsPending] = useState(false);
@@ -59,6 +61,7 @@ export function BookingConfirmDialog({
         mentorId,
         scheduledStart: slot.value,
         durationMins,
+        holdId: holdId || undefined,
       });
 
       toast.success("Session booked successfully");

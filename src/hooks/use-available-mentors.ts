@@ -1,10 +1,19 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState, useEffect } from "react";
-import { format, addDays, startOfDay, isSameDay, parseISO } from "date-fns";
+import { format, addDays } from "date-fns";
 import { DAY_KEYS } from "@/lib/booking";
-import { safeDate as safeDateResult, safeTimeString } from "@/lib/safe-datetime";
+import { safeDate as safeDateResult } from "@/lib/safe-datetime";
 import { useBookingRules } from "@/hooks/use-booking-rules";
+import {
+  localToUtcInstant,
+  studentDateRange,
+  localDatesInRange,
+  weekdayLongLower,
+  formatLocalTime,
+  h24ToH12,
+  parseTime24,
+} from "@/lib/timezone-utils";
 
 export type TimeGroup = "morning" | "afternoon" | "evening" | "night";
 
@@ -66,64 +75,6 @@ function safeDate(value: unknown): Date | null {
   return result.valid ? result.value : null;
 }
 
-function getUTCOffsetMinutes(timeZone: string, date: Date): number {
-  if (!timeZone || timeZone === "UTC") return 0;
-  try {
-    const localDate = new Date(date.toISOString());
-    const tzStr = new Intl.DateTimeFormat("en-US", {
-      timeZone: timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    }).format(localDate);
-    const tzAsUTC = safeDate(tzStr + "Z");
-    if (!tzAsUTC) return 0;
-    return Math.round((localDate.getTime() - tzAsUTC.getTime()) / 60_000);
-  } catch {
-    return 0;
-  }
-}
-
-function convertSlotTimeToStudentTimezone(
-  timeStr: string,
-  mentorTimezone: string | null,
-  studentTimezone: string,
-  selectedDate: Date
-): { displayTime: string; utcTimestamp: string } | null {
-  const timeResult = safeTimeString(timeStr);
-  if (!timeResult.valid) {
-    console.warn("[use-available-mentors] Invalid slot time, skipping", {
-      rawTime: timeStr,
-      reason: timeResult.reason,
-    });
-    return null;
-  }
-
-  const { hours, minutes } = timeResult;
-  const mentorOffset = getUTCOffsetMinutes(mentorTimezone || "UTC", selectedDate);
-  const studentOffset = getUTCOffsetMinutes(studentTimezone, selectedDate);
-
-  const utcTotalMinutes = hours * 60 + minutes - mentorOffset;
-  const studentTotalMinutes = utcTotalMinutes + studentOffset;
-
-  const normalizedMinutes = ((studentTotalMinutes % 1440) + 1440) % 1440;
-  const studentHours = Math.floor(normalizedMinutes / 60);
-  const studentMinutes = normalizedMinutes % 60;
-
-  const period = studentHours >= 12 ? "PM" : "AM";
-  const displayHours = studentHours % 12 || 12;
-  const displayTime = `${displayHours}:${String(studentMinutes).padStart(2, "0")} ${period}`;
-
-  const utcDate = new Date(selectedDate);
-  utcDate.setUTCHours(0, 0, 0, 0);
-  utcDate.setUTCMinutes(utcDate.getUTCMinutes() + Math.round(utcTotalMinutes));
-  const utcTimestamp = utcDate.toISOString();
-
-  return { displayTime, utcTimestamp };
-}
 
 interface SlotWithMentor {
   slot: any;
@@ -140,6 +91,7 @@ interface SlotWithMentor {
 
 function computeSlotsForMentorDate(params: SlotWithMentor[]): SlotOption[] {
   const results: SlotOption[] = [];
+  const seen = new Set<string>();
 
   for (const {
     slot,
@@ -153,71 +105,87 @@ function computeSlotsForMentorDate(params: SlotWithMentor[]): SlotOption[] {
     minNoticeMs,
     maxWindowMs,
   } of params) {
-    const baseDate = dateFromString(selectedDate);
-    const startResult = convertSlotTimeToStudentTimezone(
-      slot.start_time,
-      mentor.timezone,
-      studentTimezone,
-      baseDate,
-    );
-    if (!startResult) continue;
+    const tz = mentor?.timezone || slot?.timezone || "UTC";
 
-    const endResult = convertSlotTimeToStudentTimezone(
-      slot.end_time,
-      mentor.timezone,
-      studentTimezone,
-      baseDate,
-    );
-    if (!endResult) continue;
+    // --- 1. Student's local calendar day as a UTC window ---
+    const range = studentDateRange(selectedDate, studentTimezone);
+    if (!range) continue;
 
-    const slotStart = safeDate(startResult.utcTimestamp);
-    if (!slotStart) continue;
+    // --- 2. Mentor-local dates overlapping this student day ---
+    const localDates = localDatesInRange(range.start, range.end, tz);
 
-    const slotEnd = safeDate(endResult.utcTimestamp);
-    if (!slotEnd) continue;
+    // --- 3. Parse the slot's local time window ---
+    const startT = parseTime24(slot.start_time);
+    const endT = parseTime24(slot.end_time);
+    if (!startT || !endT) continue;
+    const startMin = startT.hour * 60 + startT.minute;
+    const endMin = endT.hour * 60 + endT.minute;
+    if (endMin <= startMin || endMin - startMin < durationMins) continue;
 
-    const [eh, em] = slot.end_time.split(":").map(Number);
-    const mentorOffset = getUTCOffsetMinutes(mentor.timezone || "UTC", baseDate);
-    slotEnd.setUTCHours(eh, em - mentorOffset, 0, 0);
+    // --- 4. Match weekday in the MENTOR's timezone (single UTC conversion) ---
+    const slotDay = (slot.day_of_week || "").toLowerCase().trim();
+    if (!slotDay) continue;
 
-    if (slotEnd.getTime() - slotStart.getTime() < durationMins * 60_000) {
-      continue;
+    for (const ld of localDates) {
+      const noonMs = localToUtcInstant(ld.year, ld.month, ld.day, 12, 0, tz) ?? 0;
+      if (weekdayLongLower(noonMs, tz) !== slotDay) continue;
+
+      const occStart = localToUtcInstant(
+        ld.year, ld.month, ld.day, startT.hour, startT.minute, tz,
+      );
+      const occEnd = localToUtcInstant(
+        ld.year, ld.month, ld.day, endT.hour, endT.minute, tz,
+      );
+      if (occStart == null || occEnd == null) continue;
+      if (occEnd - occStart < durationMins * 60_000) continue;
+
+      const proposedStart = occStart;
+      const proposedEnd = proposedStart + durationMins * 60_000;
+
+      // --- 5. Exclude past / out-of-window occurrences ---
+      if (proposedStart <= now) continue;
+      if (proposedStart < now + minNoticeMs) continue;
+      if (proposedStart > now + maxWindowMs) continue;
+
+      // --- 6. Exclude booked occurrences ---
+      const hasBookingConflict = sessions.some((s) => {
+        if (s.status === "cancelled" || s.status === "rejected") return false;
+        const es = safeDate(s.scheduled_time);
+        if (!es) return false;
+        const existingEnd = es.getTime() + s.duration_mins * 60_000;
+        return proposedStart < existingEnd && proposedEnd > es.getTime();
+      });
+
+      // --- 7. Exclude actively-held occurrences ---
+      const hasHoldConflict = holds.some((h) => {
+        if (h.status !== "active") return false;
+        const hs = safeDate(h.scheduled_time);
+        if (!hs) return false;
+        const holdEnd = hs.getTime() + h.duration_mins * 60_000;
+        return proposedStart < holdEnd && proposedEnd > hs.getTime();
+      });
+
+      if (hasBookingConflict || hasHoldConflict) continue; // gone for this student
+
+      // --- 8. Dedup identical slots (same UTC instant) ---
+      const value = new Date(proposedStart).toISOString();
+      if (seen.has(value)) continue;
+      seen.add(value);
+
+      // Display label is the slot start/end rendered in the student's tz.
+      const startDisplay = parseTime24(formatLocalTime(proposedStart, studentTimezone));
+      const endDisplay = parseTime24(formatLocalTime(proposedEnd, studentTimezone));
+      const label = `${h24ToH12(startDisplay!.hour, startDisplay!.minute)} – ${h24ToH12(endDisplay!.hour, endDisplay!.minute)}`;
+
+      results.push({
+        value,
+        label,
+        disabled: false,
+        startTime: slot.start_time,
+        endTime: slot.end_time,
+        group: getTimeGroup(startDisplay!.hour),
+      });
     }
-
-    const proposedStart = slotStart.getTime();
-    const proposedEnd = proposedStart + durationMins * 60_000;
-
-    if (proposedStart <= now) continue;
-    if (proposedStart < now + minNoticeMs) continue;
-    if (proposedStart > now + maxWindowMs) continue;
-
-    const hasBookingConflict = sessions.some((s) => {
-      if (s.status === "cancelled" || s.status === "rejected") return false;
-      const existingStartResult = safeDate(s.scheduled_time);
-      if (!existingStartResult) return false;
-      const existingStart = existingStartResult.getTime();
-      const existingEnd = existingStart + s.duration_mins * 60_000;
-      return proposedStart < existingEnd && proposedEnd > existingStart;
-    });
-
-    const hasHoldConflict = holds.some((h) => {
-      if (h.status !== "active") return false;
-      const holdStart = safeDate(h.scheduled_time);
-      if (!holdStart) return false;
-      const holdEnd = holdStart.getTime() + h.duration_mins * 60_000;
-      return proposedStart < holdEnd && proposedEnd > holdStart.getTime();
-    });
-
-    const disabled = hasBookingConflict || hasHoldConflict;
-
-    results.push({
-      value: startResult.utcTimestamp,
-      label: `${startResult.displayTime} – ${endResult.displayTime}`,
-      disabled,
-      startTime: slot.start_time,
-      endTime: slot.end_time,
-      group: getTimeGroup(slotStart.getUTCHours()),
-    });
   }
 
   return results;
@@ -236,13 +204,13 @@ function buildMentorSlotParams(
   maxWindowMs: number,
 ) {
   return daySlots.map((slot) => ({
-    slot: { ...slot, _selectedDate: selectedDate },
+    slot,
     mentor,
     sessions: mentorSessions,
     holds: mentorHolds,
     durationMins,
-    studentTimezone,
     selectedDate,
+    studentTimezone,
     now,
     minNoticeMs,
     maxWindowMs,
@@ -325,7 +293,7 @@ export function useAvailableMentors(date?: string) {
     staleTime: 1000 * 15,
   });
 
-  const availableMentors = useMemo(() => {
+    const availableMentors = useMemo(() => {
     if (!mentors.length || !allSlots.length) return [];
 
     const studentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -333,43 +301,40 @@ export function useAvailableMentors(date?: string) {
     const minNoticeMs = (rulesData?.minimum_booking_notice_minutes ?? 30) * 60 * 1000;
     const maxWindowMs = (rulesData?.maximum_booking_days ?? 30) * 24 * 60 * 60 * 1000;
 
-    const slotsByMentorDay = new Map<string, any[]>();
+    // Group slots by mentor ONLY (all of the mentor's slots). Weekday matching
+    // is performed in the mentor's timezone inside computeSlotsForMentorDate —
+    // never by the student's local weekday, which caused Tuesday IST slots to
+    // vanish for students in other timezones.
+    const slotsByMentor = new Map<string, any[]>();
     for (const slot of allSlots) {
-      const key = `${slot.mentor_id}|${slot.day_of_week}`;
-      const list = slotsByMentorDay.get(key) || [];
+      const list = slotsByMentor.get(slot.mentor_id) || [];
       list.push(slot);
-      slotsByMentorDay.set(key, list);
+      slotsByMentor.set(slot.mentor_id, list);
     }
 
-    const sessionsByMentorDate = new Map<string, any[]>();
+    // Conflict detection uses absolute UTC instants, so sessions/holds are
+    // grouped by mentor only — no student-local date keying, which caused
+    // off-by-one date-boundary mismatches across timezones.
+    const sessionsByMentor = new Map<string, any[]>();
     for (const session of allSessions) {
-      const sessionDate = safeDate(session.scheduled_time);
-      if (!sessionDate) continue;
-      const ds = format(sessionDate, "yyyy-MM-dd");
-      const key = `${session.mentor_id}|${ds}`;
-      const list = sessionsByMentorDate.get(key) || [];
+      const list = sessionsByMentor.get(session.mentor_id) || [];
       list.push(session);
-      sessionsByMentorDate.set(key, list);
+      sessionsByMentor.set(session.mentor_id, list);
     }
-
-    const holdsByMentorDate = new Map<string, any[]>();
+    const holdsByMentor = new Map<string, any[]>();
     for (const hold of allHolds) {
-      const holdDate = safeDate(hold.scheduled_time);
-      if (!holdDate) continue;
-      const ds = format(holdDate, "yyyy-MM-dd");
-      const key = `${hold.mentor_id}|${ds}`;
-      const list = holdsByMentorDate.get(key) || [];
+      const list = holdsByMentor.get(hold.mentor_id) || [];
       list.push(hold);
-      holdsByMentorDate.set(key, list);
+      holdsByMentor.set(hold.mentor_id, list);
     }
 
     const result: AvailableMentor[] = [];
 
     for (const mentor of mentors) {
       try {
-        const daySlots = slotsByMentorDay.get(`${mentor.user_id}|${dayKey}`) || [];
-        const mentorSessions = sessionsByMentorDate.get(`${mentor.user_id}|${selectedDate}`) || [];
-        const mentorHolds = holdsByMentorDate.get(`${mentor.user_id}|${selectedDate}`) || [];
+        const daySlots = slotsByMentor.get(mentor.user_id) || [];
+        const mentorSessions = sessionsByMentor.get(mentor.user_id) || [];
+        const mentorHolds = holdsByMentor.get(mentor.user_id) || [];
 
         const slotParams = buildMentorSlotParams(
           daySlots,
@@ -404,39 +369,32 @@ export function useAvailableMentors(date?: string) {
     }
 
     return result;
-  }, [mentors, allSlots, allSessions, allHolds, selectedDate, dayKey, durationMins, rulesData]);
+  }, [mentors, allSlots, allSessions, allHolds, selectedDate, durationMins, rulesData]);
 
-  const dateAvailability = useMemo(() => {
+    const dateAvailability = useMemo(() => {
     if (!mentors.length || !allSlots.length) return [];
 
-    const slotsByMentorDay = new Map<string, any[]>();
+    // All of each mentor's slots grouped by mentor. Weekday matching for the
+    // calendar preview is done in the mentor's timezone (inside
+    // computeSlotsForMentorDate), so we must NOT pre-filter by the student's
+    // local weekday.
+    const slotsByMentor = new Map<string, any[]>();
     for (const slot of allSlots) {
-      const key = `${slot.mentor_id}|${slot.day_of_week}`;
-      const list = slotsByMentorDay.get(key) || [];
+      const list = slotsByMentor.get(slot.mentor_id) || [];
       list.push(slot);
-      slotsByMentorDay.set(key, list);
+      slotsByMentor.set(slot.mentor_id, list);
     }
-
-    const sessionsByMentorDate = new Map<string, any[]>();
+    const sessionsByMentor = new Map<string, any[]>();
     for (const session of allSessions) {
-      const sessionDate = safeDate(session.scheduled_time);
-      if (!sessionDate) continue;
-      const ds = format(sessionDate, "yyyy-MM-dd");
-      const key = `${session.mentor_id}|${ds}`;
-      const list = sessionsByMentorDate.get(key) || [];
+      const list = sessionsByMentor.get(session.mentor_id) || [];
       list.push(session);
-      sessionsByMentorDate.set(key, list);
+      sessionsByMentor.set(session.mentor_id, list);
     }
-
-    const holdsByMentorDate = new Map<string, any[]>();
+    const holdsByMentor = new Map<string, any[]>();
     for (const hold of allHolds) {
-      const holdDate = safeDate(hold.scheduled_time);
-      if (!holdDate) continue;
-      const ds = format(holdDate, "yyyy-MM-dd");
-      const key = `${hold.mentor_id}|${ds}`;
-      const list = holdsByMentorDate.get(key) || [];
+      const list = holdsByMentor.get(hold.mentor_id) || [];
       list.push(hold);
-      holdsByMentorDate.set(key, list);
+      holdsByMentor.set(hold.mentor_id, list);
     }
 
     const studentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -449,16 +407,14 @@ export function useAvailableMentors(date?: string) {
     for (let i = 0; i < 14; i++) {
       const d = addDays(today, i);
       const ds = format(d, "yyyy-MM-dd");
-      const dk = getDateDayKey(ds);
+      const dk = getDateDayKey(ds); // label only; matching is done cross-tz in computeSlotsForMentorDate
 
       let count = 0;
       for (const mentor of mentors) {
         try {
-          const daySlots = slotsByMentorDay.get(`${mentor.user_id}|${dk}`) || [];
-          if (daySlots.length === 0) continue;
-
-          const mentorSessions = sessionsByMentorDate.get(`${mentor.user_id}|${ds}`) || [];
-          const mentorHolds = holdsByMentorDate.get(`${mentor.user_id}|${ds}`) || [];
+          const daySlots = slotsByMentor.get(mentor.user_id) || [];
+          const mentorSessions = sessionsByMentor.get(mentor.user_id) || [];
+          const mentorHolds = holdsByMentor.get(mentor.user_id) || [];
 
           const slotParams = buildMentorSlotParams(
             daySlots,
@@ -488,9 +444,46 @@ export function useAvailableMentors(date?: string) {
     }
 
     return dates;
-  }, [mentors, allSlots, allSessions, allHolds, durationMins, rulesData]);
+  }, [mentors, allSessions, allHolds, allSlots, durationMins, rulesData]);
 
-  return {
+  // Realtime sync: when a mentor changes availability (or a slot is booked/held
+  // by another student), refresh the cached slots/sessions/holds so the student
+  // booking page reflects the change instantly.
+  useEffect(() => {
+    const queryClient = useQueryClient();
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey: ["availability-slots-all"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions-date-range"] });
+      queryClient.invalidateQueries({ queryKey: ["booking-holds-active"] });
+      queryClient.invalidateQueries({ queryKey: ["available-mentors-list"] });
+    };
+
+    const channel = supabase.channel("student-booking-realtime");
+
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "availability_slots" },
+      () => invalidate(),
+    );
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "sessions" },
+      () => invalidate(),
+    );
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "booking_holds" },
+      () => invalidate(),
+    );
+
+    channel.subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, queryClient]);
+
+    return {
     availableMentors,
     mentorsLoading,
     dateAvailability,

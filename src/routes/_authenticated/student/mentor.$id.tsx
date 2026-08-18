@@ -1,23 +1,18 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { StudentLayout } from "@/components/layouts";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import { ArrowLeft, CalendarClock } from "lucide-react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { MentorPublicProfile } from "@/components/mentor-public-profile";
-import { BookingCalendar } from "@/components/booking-calendar";
-import { SessionConfirmCard, BookingSuccessCard } from "@/components/session-confirm-card";
 import { MentorRatingSummary } from "@/components/review/MentorRatingSummary";
 import { useMentorRatingSummary } from "@/hooks/use-reviews";
-import { useAvailableSlots, calculateAvailableDates } from "@/hooks/use-booking";
-import { useConfirmBooking, mapBookingError } from "@/hooks/use-student-booking";
-import { useStudentSubscription } from "@/hooks/use-subscriptions";
-import { createSlotHold, releaseSlotHold, type BookingHold } from "@/lib/slot-holds";
 import { format } from "date-fns";
 import { DashboardSkeleton } from "@/components/skeleton-loader";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/student/mentor/$id")({
   component: MentorProfile,
@@ -46,14 +41,6 @@ function MentorProfile() {
     isLoading: summaryLoading,
   } = useMentorRatingSummary(id);
 
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [booked, setBooked] = useState<{ scheduled_time: string } | null>(null);
-  const [hold, setHold] = useState<BookingHold | null>(null);
-  const [isCreatingHold, setIsCreatingHold] = useState(false);
-
-  const slotDurationMins = 30;
-
   const { data: availSlots = [] } = useQuery({
     queryKey: ["availability-slots", id],
     enabled: !!id,
@@ -64,102 +51,15 @@ function MentorProfile() {
           .select("*")
           .eq("mentor_id", id)
           .eq("is_available", true)
+          .order("start_time", { ascending: true })
+          .limit(20)
       ).data ?? [],
   });
 
-  const { slotOptions, groupedSlots } = useAvailableSlots(id, selectedDate, slotDurationMins);
-
-  const availableDates = useMemo(() => {
-    if (!availSlots.length) return [];
-    const start = new Date();
-    const end = new Date();
-    end.setMonth(end.getMonth() + 2);
-    return calculateAvailableDates(availSlots, start, end);
+  const nextSlots = useMemo(() => {
+    const now = new Date();
+    return availSlots.filter((s) => new Date(s.start_time) > now).slice(0, 3);
   }, [availSlots]);
-
-  const confirmBooking = useConfirmBooking();
-  const { data: subscription } = useStudentSubscription(auth?.user?.id ?? null);
-  const usableBefore =
-    (subscription?.current_session_slots ?? 0) + (subscription?.bonus_slots ?? 0);
-  const usableAfter = usableBefore;
-
-  const createHoldForSlot = useCallback(
-    async (slotValue: string) => {
-      setIsCreatingHold(true);
-      setHold(null);
-      try {
-        const result = await createSlotHold({
-          mentorId: id,
-          scheduledStart: slotValue,
-          durationMins: slotDurationMins,
-        });
-        if (result.success && result.hold) {
-          setHold(result.hold);
-        } else {
-          toast.error(result.error || "Unable to reserve slot.");
-          setSelectedSlot(null);
-        }
-      } catch (e) {
-        toast.error("Unable to reserve slot.");
-        setSelectedSlot(null);
-      } finally {
-        setIsCreatingHold(false);
-      }
-    },
-    [id, slotDurationMins],
-  );
-
-  function handleSelectDate(date: string) {
-    setSelectedDate(date);
-    setSelectedSlot(null);
-    setHold(null);
-  }
-
-  function handleSelectSlot(slot: string | null) {
-    if (!slot) {
-      setSelectedSlot(null);
-      setHold(null);
-      return;
-    }
-    setSelectedSlot(slot);
-    createHoldForSlot(slot);
-  }
-
-  async function handleConfirmBooking() {
-    if (!selectedSlot || !hold) return;
-
-    try {
-      const booking = await confirmBooking.mutateAsync({
-        mentorId: id,
-        scheduledStart: selectedSlot,
-        durationMins: slotDurationMins,
-        holdId: hold.id,
-      });
-      setBooked(booking ?? { scheduled_time: selectedSlot });
-      setSelectedSlot(null);
-      setHold(null);
-      qc.invalidateQueries({ queryKey: ["sessions-date"] });
-      toast.success("Session booked!");
-    } catch (e) {
-      const message = e instanceof Error ? e.message : mapBookingError(null);
-      toast.error(message);
-      setHold(null);
-      setSelectedSlot(null);
-    }
-  }
-
-  function handleHoldExpired() {
-    setHold(null);
-    toast.error("Your slot reservation has expired. Please select again.");
-  }
-
-  useEffect(() => {
-    return () => {
-      if (hold?.id) {
-        releaseSlotHold(hold.id);
-      }
-    };
-  }, [hold]);
 
   if (isLoading) {
     return (
@@ -184,111 +84,64 @@ function MentorProfile() {
     );
   }
 
-  const hasSelectedDate = !!selectedDate;
-  const hasSelectedSlot = !!selectedSlot;
-
   return (
     <StudentLayout>
-      <div className="mx-auto max-w-6xl">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: "/student/explore" })}
-          className="mb-4"
-        >
+      <div className="mx-auto max-w-5xl space-y-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/student/explore" })}>
           <ArrowLeft className="mr-1 h-4 w-4" /> Back to mentors
         </Button>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-          <div className="space-y-6">
-            <MentorPublicProfile mentor={mentor.mp} profile={mentor.profile} />
+        <MentorPublicProfile mentor={mentor.mp} profile={mentor.profile} />
 
-            <MentorRatingSummary
-              stats={summaryStats}
-              reviews={summaryReviews}
-              isLoading={summaryLoading}
-            />
-          </div>
-
-          <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-              <div className="flex items-center gap-2 text-sm">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                    hasSelectedDate
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted-foreground/20 text-muted-foreground"
-                  }`}
-                >
-                  1
-                </span>
-                <span
-                  className={
-                    hasSelectedDate ? "text-foreground font-medium" : "text-muted-foreground"
-                  }
-                >
-                  Select Date
-                </span>
+        {/* Availability preview */}
+        <Card>
+          <CardContent className="p-5">
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <CalendarClock className="h-5 w-5 text-primary" /> Availability
+            </h2>
+            {nextSlots.length > 0 ? (
+              <div className="space-y-2">
+                {nextSlots.map((slot) => (
+                  <div
+                    key={slot.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <div className="text-sm font-medium">
+                        {format(new Date(slot.start_time), "d MMM yyyy")}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {format(new Date(slot.start_time), "h:mm a")} · 30 min
+                      </div>
+                    </div>
+                    <Button size="sm" asChild>
+                      <Link to="/student/book-session" search={{ mentor: id }}>
+                        Book
+                      </Link>
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <div className="h-px flex-1 bg-border mx-2" />
-              <div className="flex items-center gap-2 text-sm">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                    hasSelectedSlot
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted-foreground/20 text-muted-foreground"
-                  }`}
-                >
-                  2
-                </span>
-                <span
-                  className={
-                    hasSelectedSlot ? "text-foreground font-medium" : "text-muted-foreground"
-                  }
-                >
-                  Book
-                </span>
-              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No upcoming availability shown. Check the booking page for the latest slots.
+              </p>
+            )}
+            <div className="mt-4">
+              <Button asChild className="w-full sm:w-auto">
+                <Link to="/student/book-session" search={{ mentor: id }}>
+                  See all availability
+                </Link>
+              </Button>
             </div>
+          </CardContent>
+        </Card>
 
-            <BookingCalendar
-              slots={availSlots as any}
-              availableDates={availableDates}
-              selectedDate={selectedDate}
-              onSelectDate={handleSelectDate}
-              groupedSlots={groupedSlots}
-              selectedSlot={selectedSlot}
-              onSelectSlot={handleSelectSlot}
-            />
-
-            {booked ? (
-              <BookingSuccessCard
-                mentorName={mentor.profile?.full_name || "Mentor"}
-                dateLabel={format(new Date(booked.scheduled_time), "d MMM yyyy")}
-                slotLabel={format(new Date(booked.scheduled_time), "h:mm a")}
-                sessionsRemaining={usableAfter}
-                onViewSessions={() => navigate({ to: "/student/sessions" })}
-              />
-            ) : hasSelectedSlot ? (
-              <SessionConfirmCard
-                mentorName={mentor.profile?.full_name || "Mentor"}
-                date={selectedDate}
-                slotLabel={slotOptions.find((s) => s.value === selectedSlot)?.label || ""}
-                durationMins={slotDurationMins}
-                sessionsBefore={usableBefore}
-                sessionsAfter={usableAfter}
-                isPending={isCreatingHold || confirmBooking.isPending}
-                onConfirm={handleConfirmBooking}
-                onCancel={() => {
-                  setSelectedSlot(null);
-                  setHold(null);
-                }}
-                hold={hold}
-                onHoldExpired={handleHoldExpired}
-              />
-            ) : null}
-          </div>
-        </div>
+        <MentorRatingSummary
+          stats={summaryStats}
+          reviews={summaryReviews}
+          isLoading={summaryLoading}
+        />
       </div>
     </StudentLayout>
   );

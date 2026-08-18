@@ -4,6 +4,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSessionWorkspace } from "@/hooks/use-session-workspace";
 import { SessionWorkspace } from "@/components/session-workspace";
 import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/student/session/$id")({
   component: StudentSessionDetail,
@@ -12,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/student/session/$id")({
 function StudentSessionDetail() {
   const { id } = Route.useParams();
   const { data: auth } = useAuth();
-  const { data, isLoading, error, submitHomework, submitReview, fetchExistingReview, createNote } =
+  const { data, isLoading, error, refetch, submitHomework, submitReview, fetchExistingReview, createNote } =
     useSessionWorkspace(id, auth?.user?.id);
   const [existingReview, setExistingReview] = useState<Record<string, any> | null>(null);
 
@@ -31,11 +36,35 @@ function StudentSessionDetail() {
             Homework, notes, resources, and timeline in one place.
           </p>
         </div>
-        {isLoading ? <div className="text-sm text-muted-foreground">Loading workspace…</div> : null}
-        {error ? (
-          <div className="text-sm text-red-500">Unable to load this session workspace.</div>
-        ) : null}
-        {!isLoading && data ? (
+
+        {isLoading && (
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <Skeleton className="h-6 w-48 rounded" />
+              <Skeleton className="h-4 w-full rounded" />
+              <Skeleton className="h-4 w-3/4 rounded" />
+              <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-32 rounded" />
+                <Skeleton className="h-32 rounded" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {error && !isLoading && (
+          <Alert variant="destructive">
+            <AlertTitle>Unable to load workspace</AlertTitle>
+            <AlertDescription className="flex items-center justify-between gap-4">
+              <span>Something went wrong while loading this session. Please try again.</span>
+              <Button variant="outline" size="sm" onClick={() => refetch()} className="shrink-0">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!isLoading && data && (
           <SessionWorkspace
             sessionId={id}
             session={data.session}
@@ -52,7 +81,7 @@ function StudentSessionDetail() {
             existingReview={existingReview}
             currentUserId={auth?.user?.id}
           />
-        ) : null}
+        )}
       </div>
     </StudentLayout>
   );

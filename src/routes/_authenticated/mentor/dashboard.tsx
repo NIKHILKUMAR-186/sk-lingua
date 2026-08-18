@@ -22,14 +22,28 @@ import {
   Target,
   Flame,
   Users,
+  CheckCircle2,
+  AlertTriangle,
+  Lightbulb,
 } from "lucide-react";
-import { format, isToday, parseISO } from "date-fns";
+import { format, isToday, parseISO, differenceInMinutes, addMinutes } from "date-fns";
 import { getProfileCompletionPercent, type ProfileCompletionValues } from "@/lib/profile";
 import { useAvailability } from "@/hooks/use-availability";
 
 export const Route = createFileRoute("/_authenticated/mentor/dashboard")({
   component: MentorDashboard,
 });
+
+type ActionPriority = "urgent" | "attention" | "suggested";
+
+interface MentorAction {
+  priority: ActionPriority;
+  title: string;
+  description: string;
+  cta: string;
+  to: string;
+  icon: React.ReactNode;
+}
 
 function MentorDashboard() {
   const { data: auth } = useAuth();
@@ -115,7 +129,6 @@ function MentorDashboard() {
     return isToday(scheduled);
   });
   const studentsTaught = new Set(completed.map((s) => s.student_id).filter(Boolean)).size;
-  const homeworkShared = resources.filter((r) => r.session_id).length;
 
   const nextSession = upcoming.length > 0 ? upcoming[0] : null;
 
@@ -140,6 +153,81 @@ function MentorDashboard() {
   );
 
   const isLoading = sessionsLoading || mpLoading || reviewsLoading || resourcesLoading;
+
+  const mentorActions = useMemo((): MentorAction[] => {
+    const actions: MentorAction[] = [];
+
+    if (pending.length > 0) {
+      actions.push({
+        priority: "urgent",
+        title: `${pending.length} booking request${pending.length > 1 ? "s" : ""} need${pending.length === 1 ? "s" : ""} your response`,
+        description: "Students are waiting for your confirmation.",
+        cta: "Review requests",
+        to: "/mentor/calendar",
+        icon: <AlertTriangle className="h-4 w-4" />,
+      });
+    }
+
+    const nextSoon = nextSession && differenceInMinutes(parseISO(nextSession.scheduled_time), new Date()) <= 60
+      ? nextSession
+      : null;
+    if (nextSoon) {
+      actions.push({
+        priority: "urgent",
+        title: `Session with ${studentMap.get(nextSoon.student_id)?.full_name || "Student"} starts soon`,
+        description: `Starts in ${differenceInMinutes(parseISO(nextSoon.scheduled_time), new Date())} minutes.`,
+        cta: "View session",
+        to: `/mentor/session/${nextSoon.id}`,
+        icon: <Video className="h-4 w-4" />,
+      });
+    }
+
+    if (profileCompletion < 80 && profileCompletion > 0) {
+      actions.push({
+        priority: "attention",
+        title: "Your profile is incomplete",
+        description: `Complete your profile to help students trust you. ${profileCompletion}% done.`,
+        cta: "Complete profile",
+        to: "/mentor/profile",
+        icon: <Target className="h-4 w-4" />,
+      });
+    }
+
+    if (activeDays === 0 && totalSlots === 0 && upcoming.length === 0) {
+      actions.push({
+        priority: "attention",
+        title: "No availability set",
+        description: "Students can't book sessions without your schedule.",
+        cta: "Manage availability",
+        to: "/mentor/availability",
+        icon: <Clock3 className="h-4 w-4" />,
+      });
+    }
+
+    if (todaySessions.length === 0 && upcoming.length === 0 && pending.length === 0 && activeDays > 0) {
+      actions.push({
+        priority: "suggested",
+        title: "Your schedule is clear today",
+        description: "Consider adding a last-minute availability window.",
+        cta: "Manage availability",
+        to: "/mentor/availability",
+        icon: <Plus className="h-4 w-4" />,
+      });
+    }
+
+    return actions;
+  }, [pending, nextSession, studentMap, profileCompletion, activeDays, totalSlots, todaySessions, upcoming]);
+
+  const teachingHours = useMemo(() => {
+    const mins = completed.reduce((sum, s) => sum + (s.duration_mins || 0), 0);
+    return (mins / 60).toFixed(1);
+  }, [completed]);
+
+  const attendanceRate = useMemo(() => {
+    const total = completed.length + todaySessions.filter((s) => s.status !== "completed").length + upcoming.length;
+    if (total === 0) return null;
+    return Math.round((completed.length / total) * 100);
+  }, [completed, todaySessions, upcoming]);
 
   const isApprovedMentor = (auth?.roles ?? []).includes("mentor");
   if (!isApprovedMentor) {
@@ -167,7 +255,7 @@ function MentorDashboard() {
       <div className="mx-auto max-w-5xl space-y-8">
         <PageHeader
           title={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, ${firstName}`}
-          description="Here&apos;s what needs your attention today."
+          description={mentorActions.length > 0 ? "Here's what needs your attention." : "You're all caught up."}
           action={
             pending.length > 0 ? (
               <Button asChild>
@@ -178,6 +266,56 @@ function MentorDashboard() {
             ) : undefined
           }
         />
+
+        {/* Mentor Action Center */}
+        {!isLoading && mentorActions.length > 0 && (
+          <section>
+            <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-3">
+              Your next actions
+            </h2>
+            <div className="space-y-2">
+              {mentorActions.map((action, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <Link
+                    to={action.to}
+                    className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4 transition hover:border-primary/20 hover:bg-accent/10"
+                  >
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                      action.priority === "urgent"
+                        ? "bg-amber-50 text-amber-700"
+                        : action.priority === "attention"
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-muted text-muted-foreground"
+                    }`}>
+                      {action.icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground">{action.title}</p>
+                      <p className="text-xs text-muted-foreground">{action.description}</p>
+                    </div>
+                    <div className="shrink-0">
+                      <span className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium ${
+                        action.priority === "urgent"
+                          ? "bg-amber-50 text-amber-700 border border-amber-200"
+                          : action.priority === "attention"
+                            ? "bg-blue-50 text-blue-700 border border-blue-200"
+                            : "bg-background text-foreground border border-border"
+                      }`}>
+                        {action.cta}
+                        <ArrowRight className="ml-1.5 h-3 w-3" />
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Next Session — primary focus */}
         <section>
@@ -206,6 +344,12 @@ function MentorDashboard() {
                       <span className="text-sm text-muted-foreground">
                         {format(parseISO(nextSession.scheduled_time), "MMM d, yyyy")}
                       </span>
+                      {differenceInMinutes(parseISO(nextSession.scheduled_time), new Date()) <= 60 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 border border-amber-200">
+                          <Flame className="h-3 w-3" />
+                          Starts soon
+                        </span>
+                      )}
                     </div>
                     <div>
                       <p className="text-lg font-semibold text-foreground">
@@ -239,9 +383,9 @@ function MentorDashboard() {
             </motion.div>
           ) : (
             <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
-              <p className="text-sm font-medium text-foreground mb-1">Your day is clear</p>
+              <p className="text-sm font-medium text-foreground mb-1">Your schedule is clear</p>
               <p className="text-xs text-muted-foreground mb-4">
-                No sessions scheduled today.
+                No upcoming sessions scheduled.
               </p>
               <Button variant="outline" asChild>
                 <Link to="/mentor/availability">Manage availability</Link>
@@ -317,35 +461,38 @@ function MentorDashboard() {
                 This week
               </h2>
               <div className="rounded-xl border border-border/60 bg-card p-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-2xl font-display tracking-tight">
-                      {upcoming.length + completed.length}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Sessions</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-display tracking-tight">{studentsTaught}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Students</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-display tracking-tight">
-                      {completed.length > 0
-                        ? `${Math.round((completed.length / (completed.length + todaySessions.filter((s) => s.status !== "completed").length + upcoming.length)) * 100)}%`
-                        : "—"}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Attendance</p>
-                  </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-border/60">
-                  <p className="text-xs text-muted-foreground">Teaching momentum</p>
-                  <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all duration-500"
-                      style={{ width: `${Math.min(profileCompletion, 100)}%` }}
-                    />
-                  </div>
-                </div>
+                {completed.length === 0 && upcoming.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    Momentum will appear after your first completed session.
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <p className="text-2xl font-display tracking-tight">
+                          {upcoming.length + completed.length}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Sessions</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-display tracking-tight">{studentsTaught}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Students</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-display tracking-tight">
+                          {attendanceRate !== null ? `${attendanceRate}%` : "—"}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Attendance</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-border/60">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">Teaching hours</p>
+                        <p className="text-xs font-medium text-foreground">{teachingHours}h</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </section>
 

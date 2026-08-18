@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ShieldCheck, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 interface PaymentSummaryProps {
   baseAmount: number;
@@ -68,10 +68,6 @@ export function PaymentSummary({
         </div>
 
         <div className="space-y-2 pt-4">
-          <div className="flex items-center gap-2 text-xs text-green-600">
-            <ShieldCheck className="h-4 w-4" />
-            <span>100% money-back guarantee if not satisfied</span>
-          </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Lock className="h-4 w-4" />
             <span>Secure payment • SSL encrypted</span>

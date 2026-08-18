@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useAvailableMentors, type AvailableMentor } from "@/hooks/use-available-mentors";
@@ -12,6 +12,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
   Star,
   Shield,
   Sparkles,
@@ -21,6 +29,11 @@ import {
   ArrowRight,
   GraduationCap,
   Languages as LanguagesIcon,
+  MessageSquare,
+  TrendingUp,
+  Target,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { BookingConfirmDialog } from "@/components/booking-confirm-dialog";
 import { SlotTimeline } from "@/components/booking/slot-timeline";
@@ -38,41 +51,51 @@ import {
   timestampLabel,
 } from "@/lib/booking/view-models";
 import { toast } from "sonner";
+import { createSlotHold, releaseSlotHold, type BookingHold } from "@/lib/slot-holds";
 
-const INTENTS: { id: Intent; label: string }[] = [
-  { id: "today", label: "Today" },
-  { id: "tomorrow", label: "Tomorrow" },
-  { id: "week", label: "This Week" },
-  { id: "flexible", label: "I'm Flexible" },
-];
+const GOALS = [
+  { id: "speaking", label: "Speaking", icon: MessageSquare },
+  { id: "grammar", label: "Grammar", icon: GraduationCap },
+  { id: "pronunciation", label: "Pronunciation", icon: TrendingUp },
+  { id: "confidence", label: "Confidence", icon: Target },
+  { id: "fluency", label: "Fluency", icon: Sparkles },
+  { id: "interview", label: "Interview Prep", icon: Shield },
+] as const;
 
 const TIME_PREFS: TimePreference[] = ["morning", "afternoon", "evening", "any"];
 
-export function SessionBookingFlow() {
+interface SessionBookingFlowProps {
+  preselectedMentorId?: string | null;
+}
+
+export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowProps) {
   const { data: auth } = useAuth();
   const { data: rules } = useBookingRules();
   const durationMins = rules?.session_duration_minutes ?? 30;
 
   const today = startOfDay(new Date());
   const todayStr = format(today, "yyyy-MM-dd");
-  const tomorrowStr = format(addDays(today, 1), "yyyy-MM-dd");
 
-  const [intent, setIntent] = useState<Intent>("today");
-  const [timePref, setTimePref] = useState<TimePreference>("any");
+  const [goal, setGoal] = useState<string | null>(null);
   const [language, setLanguage] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  const [filterDate, setFilterDate] = useState<string>(todayStr);
+  const [filterTimePref, setFilterTimePref] = useState<TimePreference>("any");
+  const [showFilters, setShowFilters] = useState(false);
+
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [selectedSlotValue, setSelectedSlotValue] = useState<string | null>(null);
   const [previewMentorId, setPreviewMentorId] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [raceOpen, setRaceOpen] = useState(false);
   const [raceFailed, setRaceFailed] = useState<string | null>(null);
+  const [hold, setHold] = useState<BookingHold | null>(null);
+  const [isCreatingHold, setIsCreatingHold] = useState(false);
 
-  const { availableMentors, mentorsLoading, dateAvailability } = useAvailableMentors(selectedDate);
+  const { availableMentors, mentorsLoading, dateAvailability } = useAvailableMentors(filterDate);
 
   const criteria = useMemo(
-    () => ({ intent, timePreference: timePref, selectedDate, language }),
-    [intent, timePref, language, selectedDate],
+    () => ({ intent: "today" as Intent, timePreference: filterTimePref, selectedDate: filterDate, language, selectedGoal: goal }),
+    [filterTimePref, filterDate, language, goal],
   );
 
   const recommended = useMemo(
@@ -97,7 +120,10 @@ export function SessionBookingFlow() {
 
   const allLanguages = useMemo(() => {
     const langs = new Set<string>();
-    availableMentors.forEach((m) => m.languages_taught?.forEach((l) => langs.add(l)));
+    availableMentors.forEach((m) => {
+      const langsArray = Array.isArray(m.languages) ? m.languages : [];
+      langsArray.forEach((l) => langs.add(l));
+    });
     return Array.from(langs).sort();
   }, [availableMentors]);
 
@@ -106,8 +132,6 @@ export function SessionBookingFlow() {
     [dateAvailability],
   );
 
-  // Smart "next available" discovery — the earliest real slot across the ranked
-  // results, surfaced as a quick-pick so students never have to hunt.
   const nextSuggestion = useMemo(() => {
     let best: { mentor: BookingMentorViewModel; slot: BookingSlotViewModel } | null = null;
     for (const m of recommended) {
@@ -120,56 +144,83 @@ export function SessionBookingFlow() {
     return best;
   }, [recommended]);
 
-  // When the recommended set no longer contains the chosen mentor (e.g. date
-  // changed), drop the stale selection.
   useEffect(() => {
     if (selectedMentorId && !selectedMentor) {
+      if (hold?.id) releaseSlotHold(hold.id);
       setSelectedMentorId(null);
       setSelectedSlotValue(null);
+      setHold(null);
     }
-  }, [selectedMentorId, selectedMentor]);
+  }, [selectedMentorId, selectedMentor, hold]);
 
-  // When the mentor's available slots change (availability refresh), drop an
-  // incompatible/vanished slot.
   useEffect(() => {
     if (
       selectedMentor &&
       selectedSlotValue &&
       !selectedMentor.availableSlots.some((s) => s.id === selectedSlotValue)
     ) {
+      if (hold?.id) releaseSlotHold(hold.id);
       setSelectedSlotValue(null);
+      setHold(null);
     }
-  }, [selectedMentor, selectedSlotValue]);
+  }, [selectedMentor, selectedSlotValue, hold]);
 
-  function firstAvailableDate(windowDays: number): string | null {
-    for (let i = 0; i < windowDays; i++) {
-      const ds = format(addDays(today, i), "yyyy-MM-dd");
-      const a = dateAvailability.find((x) => x.dateStr === ds);
-      if (a && a.count > 0) return ds;
-    }
-    return null;
-  }
+  useEffect(() => {
+    return () => {
+      if (hold?.id) {
+        releaseSlotHold(hold.id);
+      }
+    };
+  }, [hold]);
 
-  function applyIntent(value: Intent) {
-    setIntent(value);
-    if (value === "today") {
-      setSelectedDate(todayStr);
-    } else if (value === "tomorrow") {
-      setSelectedDate(tomorrowStr);
-    } else {
-      setSelectedDate(firstAvailableDate(7) ?? todayStr);
+  useEffect(() => {
+    if (!preselectedMentorId || !recommended.length) return;
+    const exists = recommended.some((m) => m.id === preselectedMentorId);
+    if (exists && !selectedMentorId) {
+      setSelectedMentorId(preselectedMentorId);
     }
-  }
+  }, [preselectedMentorId, recommended, selectedMentorId]);
+
+  const createHoldForSlot = useCallback(
+    async (mentorId: string, slotValue: string) => {
+      setIsCreatingHold(true);
+      setHold(null);
+      try {
+        const result = await createSlotHold({
+          mentorId,
+          scheduledStart: slotValue,
+          durationMins,
+        });
+        if (result.success && result.hold) {
+          setHold(result.hold);
+        } else {
+          toast.error(result.error || "Unable to reserve slot.");
+          setSelectedSlotValue(null);
+        }
+      } catch (e) {
+        toast.error("Unable to reserve slot.");
+        setSelectedSlotValue(null);
+      } finally {
+        setIsCreatingHold(false);
+      }
+    },
+    [durationMins],
+  );
 
   function selectSlot(mentor: BookingMentorViewModel, slot: BookingSlotViewModel) {
     setSelectedMentorId(mentor.id);
     setSelectedSlotValue(slot.id);
+    createHoldForSlot(mentor.id, slot.id);
   }
 
   function clearFilters() {
+    setGoal(null);
     setLanguage(null);
-    setTimePref("any");
+    setFilterDate(todayStr);
+    setFilterTimePref("any");
   }
+
+  const hasActiveFilters = goal || language || filterDate !== todayStr || filterTimePref !== "any";
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
@@ -177,109 +228,167 @@ export function SessionBookingFlow() {
         <div>
           <h1 className="text-3xl font-display tracking-tight">Book a Session</h1>
           <p className="mt-1 text-muted-foreground">
-            Find the right mentor and time for your next session.
+            Choose what you want to learn, pick a mentor, and book a time that works for you.
           </p>
         </div>
 
-        {/* Intent */}
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-foreground">When would you like to learn?</div>
-          <div className="flex flex-wrap gap-2">
-            {INTENTS.map(({ id, label }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => applyIntent(id)}
-                className={cn(
-                  "rounded-full border px-4 py-2 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  intent === id
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border hover:border-primary/40 hover:bg-accent",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <Card className="border-border/70">
+          <CardContent className="p-4 md:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex-1 space-y-2">
+                <div className="text-sm font-medium text-foreground">What would you like to work on?</div>
+                <div className="flex flex-wrap gap-2">
+                  {GOALS.map((g) => (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => setGoal(goal === g.id ? null : g.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        goal === g.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
+                      )}
+                    >
+                      <g.icon className="h-3.5 w-3.5" />
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        {/* Time preference */}
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-foreground">Preferred time of day</div>
-          <div className="flex flex-wrap gap-2">
-            {TIME_PREFS.map((tp) => (
-              <button
-                key={tp}
-                type="button"
-                onClick={() => setTimePref(tp)}
-                className={cn(
-                  "rounded-lg border px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  timePref === tp
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:bg-accent",
-                )}
-              >
-                {TIME_PREFERENCE_LABEL[tp]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Date rail + language */}
-        <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-3">
-          <DateSelector
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-            dateAvailability={dateAvailability}
-          />
-          {allLanguages.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Language</span>
-              <button
-                type="button"
-                onClick={() => setLanguage(null)}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-medium",
-                  language === null
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent",
-                )}
-              >
-                All
-              </button>
-              {allLanguages.slice(0, 6).map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => setLanguage(l === language ? null : l)}
-                  className={cn(
-                    "rounded-md px-2.5 py-1 text-xs font-medium",
-                    language === l
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent",
-                  )}
+              <div className="space-y-2 sm:w-48">
+                <div className="text-sm font-medium text-foreground">Language</div>
+                <select
+                  value={language ?? ""}
+                  onChange={(e) => setLanguage(e.target.value || null)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  {l}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                  <option value="">Any language</option>
+                  {allLanguages.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {/* Results */}
+              <div className="flex items-end">
+                <Sheet open={showFilters} onOpenChange={setShowFilters}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Filters
+                      {hasActiveFilters && (
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                          {[goal, language, filterDate !== todayStr, filterTimePref !== "any"].filter(Boolean).length}
+                        </span>
+                      )}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full sm:max-w-md">
+                    <SheetHeader>
+                      <SheetTitle>Refine your search</SheetTitle>
+                      <SheetDescription>
+                        These filters help narrow down mentors. Results update automatically.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6 space-y-6">
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium">Date</div>
+                        <DateSelector
+                          selectedDate={filterDate}
+                          onSelectDate={setFilterDate}
+                          dateAvailability={dateAvailability}
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium">Preferred time of day</div>
+                        <div className="flex flex-wrap gap-2">
+                          {TIME_PREFS.map((tp) => (
+                            <button
+                              key={tp}
+                              type="button"
+                              onClick={() => setFilterTimePref(tp)}
+                              className={cn(
+                                "rounded-lg border px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                filterTimePref === tp
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "border-border text-muted-foreground hover:bg-accent",
+                              )}
+                            >
+                              {TIME_PREFERENCE_LABEL[tp]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {hasActiveFilters && (
+                        <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2">
+                          <X className="h-4 w-4" />
+                          Clear all filters
+                        </Button>
+                      )}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">Active filters:</span>
+                {goal && (
+                  <Badge variant="secondary" className="gap-1">
+                    {GOALS.find((g) => g.id === goal)?.label}
+                    <button type="button" onClick={() => setGoal(null)} className="ml-1 hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {language && (
+                  <Badge variant="secondary" className="gap-1">
+                    {language}
+                    <button type="button" onClick={() => setLanguage(null)} className="ml-1 hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {filterDate !== todayStr && (
+                  <Badge variant="secondary" className="gap-1">
+                    {dateLabel(filterDate)}
+                    <button type="button" onClick={() => setFilterDate(todayStr)} className="ml-1 hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {filterTimePref !== "any" && (
+                  <Badge variant="secondary" className="gap-1">
+                    {TIME_PREFERENCE_LABEL[filterTimePref]}
+                    <button type="button" onClick={() => setFilterTimePref("any")} className="ml-1 hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <div className="space-y-4">
           {!mentorsLoading && recommended.length > 0 && (
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-              <span className="font-medium">Best options for you</span>
+              <span className="font-medium">Available mentors</span>
               <span className="text-sm text-muted-foreground">
                 · {recommended.length} mentor{recommended.length !== 1 ? "s" : ""} available on{" "}
-                {dateLabel(selectedDate)} matching your criteria
+                {dateLabel(filterDate)}
               </span>
             </div>
           )}
 
-          {!mentorsLoading && nextSuggestion && (
+          {!mentorsLoading && nextSuggestion && !selectedMentor && (
             <button
               type="button"
               onClick={() => selectSlot(nextSuggestion.mentor, nextSuggestion.slot)}
@@ -329,8 +438,11 @@ export function SessionBookingFlow() {
             <SmartEmptyState
               flexibleOptions={flexibleOptions}
               hasAny={flexibleOptions.length > 0}
-              onPickDate={setSelectedDate}
-              onFlexible={() => applyIntent("flexible")}
+              onPickDate={setFilterDate}
+              onFlexible={() => {
+                setFilterDate(todayStr);
+                setFilterTimePref("any");
+              }}
               onClear={clearFilters}
             />
           ) : (
@@ -339,11 +451,13 @@ export function SessionBookingFlow() {
                 <MentorResultCard
                   key={mentor.id}
                   mentor={mentor}
-                  selectedDate={selectedDate}
+                  selectedDate={filterDate}
                   selectedSlotId={selectedSlotValue}
+                  selectedMentorId={selectedMentorId}
                   durationMins={durationMins}
                   onSelectSlot={(slot) => selectSlot(mentor, slot)}
                   onPreview={() => setPreviewMentorId(mentor.id)}
+                  onSelectMentor={() => setSelectedMentorId(mentor.id)}
                 />
               ))}
             </div>
@@ -351,30 +465,30 @@ export function SessionBookingFlow() {
         </div>
       </div>
 
-      {/* Sticky summary — desktop right column */}
       <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
         {selectedMentor && selectedSlot && (
           <StickyBookingSummary
             mentor={selectedMentor}
             slot={selectedSlot}
-            date={selectedDate}
+            date={filterDate}
             durationMins={durationMins}
             onContinue={() => setConfirmOpen(true)}
+            isPending={isCreatingHold}
           />
         )}
       </div>
 
-      {/* Inline preview — stays on the booking page */}
-      <MentorPreviewDrawer
-        open={!!previewMentor}
-        mentor={previewMentor!}
-        date={selectedDate}
-        selectedSlotId={selectedSlotValue}
-        onSelectSlot={(slot) => previewMentor && selectSlot(previewMentor, slot)}
-        onClose={() => setPreviewMentorId(null)}
-      />
+      {previewMentor && (
+        <MentorPreviewDrawer
+          open={!!previewMentor}
+          mentor={previewMentor}
+          date={filterDate}
+          selectedSlotId={selectedSlotValue}
+          onSelectSlot={(slot) => previewMentor && selectSlot(previewMentor, slot)}
+          onClose={() => setPreviewMentorId(null)}
+        />
+      )}
 
-      {/* Confirmation — reuses existing booking / payment architecture */}
       {selectedMentor && selectedSlot && (
         <BookingConfirmDialog
           open={confirmOpen}
@@ -382,9 +496,10 @@ export function SessionBookingFlow() {
           mentorId={selectedMentor.id}
           mentorName={selectedMentor.name}
           slot={{ value: selectedSlot.id, label: selectedSlot.label }}
-          date={selectedDate}
+          date={filterDate}
           durationMins={durationMins}
           language={selectedMentor.primaryLanguage}
+          holdId={hold?.id}
           onRaceConflict={() => {
             setConfirmOpen(false);
             setRaceFailed(selectedSlot.id);
@@ -393,7 +508,6 @@ export function SessionBookingFlow() {
         />
       )}
 
-      {/* Race-condition recovery — one-click closest alternative */}
       <RaceConditionRecovery
         open={raceOpen}
         mentor={selectedMentor}
@@ -408,24 +522,31 @@ export function SessionBookingFlow() {
     </div>
   );
 }
+
 function MentorResultCard({
   mentor,
   selectedDate,
   selectedSlotId,
+  selectedMentorId,
   durationMins,
   onSelectSlot,
   onPreview,
+  onSelectMentor,
 }: {
   mentor: BookingMentorViewModel;
   selectedDate: string;
   selectedSlotId?: string | null;
+  selectedMentorId?: string | null;
   durationMins: number;
   onSelectSlot: (slot: BookingSlotViewModel) => void;
   onPreview: () => void;
+  onSelectMentor: () => void;
 }) {
+  const isSelected = selectedMentorId === mentor.id;
+
   return (
-    <Card className="h-full transition-shadow duration-200 hover:shadow-md">
-      <CardContent className="space-y-3 p-4">
+    <Card className={cn("h-full transition-shadow duration-200", isSelected ? "ring-2 ring-primary shadow-md" : "hover:shadow-md")}>
+      <CardContent className="p-4 space-y-3">
         <div className="flex items-start gap-3">
           <Avatar className="h-11 w-11">
             <AvatarImage src={mentor.avatarUrl || undefined} alt={mentor.name} />
@@ -459,7 +580,6 @@ function MentorResultCard({
           </div>
         </div>
 
-        {/* Explainable recommendation */}
         {mentor.reasons.length > 0 && (
           <div className="rounded-xl bg-primary/5 p-2.5">
             <div className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
@@ -477,7 +597,6 @@ function MentorResultCard({
           </div>
         )}
 
-        {/* Actual available slots — book directly (mentor + slot as one decision) */}
         <div>
           <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
             <span className="font-medium text-foreground">Available {dateLabel(selectedDate)}</span>
@@ -490,9 +609,19 @@ function MentorResultCard({
           />
         </div>
 
-        <Button variant="ghost" size="sm" className="w-full" onClick={onPreview}>
-          Preview {mentor.name.split(" ")[0]}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            className="flex-1"
+            onClick={onSelectMentor}
+          >
+            {isSelected ? "Selected" : `Book with ${mentor.name.split(" ")[0]}`}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onPreview}>
+            Preview
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -544,7 +673,7 @@ function SmartEmptyState({
 
       <div className="mt-5 flex flex-wrap justify-center gap-2">
         <Button variant="outline" size="sm" onClick={onFlexible}>
-          I'm flexible
+          I&apos;m flexible
         </Button>
         <Button variant="outline" size="sm" onClick={onClear}>
           Clear filters

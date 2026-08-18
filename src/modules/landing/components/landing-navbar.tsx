@@ -6,11 +6,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { getDashboardRoute } from "@/lib/auth";
 
-const NAV_LINKS = [
-  { label: "How it works", hash: "how" },
-  { label: "Mentors", hash: "mentors" },
-] as const;
-
 export function LandingNavbar() {
   const { data } = useAuth();
   const [open, setOpen] = useState(false);
@@ -29,7 +24,7 @@ export function LandingNavbar() {
         className={cn(
           "flex w-full max-w-5xl items-center justify-between rounded-full border transition-all duration-500",
           scrolled
-            ? "border-border/80 bg-background/80 shadow-lg shadow-black/5 backdrop-blur-xl"
+            ? "glass border-white/40 shadow-lg shadow-black/5"
             : "border-transparent bg-transparent",
         )}
       >
@@ -38,23 +33,27 @@ export function LandingNavbar() {
           className="flex items-center gap-2.5 rounded-full px-4 py-2.5 transition-colors hover:bg-muted/50 md:px-3"
           aria-label="Lingua home"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient shadow-glow">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-gradient shadow-glow">
             <img src="/logo.png" alt="" className="h-4 w-4" />
           </span>
           <span className="text-lg font-semibold tracking-tight">Lingua</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.hash}
-              to="/"
-              hash={link.hash}
-              className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            to="/"
+            hash="how"
+            className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+          >
+            How it works
+          </Link>
+          <Link
+            to="/"
+            hash="mentors"
+            className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+          >
+            Mentors
+          </Link>
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -94,17 +93,22 @@ export function LandingNavbar() {
         )}
       >
         <nav className="space-y-1 p-4" aria-label="Mobile">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.hash}
-              to="/"
-              hash={link.hash}
-              onClick={() => setOpen(false)}
-              className="block rounded-xl px-3 py-2.5 text-sm text-foreground hover:bg-muted/60"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            to="/"
+            hash="how"
+            onClick={() => setOpen(false)}
+            className="block rounded-xl px-3 py-2.5 text-sm text-foreground hover:bg-muted/60"
+          >
+            How it works
+          </Link>
+          <Link
+            to="/"
+            hash="mentors"
+            onClick={() => setOpen(false)}
+            className="block rounded-xl px-3 py-2.5 text-sm text-foreground hover:bg-muted/60"
+          >
+            Mentors
+          </Link>
           <div className="flex gap-2 pt-3">
             {data?.user ? (
               <Button asChild size="sm" className="flex-1 rounded-full">
