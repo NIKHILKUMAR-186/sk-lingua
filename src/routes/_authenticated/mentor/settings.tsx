@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MentorLayout } from "@/components/layouts";
 import { PageHeader } from "@/components/mentor/page-header";
 import { SectionCard } from "@/components/mentor/section-card";
+import { MentorSectionHeader } from "@/components/mentor-design/MentorSectionHeader";
+import { MentorPageContainer } from "@/components/mentor-design/MentorPageContainer";
 import { Button } from "@/components/ui/button";
 import { User, BookOpen, Clock, Bell, Shield } from "lucide-react";
 
@@ -12,13 +14,13 @@ export const Route = createFileRoute("/_authenticated/mentor/settings")({
 function MentorSettingsHub() {
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
+      <MentorPageContainer>
         <PageHeader
           title="Settings"
           description="Manage your mentor profile and teaching preferences."
         />
 
-        <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+        <div className="mentor-card divide-y divide-border/60">
           <SettingsRow
             icon={<User className="h-4 w-4 text-muted-foreground" />}
             title="Profile"
@@ -50,7 +52,7 @@ function MentorSettingsHub() {
             href="#"
           />
         </div>
-      </div>
+      </MentorPageContainer>
     </MentorLayout>
   );
 }
@@ -69,10 +71,10 @@ function SettingsRow({
   return (
     <Link
       to={href}
-      className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-accent/10 transition-colors"
+      className="mentor-settings-row"
     >
       <div className="flex items-center gap-3.5 min-w-0">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/60">
           {icon}
         </div>
         <div className="min-w-0">

@@ -4,14 +4,19 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
-import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
+import { MentorSectionHeader } from "@/components/mentor-design/MentorSectionHeader";
+import { MentorEmptyState } from "@/components/mentor-design/MentorEmptyState";
+import { MentorStatusBadge } from "@/components/mentor-design/MentorStatusBadge";
+import { MentorDateChip } from "@/components/mentor-design/MentorDateChip";
+import { MentorAvatar } from "@/components/mentor-design/MentorAvatar";
+import { MentorPageContainer } from "@/components/mentor-design/MentorPageContainer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { CalendarDays, Clock3, Video, CalendarClock, ChevronRight } from "lucide-react";
+import { CalendarDays, Clock3, Video, CalendarClock, ChevronRight, ExternalLink, ArrowRight } from "lucide-react";
 import { format, parseISO, formatDistanceToNow, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
@@ -164,18 +169,28 @@ function MentorCalendarRequests() {
 
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-5xl space-y-6">
-        <PageHeader title="Calendar & Requests" description="Your schedule and booking requests." />
+      <MentorPageContainer>
+        <PageHeader
+          title="Calendar & Requests"
+          description="Your schedule and booking requests."
+          action={
+            totalPending > 0 ? (
+              <Button asChild>
+                <Link to="/mentor/calendar">
+                  Review requests <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : undefined
+          }
+        />
 
         <Tabs value={topTab} onValueChange={(v) => setTopTab(v as TopTab)}>
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="requests">
+          <TabsList className="mentor-tabs-list w-auto">
+            <TabsTrigger value="calendar" className="mentor-tab">Calendar</TabsTrigger>
+            <TabsTrigger value="requests" className="mentor-tab">
               Requests
               {totalPending > 0 && (
-                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/10 px-1.5 text-[11px] font-semibold text-primary">
-                  {totalPending}
-                </span>
+                <span className="mentor-sidebar-item-badge">{totalPending}</span>
               )}
             </TabsTrigger>
           </TabsList>
@@ -186,7 +201,7 @@ function MentorCalendarRequests() {
                 <div className="space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex gap-4">
-                      <Skeleton className="h-12 w-12 shrink-0 rounded-lg" />
+                      <Skeleton className="h-12 w-12 shrink-0 rounded-xl" />
                       <div className="flex-1 space-y-2">
                         <Skeleton className="h-4 w-48" />
                         <Skeleton className="h-3 w-32" />
@@ -201,7 +216,7 @@ function MentorCalendarRequests() {
                   description="Accepted and confirmed sessions will appear here."
                 />
               ) : (
-                <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+                <div className="mentor-card divide-y divide-border/60">
                   {upcomingSessions.map((session: any) => {
                     const start = parseISO(session.scheduled_time);
                     const student = studentMap.get(session.student_id);
@@ -216,19 +231,15 @@ function MentorCalendarRequests() {
                         key={session.id}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                        className="mentor-session-row"
                         onClick={() =>
                           navigate({ to: "/mentor/session/$id", params: { id: session.id } } as any)
                         }
                       >
-                        <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg border border-border/60 bg-background">
-                          <span className="text-[10px] font-medium uppercase leading-none text-muted-foreground">
-                            {format(start, "MMM")}
-                          </span>
-                          <span className="text-lg font-display font-bold leading-tight">
-                            {format(start, "d")}
-                          </span>
-                        </div>
+                        <MentorDateChip
+                          month={format(start, "MMM")}
+                          day={format(start, "d")}
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium text-foreground truncate">
                             {student?.full_name || "Student"}
@@ -249,12 +260,16 @@ function MentorCalendarRequests() {
           {topTab === "requests" && (
             <div className="mt-4">
               <Tabs value={requestTab} onValueChange={(v) => setRequestTab(v as RequestTab)}>
-                <TabsList className="w-full justify-start">
-                  <TabsTrigger value="pending">
+                <TabsList className="mentor-tabs-list w-auto">
+                  <TabsTrigger value="pending" className="mentor-tab">
                     Pending {totalPending > 0 ? `(${totalPending})` : ""}
                   </TabsTrigger>
-                  <TabsTrigger value="upcoming">Upcoming ({upcomingSessions.length})</TabsTrigger>
-                  <TabsTrigger value="past">Past ({pastSessions.length})</TabsTrigger>
+                  <TabsTrigger value="upcoming" className="mentor-tab">
+                    Upcoming ({upcomingSessions.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="past" className="mentor-tab">
+                    Past ({pastSessions.length})
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="pending" className="mt-4 space-y-3">
@@ -319,14 +334,15 @@ function MentorCalendarRequests() {
                             key={`demo-${r.id}`}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="rounded-xl border border-border/60 bg-card overflow-hidden"
+                            className="mentor-request-card"
                           >
                             <div className="p-4">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-start gap-3 min-w-0">
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                                    {student?.full_name?.charAt(0) || "S"}
-                                  </div>
+                                  <MentorAvatar
+                                    fallback={student?.full_name || "S"}
+                                    size="md"
+                                  />
                                   <div className="min-w-0 flex-1">
                                     <p className="text-sm font-semibold text-foreground truncate">
                                       {student?.full_name || "Student"}
@@ -338,12 +354,12 @@ function MentorCalendarRequests() {
                                       {r.booking_time_start} — {r.booking_time_end}
                                     </p>
                                     {isAwaiting && (
-                                      <p className="text-xs text-orange-600 mt-1 font-medium">
+                                      <p className="text-xs text-amber-600 mt-1 font-medium">
                                         Accept within: {countdownLabel}
                                       </p>
                                     )}
                                     {isAccepted && !hasLink && (
-                                      <p className="text-xs text-blue-600 mt-1">
+                                      <p className="text-xs text-electric-iris mt-1">
                                         Add a Google Meet link to make this session ready
                                       </p>
                                     )}
@@ -397,9 +413,7 @@ function MentorCalendarRequests() {
                                     </div>
                                   )}
                                   {isAccepted && hasLink && (
-                                    <Badge variant="default" className="h-8 text-xs">
-                                      Ready
-                                    </Badge>
+                                    <MentorStatusBadge status="success" label="Ready" />
                                   )}
                                 </div>
                               </div>
@@ -421,14 +435,15 @@ function MentorCalendarRequests() {
                             key={r.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="rounded-xl border border-border/60 bg-card overflow-hidden"
+                            className="mentor-request-card"
                           >
                             <div className="p-5">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-start gap-3 min-w-0">
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                                    {(r.student?.full_name || "S").charAt(0)}
-                                  </div>
+                                  <MentorAvatar
+                                    fallback={(r.student?.full_name || "S").charAt(0)}
+                                    size="md"
+                                  />
                                   <div className="min-w-0 flex-1">
                                     <p className="text-sm font-semibold text-foreground truncate">
                                       {r.student?.full_name || "Student"}
@@ -493,7 +508,7 @@ function MentorCalendarRequests() {
                       description="Accepted sessions will appear here."
                     />
                   ) : (
-                    <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+                    <div className="mentor-card divide-y divide-border/60">
                       {upcomingSessions.map((r: any) => {
                         const start = parseISO(r.scheduled_time);
                         const student = studentMap.get(r.student_id);
@@ -508,19 +523,15 @@ function MentorCalendarRequests() {
                             key={r.id}
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                            className="mentor-session-row"
                             onClick={() =>
                               navigate({ to: "/mentor/session/$id", params: { id: r.id } } as any)
                             }
                           >
-                            <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg border border-border/60 bg-background">
-                              <span className="text-[10px] font-medium uppercase leading-none text-muted-foreground">
-                                {format(start, "MMM")}
-                              </span>
-                              <span className="text-lg font-display font-bold leading-tight">
-                                {format(start, "d")}
-                              </span>
-                            </div>
+                            <MentorDateChip
+                              month={format(start, "MMM")}
+                              day={format(start, "d")}
+                            />
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium text-foreground truncate">
                                 {student?.full_name || "Student"}
@@ -529,7 +540,7 @@ function MentorCalendarRequests() {
                                 {dayLabel} · {format(start, "h:mm a")} · {r.duration_mins} min
                               </p>
                             </div>
-                            <span className="text-xs text-muted-foreground capitalize">
+                            <span className="text-xs text-muted-foreground capitalize shrink-0">
                               {r.status === "accepted" || r.status === "confirmed"
                                 ? "Confirmed"
                                 : r.status}
@@ -564,7 +575,7 @@ function MentorCalendarRequests() {
                       description="Completed and cancelled sessions appear here."
                     />
                   ) : (
-                    <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+                    <div className="mentor-card divide-y divide-border/60">
                       {pastSessions.map((r: any) => {
                         const start = parseISO(r.scheduled_time);
                         const student = studentMap.get(r.student_id);
@@ -573,16 +584,12 @@ function MentorCalendarRequests() {
                             key={r.id}
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-4 px-5 py-4"
+                            className="mentor-session-row opacity-70"
                           >
-                            <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg border border-border/60 bg-background opacity-60">
-                              <span className="text-[10px] font-medium uppercase leading-none text-muted-foreground">
-                                {format(start, "MMM")}
-                              </span>
-                              <span className="text-lg font-display font-bold leading-tight text-muted-foreground">
-                                {format(start, "d")}
-                              </span>
-                            </div>
+                            <MentorDateChip
+                              month={format(start, "MMM")}
+                              day={format(start, "d")}
+                            />
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium text-foreground truncate">
                                 {student?.full_name || "Student"}
@@ -592,7 +599,7 @@ function MentorCalendarRequests() {
                                 {r.duration_mins} min
                               </p>
                             </div>
-                            <span className="text-xs text-muted-foreground capitalize">
+                            <span className="text-xs text-muted-foreground capitalize shrink-0">
                               {r.status}
                             </span>
                           </motion.div>
@@ -605,7 +612,7 @@ function MentorCalendarRequests() {
             </div>
           )}
         </Tabs>
-      </div>
+      </MentorPageContainer>
     </MentorLayout>
   );
 }

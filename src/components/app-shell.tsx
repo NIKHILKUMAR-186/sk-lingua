@@ -62,13 +62,11 @@ interface AdminNavItem {
   icon: LucideIcon;
 }
 
-/** Grouped Admin navigation (MANAGE / OPERATIONS / NETWORK / FINANCE / SYSTEM). */
 const ADMIN_SECTIONS: Array<{ label: string; items: AdminNavItem[] }> = [
   {
     label: "Manage",
     items: [
       { title: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
-      { title: "Analytics", to: "/admin/analytics", icon: BarChart3 },
     ],
   },
   {
@@ -116,11 +114,6 @@ const ACCOUNT_ITEMS_BASE = [
   { title: "Settings", icon: Settings },
 ] as const;
 
-// const HELP_ITEMS = [
-//   { title: "Help Center", to: "/help", icon: CircleHelp },
-//   { title: "Send Feedback", to: "/feedback", icon: MessageSquare },
-// ] as const;
-
 function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "admin" }) {
   const { data: auth } = useAuth();
   const navigate = useNavigate();
@@ -148,7 +141,6 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
             to: `/${variant}/${item.title.toLowerCase()}`,
           }));
 
-  // ── Dynamic student nav items (P1 lifecycle-aware) ─────────────────
   const isStudentVariant = variant === "student";
   const studentLearning = useStudentLearningState();
 
@@ -196,7 +188,6 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
 
   return (
     <>
-      {/* Brand Header */}
       <SidebarHeader className="px-4 pt-6 pb-2">
         <Link
           to="/"
@@ -204,11 +195,11 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
           aria-label="Lingua Home"
         >
           <motion.div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl overflow-hidden bg-white ring-1 ring-border"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl overflow-hidden bg-brand-gradient shadow-glow"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <img src="/logo.png" alt="Lingua" className="h-full w-full object-contain p-1" />
+            <img src="/logo.png" alt="Lingua" className="h-full w-full object-contain p-1.5" />
           </motion.div>
 
           {!collapsed && (
@@ -242,14 +233,12 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
         </Link>
       </SidebarHeader>
 
-      {/* Navigation */}
       <SidebarContent className="px-3 py-2">
-        {/* Learning Section (student / mentor) */}
         {variant !== "admin" && (
           <SidebarGroup>
             <SidebarGroupLabel
               className={cn(
-                "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
+                "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-muted-foreground uppercase",
                 collapsed && "sr-only",
               )}
             >
@@ -273,13 +262,12 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
           </SidebarGroup>
         )}
 
-        {/* Admin sections (MANAGE / OPERATIONS / NETWORK / FINANCE / SYSTEM) */}
         {variant === "admin" &&
           ADMIN_SECTIONS.map((section) => (
             <SidebarGroup key={section.label}>
               <SidebarGroupLabel
                 className={cn(
-                  "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
+                  "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-muted-foreground uppercase",
                   collapsed && "sr-only",
                 )}
               >
@@ -303,11 +291,10 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
             </SidebarGroup>
           ))}
 
-        {/* Account Section */}
         <SidebarGroup>
           <SidebarGroupLabel
             className={cn(
-              "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
+              "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-muted-foreground uppercase",
               collapsed && "sr-only",
             )}
           >
@@ -330,43 +317,15 @@ function SidebarContentInner({ variant }: { variant: "student" | "mentor" | "adm
             </nav>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* Help Section */}
-        {/* <SidebarGroup> */}
-        {/* <SidebarGroupLabel
-            className={cn(
-              "px-2 pb-1 text-[11px] font-medium tracking-[0.12em] text-gray-500 uppercase",
-              collapsed && "sr-only",
-            )}
-          >
-            Support
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <nav aria-label="Support">
-              <ul className="flex w-full min-w-0 flex-col gap-0.5">
-                {HELP_ITEMS.map((item) => (
-                  <SidebarItem
-                    key={item.to}
-                    icon={item.icon}
-                    label={item.title}
-                    to={item.to}
-                    isActive={pathname === item.to}
-                  />
-                ))}
-              </ul>
-            </nav>
-          </SidebarGroupContent>
-        </SidebarGroup> */}
       </SidebarContent>
 
-      {/* Footer: Profile + Logout */}
       <SidebarFooter className="border-t border-border/50 p-3">
         <ProfileCard auth={auth} collapsed={collapsed} settingsPath={`/${variant}/settings`} />
         {!collapsed && (
           <button
             type="button"
             onClick={signOut}
-            className="mx-2 mt-2 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-red-600 hover:bg-red-50"
+            className="mx-2 mt-2 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-destructive hover:bg-destructive/10"
           >
             <LogOut className="h-3.5 w-3.5" />
             <span>Sign out</span>
@@ -387,7 +346,7 @@ export function AppShell({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
-        <Sidebar collapsible="icon" className="border-r border-border shadow-sm">
+        <Sidebar collapsible="icon" className="mentor-sidebar border-r border-border shadow-sm">
           <SidebarContentInner variant={variant} />
         </Sidebar>
         <SidebarInset>
@@ -400,7 +359,7 @@ export function AppShell({
                   <TooltipTrigger asChild>
                     <Link
                       to="/student/streak"
-                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-flame hover:bg-hi-yellow/10 transition-colors"
                       aria-label="View analytics & streaks"
                     >
                       <Flame className="h-4 w-4" />
@@ -408,6 +367,24 @@ export function AppShell({
                   </TooltipTrigger>
                   <TooltipContent side="bottom" align="end">
                     <p className="text-xs">Activity & Streaks</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {variant === "admin" && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to="/admin/analytics"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary-soft transition-colors"
+                      aria-label="View analytics"
+                    >
+                      <BarChart3 className="h-4 w-4" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="end">
+                    <p className="text-xs">Analytics</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

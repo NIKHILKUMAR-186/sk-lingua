@@ -1,0 +1,723 @@
+# UNIVERSAL LANDING PAGE DESIGN IMPLEMENTATION PROMPT
+# Lingua — design.md as the Single Source of Truth
+
+You are a senior product designer + frontend architect working on the Lingua production application.
+
+Your task is to completely design and implement the Lingua LANDING PAGE according to the existing `design.md` file in the repository.
+
+============================================================
+CORE DIRECTIVE
+============================================================
+
+IMPORTANT:
+
+`design.md` is the SINGLE SOURCE OF TRUTH for the landing page's visual design.
+
+Do NOT invent a different visual language.
+
+Do NOT create a generic SaaS landing page.
+
+Do NOT blindly follow the existing landing page implementation if it conflicts with `design.md`.
+
+Instead:
+
+1. Read `design.md` completely.
+2. Understand its:
+   - visual language
+   - typography
+   - color system
+   - spacing
+   - layout philosophy
+   - components
+   - interactions
+   - animation principles
+   - responsive behavior
+   - visual hierarchy
+   - UX principles
+3. Translate those principles into the actual Lingua landing page.
+4. Preserve Lingua's real functionality and routing.
+5. Make the final result feel like a real premium production website, not a static mockup.
+
+============================================================
+BEFORE WRITING CODE
+============================================================
+
+First inspect the repository.
+
+Find:
+
+- `design.md`
+- current landing page route
+- current landing page components
+- shared UI components
+- Tailwind/CSS configuration
+- existing animation utilities
+- existing icon system
+- existing fonts
+- existing assets
+- authentication routes
+- student/mentor/admin entry points
+
+Also inspect recent landing-page changes.
+
+Determine:
+
+- which parts of the current landing page are reusable
+- which parts should be rebuilt
+- which components are causing visual clutter
+- which existing functionality must remain
+
+Do NOT assume.
+
+============================================================
+DESIGN.MD INTERPRETATION
+============================================================
+
+After reading `design.md`, create an internal mapping:
+
+DESIGN.MD
+    ↓
+Design tokens
+    ↓
+Layout system
+    ↓
+Typography
+    ↓
+Components
+    ↓
+Motion
+    ↓
+Responsive behavior
+    ↓
+Landing page sections
+
+Do not randomly copy styles.
+
+Understand the design system first, then implement it consistently.
+
+============================================================
+LANDING PAGE GOAL
+============================================================
+
+The landing page should immediately communicate:
+
+LINGUA
+
+A premium platform for connecting students with mentors and improving learning through real human guidance.
+
+The page should feel:
+
+- premium
+- modern
+- trustworthy
+- human
+- educational
+- calm
+- intelligent
+- polished
+- interactive
+- production-ready
+
+It should NOT feel:
+
+- template-generated
+- over-designed
+- noisy
+- cluttered
+- childish
+- overly corporate
+- like a dashboard
+- like a collection of unrelated animations
+
+============================================================
+LANGUAGE REQUIREMENT
+============================================================
+
+IMPORTANT:
+
+The landing page is ENGLISH ONLY.
+
+Do NOT add:
+
+- Spanish
+- French
+- German
+- Hindi
+- multilingual selectors
+- language switching
+- translated headings
+- random foreign-language decorative text
+
+Every visible landing-page text must be English.
+
+Use concise, readable English copy.
+
+============================================================
+INFORMATION ARCHITECTURE
+============================================================
+
+Do NOT remove important existing landing-page functionality.
+
+At minimum, the landing page should have a clear structure such as:
+
+1. Navigation
+2. Hero
+3. Value proposition
+4. How Lingua works
+5. Mentor discovery / mentor showcase
+6. Learning/session experience
+7. Trust / social proof
+8. CTA
+9. Footer
+
+However:
+
+DO NOT blindly force these sections if `design.md` specifies a different structure.
+
+`design.md` takes priority for visual organization.
+
+Existing functional CTAs must continue working.
+
+Examples:
+
+- Get Started
+- Find a Mentor
+- Book a Session
+- Login
+- Sign Up
+
+must route to the appropriate existing application routes.
+
+DO NOT replace working routes with dummy buttons.
+
+============================================================
+VISUAL DESIGN
+============================================================
+
+Apply the visual system from `design.md` consistently.
+
+Pay special attention to:
+
+- typography
+- font weights
+- font hierarchy
+- letter spacing
+- section rhythm
+- content width
+- whitespace
+- borders
+- shadows
+- radius
+- backgrounds
+- gradients
+- imagery
+- iconography
+- button treatment
+- cards
+- interactive states
+
+Do not introduce random CSS values when an existing design token can be reused.
+
+============================================================
+READABILITY RULE
+============================================================
+
+The previous landing page became visually messy because too many visual elements competed for attention.
+
+Therefore:
+
+Every section must have a clear hierarchy.
+
+Users should instantly understand:
+
+WHAT IS THIS?
+WHY SHOULD I CARE?
+HOW DOES IT WORK?
+WHAT SHOULD I DO NEXT?
+
+Avoid:
+
+- excessive text
+- giant paragraphs
+- too many badges
+- too many floating elements
+- excessive gradients
+- excessive shadows
+- excessive borders
+- too many competing colors
+- decorative elements behind important text
+
+Visual sophistication must come from composition, not clutter.
+
+============================================================
+ANIMATION SYSTEM
+============================================================
+
+Use animations ONLY where they improve the experience.
+
+Animations should be based on the interaction principles described in `design.md`.
+
+Possible techniques include:
+
+- text reveal
+- word reveal
+- character reveal
+- fade + slide
+- staggered entrance
+- scroll-triggered reveal
+- subtle parallax
+- image movement
+- hover elevation
+- magnetic CTA
+- floating elements
+- smooth section transitions
+
+But:
+
+DO NOT use all of these everywhere.
+
+Choose the animation that best fits each section.
+
+Animation hierarchy:
+
+1. Hero → strongest motion
+2. Section transitions → subtle
+3. Cards → micro-interactions
+4. Buttons → responsive feedback
+5. Background → very subtle
+
+The page should remain readable even if animations are disabled.
+
+============================================================
+TEXT REVEAL
+============================================================
+
+If `design.md` supports text-reveal effects, use them strategically.
+
+Good candidates:
+
+- Hero headline
+- Major section headings
+- Key value propositions
+
+Avoid animating every sentence.
+
+Text should never become unreadable because of animation.
+
+Respect:
+
+`prefers-reduced-motion`
+
+============================================================
+PARALLAX
+============================================================
+
+Use parallax only where it creates meaningful depth.
+
+Good candidates:
+
+- hero visual
+- background shapes
+- product imagery
+- floating mentor/session elements
+
+Do NOT make the entire page move independently.
+
+Avoid motion sickness.
+
+Keep movement subtle.
+
+============================================================
+GLASSMORPHISM / CLAYMORPHISM / NEOMORPHISM
+============================================================
+
+Use these styles ONLY where they fit `design.md`.
+
+Do not combine every visual trend.
+
+For example:
+
+Glassmorphism can be used for:
+
+- floating navigation
+- hero cards
+- floating UI
+- contextual overlays
+
+Claymorphism can be used for:
+
+- friendly learning illustrations
+- feature cards
+- mentor highlights
+
+Neomorphism should be used sparingly.
+
+The final design must still feel coherent.
+
+============================================================
+HERO SECTION
+============================================================
+
+The hero is the most important part.
+
+It should answer within seconds:
+
+What is Lingua?
+
+Why is it different?
+
+What can I do?
+
+The hero should contain:
+
+- strong headline
+- concise supporting copy
+- primary CTA
+- secondary CTA if appropriate
+- visually compelling product/learning representation
+
+Do NOT make the hero an enormous wall of text.
+
+Do NOT use generic AI-generated marketing phrases.
+
+Use real Lingua concepts.
+
+============================================================
+MENTOR EXPERIENCE
+============================================================
+
+Show the mentor ecosystem in a believable way.
+
+If mentor cards are used, they should look like real product UI.
+
+Include realistic data structures from the application where possible.
+
+DO NOT hardcode fake production claims.
+
+DO NOT fabricate:
+
+- user counts
+- ratings
+- testimonials
+- earnings
+- success percentages
+- number of mentors
+- company logos
+
+unless such information already exists in the project.
+
+If dynamic data is available, use it appropriately.
+
+If not, use clearly illustrative UI without pretending it is live platform data.
+
+============================================================
+PRODUCT UI PREVIEWS
+============================================================
+
+Whenever possible, show actual Lingua product concepts instead of generic illustrations.
+
+Examples:
+
+- mentor profile
+- booking calendar
+- session card
+- learning progress
+- upcoming session
+- mentor availability
+- student dashboard
+
+These should visually connect the landing page with the real application.
+
+The visitor should feel:
+
+"This is an actual product."
+
+NOT:
+
+"This is a marketing template."
+
+============================================================
+RESPONSIVE DESIGN
+============================================================
+
+The landing page must be designed intentionally for:
+
+- large desktop
+- desktop
+- tablet
+- mobile
+
+Do NOT simply shrink desktop components.
+
+At mobile:
+
+- navigation should transform appropriately
+- hero should remain readable
+- animations should be reduced where necessary
+- cards should stack naturally
+- buttons should remain touch-friendly
+- no horizontal overflow
+- no text clipping
+- no broken decorative elements
+
+============================================================
+PERFORMANCE
+============================================================
+
+Animations must not destroy performance.
+
+Avoid:
+
+- expensive continuous JavaScript animations
+- unnecessary re-renders
+- huge image assets
+- excessive DOM elements
+- animation libraries for trivial effects
+
+Prefer:
+
+- CSS transforms
+- opacity
+- GPU-friendly properties
+- IntersectionObserver where appropriate
+- existing project animation utilities
+
+Do not add a dependency if the existing stack already provides the required capability.
+
+============================================================
+ACCESSIBILITY
+============================================================
+
+Maintain:
+
+- semantic HTML
+- keyboard navigation
+- visible focus states
+- sufficient color contrast
+- alt text
+- accessible buttons
+- accessible navigation
+- reduced-motion support
+
+Animations must never prevent users from accessing content.
+
+============================================================
+FUNCTIONALITY
+============================================================
+
+This is a DESIGN + FRONTEND IMPLEMENTATION task.
+
+DO NOT break:
+
+- authentication
+- routing
+- login
+- signup
+- student onboarding
+- mentor onboarding
+- existing CTAs
+- Supabase integration
+- existing API calls
+
+Do not rewrite backend logic.
+
+Do not modify database schema.
+
+============================================================
+COMPONENT ARCHITECTURE
+============================================================
+
+Build reusable components where appropriate.
+
+Example structure:
+
+LandingPage
+├── LandingNav
+├── HeroSection
+├── ValueSection
+├── HowItWorks
+├── MentorShowcase
+├── ProductExperience
+├── TrustSection
+├── FinalCTA
+└── LandingFooter
+
+Use shared primitives where appropriate.
+
+Do NOT create hundreds of tiny components simply for abstraction.
+
+Do NOT duplicate identical UI.
+
+============================================================
+DESIGN TOKEN RULE
+============================================================
+
+If `design.md` specifies:
+
+colors
+spacing
+radius
+shadows
+typography
+motion
+
+convert them into reusable implementation tokens where appropriate.
+
+The implementation should feel like one coherent system.
+
+Avoid:
+
+Component A → radius 14px
+Component B → radius 17px
+Component C → radius 23px
+Component D → radius 19px
+
+unless explicitly justified by the design.
+
+============================================================
+IMPORTANT: DO NOT MODIFY THE APPLICATION UI
+============================================================
+
+This task is specifically for the LANDING PAGE.
+
+DO NOT redesign:
+
+- Admin dashboard
+- Mentor dashboard
+- Student dashboard
+- Admin navigation
+- Mentor navigation
+- Student navigation
+- booking pages
+- session pages
+- settings
+- availability
+- demo queue
+
+unless a shared component absolutely must be changed for compatibility.
+
+If a shared component is modified, verify that existing application pages remain visually and functionally stable.
+
+============================================================
+NO HARD-CODED MOCK EXPERIENCE
+============================================================
+
+Do not create a fake "live platform" experience using meaningless numbers.
+
+Do not hardcode things like:
+
+"10,000+ students"
+
+"5,000+ mentors"
+
+"98% success rate"
+
+unless they already exist as verified project data.
+
+Authenticity > marketing exaggeration.
+
+============================================================
+ERROR HANDLING
+============================================================
+
+Before considering the work complete:
+
+Run:
+
+- TypeScript/typecheck
+- lint if available
+- production build
+
+Fix all errors introduced by your changes.
+
+Do NOT suppress errors.
+
+Do NOT hide errors with try/catch.
+
+Do NOT replace broken components with placeholders.
+
+============================================================
+VISUAL QA
+============================================================
+
+After implementation, inspect the landing page at:
+
+- 1440px+
+- 1280px
+- 1024px
+- 768px
+- mobile
+
+Check:
+
+✓ Typography
+✓ Spacing
+✓ Section rhythm
+✓ Hero hierarchy
+✓ CTA visibility
+✓ Animation timing
+✓ Scroll behavior
+✓ Responsive layout
+✓ Mobile navigation
+✓ No horizontal overflow
+✓ No text clipping
+✓ No visual collisions
+✓ No excessive empty space
+✓ No excessive visual noise
+
+============================================================
+MOST IMPORTANT RULE
+============================================================
+
+DO NOT DESIGN FROM YOUR OWN TASTE.
+
+DESIGN FROM `design.md`.
+
+The priority order is:
+
+1. `design.md`
+2. Existing Lingua product identity
+3. Existing application functionality
+4. Accessibility
+5. Performance
+6. Your implementation preferences
+
+If you personally prefer a different design than `design.md`, follow `design.md`.
+
+============================================================
+FINAL QUALITY BAR
+============================================================
+
+The final landing page should look like:
+
+A real premium EdTech product that is already ready for users.
+
+It should NOT look like:
+
+- a coding exercise
+- a generic SaaS template
+- an AI-generated landing page
+- a collection of UI components
+- an animation showcase
+
+Every animation, card, color, spacing decision and interaction must have a reason.
+
+============================================================
+FINAL REPORT
+============================================================
+
+After implementation, report:
+
+1. Which `design.md` principles were implemented.
+2. Which landing-page components were created/updated.
+3. Which animations were implemented.
+4. Which responsive behaviors were implemented.
+5. Which existing routes/CTAs were preserved.
+6. Which shared components were changed, if any.
+7. Typecheck result.
+8. Build result.
+9. Any remaining issues.
+
+DO NOT START redesigning any other workspace.
+
+STOP after completing the landing page.

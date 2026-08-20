@@ -5,6 +5,9 @@ import { useSessionWorkspace } from "@/hooks/use-session-workspace";
 import { SessionWorkspace } from "@/components/session-workspace";
 import { useState, useEffect, useMemo } from "react";
 import { PageHeader } from "@/components/mentor/page-header";
+import { MentorSectionHeader } from "@/components/mentor-design/MentorSectionHeader";
+import { MentorAvatar } from "@/components/mentor-design/MentorAvatar";
+import { MentorPageContainer } from "@/components/mentor-design/MentorPageContainer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Video, BookOpen, MessageSquareMore, ArrowRight, User, ExternalLink } from "lucide-react";
@@ -61,7 +64,7 @@ function MentorSessionDetail() {
   if (isLoading) {
     return (
       <MentorLayout>
-        <div className="mx-auto max-w-6xl">
+        <MentorPageContainer>
           <div className="mb-6">
             <Skeleton className="h-8 w-48 mb-2" />
             <Skeleton className="h-4 w-64" />
@@ -76,7 +79,7 @@ function MentorSessionDetail() {
               <Skeleton className="h-32 w-full" />
             </div>
           </div>
-        </div>
+        </MentorPageContainer>
       </MentorLayout>
     );
   }
@@ -84,7 +87,7 @@ function MentorSessionDetail() {
   if (error || !data) {
     return (
       <MentorLayout>
-        <div className="mx-auto max-w-6xl">
+        <MentorPageContainer>
           <div className="mb-6">
             <h1 className="text-2xl font-display">Session workspace</h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -94,7 +97,7 @@ function MentorSessionDetail() {
               Try again
             </Button>
           </div>
-        </div>
+        </MentorPageContainer>
       </MentorLayout>
     );
   }
@@ -118,7 +121,7 @@ function MentorSessionDetail() {
 
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-6xl space-y-6">
+      <MentorPageContainer>
         <PageHeader
           title={studentName}
           description={`${topic} · ${scheduledTime}`}
@@ -139,10 +142,11 @@ function MentorSessionDetail() {
             {/* Prepare for Session */}
             {hasPreparationData && (
               <section>
-                <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-3">
-                  Prepare for session
-                </h2>
-                <div className="rounded-xl border border-border/60 bg-card p-5 space-y-4">
+                <MentorSectionHeader
+                  title="Prepare for session"
+                  className="mb-3"
+                />
+                <div className="mentor-card p-5 space-y-4">
                   {recentNotes.length > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
@@ -151,7 +155,7 @@ function MentorSessionDetail() {
                       </div>
                       <div className="space-y-2">
                         {recentNotes.map((note: any) => (
-                          <div key={note.id} className="rounded-lg border border-border/40 p-3">
+                          <div key={note.id} className="rounded-xl border border-border/40 p-3">
                             <p className="text-xs font-medium text-foreground">{note.title}</p>
                             {note.body && (
                               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{note.body}</p>
@@ -173,7 +177,7 @@ function MentorSessionDetail() {
                       </div>
                       <div className="space-y-2">
                         {recentResources.map((resource: any) => (
-                          <div key={resource.id} className="flex items-center gap-2 rounded-lg border border-border/40 p-2.5">
+                          <div key={resource.id} className="flex items-center gap-2 rounded-xl border border-border/40 p-2.5">
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium text-foreground truncate">{resource.title}</p>
                               <p className="text-[10px] text-muted-foreground capitalize">{resource.resource_type}</p>
@@ -217,22 +221,22 @@ function MentorSessionDetail() {
           <div className="space-y-6">
             {/* Student Context Card */}
             <section>
-              <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-3">
-                Student
-              </h2>
-              <div className="rounded-xl border border-border/60 bg-card p-5">
+              <MentorSectionHeader
+                title="Student"
+                className="mb-3"
+              />
+              <div className="mentor-card p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                    {session?.student?.avatar_url ? (
-                      <img
-                        src={session.student.avatar_url}
-                        alt={studentName}
-                        className="h-full w-full rounded-full object-cover"
-                      />
-                    ) : (
-                      studentName.charAt(0).toUpperCase()
-                    )}
-                  </div>
+                  {session?.student?.avatar_url ? (
+                    <MentorAvatar
+                      src={session.student.avatar_url}
+                      alt={studentName}
+                      fallback={studentName}
+                      size="md"
+                    />
+                  ) : (
+                    <MentorAvatar fallback={studentName} size="md" />
+                  )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{studentName}</p>
                     <p className="text-xs text-muted-foreground">
@@ -267,7 +271,7 @@ function MentorSessionDetail() {
                       <p className="text-xs font-medium text-foreground mb-1.5">Recent notes</p>
                       <div className="space-y-2">
                         {recentNotes.slice(0, 2).map((note: any) => (
-                          <div key={note.id} className="rounded-lg border border-border/40 p-2.5">
+                          <div key={note.id} className="rounded-xl border border-border/40 p-2.5">
                             <p className="text-xs font-medium text-foreground line-clamp-1">{note.title}</p>
                             {note.body && (
                               <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{note.body}</p>
@@ -282,7 +286,7 @@ function MentorSessionDetail() {
             </section>
           </div>
         </div>
-      </div>
+      </MentorPageContainer>
     </MentorLayout>
   );
 }

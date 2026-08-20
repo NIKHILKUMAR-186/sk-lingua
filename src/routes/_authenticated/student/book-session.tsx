@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_authenticated/student/book-session")({
 });
 
 function BookSessionPage() {
-  const search = useSearch({ from: Route.id });
+  const search = useSearch({ from: Route.id }) as { mentor?: string };
   const preselectedMentorId = search.mentor ?? null;
 
   return (

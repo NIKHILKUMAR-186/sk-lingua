@@ -5,6 +5,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
 import { SectionCard } from "@/components/mentor/section-card";
+import { MentorSectionHeader } from "@/components/mentor-design/MentorSectionHeader";
+import { MentorEmptyState } from "@/components/mentor-design/MentorEmptyState";
+import { MentorStatusBadge } from "@/components/mentor-design/MentorStatusBadge";
+import { MentorAvatar } from "@/components/mentor-design/MentorAvatar";
+import { MentorPageContainer } from "@/components/mentor-design/MentorPageContainer";
+import { MentorInsightCard } from "@/components/mentor-design/MentorInsightCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -260,7 +266,7 @@ function MentorProfileEdit() {
 
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-3xl space-y-6">
+      <MentorPageContainer>
         <PageHeader
           title="My Profile"
           description="Manage how students discover and understand you."
@@ -284,22 +290,60 @@ function MentorProfileEdit() {
           }
         />
 
+        {/* Profile completion */}
+        <div className="mentor-card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="mentor-section-label">Profile completion</span>
+            <span className="text-sm font-semibold text-foreground">{completion}%</span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-electric-iris to-violet-600 transition-all duration-500"
+              style={{ width: `${completion}%` }}
+            />
+          </div>
+          <div className="mt-3 grid gap-2">
+            {missingFields.slice(0, 4).map((rec) => (
+              <button
+                key={rec.field}
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById(`profile-${rec.field}`);
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-lg border border-border/40 p-2.5 text-left transition hover:border-electric-iris/30 hover:bg-primary-soft",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  {rec.done ? (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-jelly-green shrink-0" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  )}
+                  <span className="text-xs text-foreground">{rec.label}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ProfileTab)}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="preview">Profile preview</TabsTrigger>
-            <TabsTrigger value="edit">Edit profile</TabsTrigger>
+          <TabsList className="mentor-tabs-list mb-6">
+            <TabsTrigger value="preview" className="mentor-tab">Profile preview</TabsTrigger>
+            <TabsTrigger value="edit" className="mentor-tab">Edit profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="preview" className="space-y-6">
-            <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
-              <div className="relative h-32 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+            <div className="mentor-card overflow-hidden">
+              <div className="relative h-32 bg-gradient-to-r from-chalk-blue to-frost-blue">
                 {values.cover_url && (
                   <img src={values.cover_url} alt="" className="h-full w-full object-cover" />
                 )}
               </div>
               <div className="px-6 pb-6">
                 <div className="relative -mt-12 mb-4">
-                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-muted shadow-sm">
+                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-muted shadow-card">
                     {values.avatar_url ? (
                       <img src={values.avatar_url} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -330,7 +374,7 @@ function MentorProfileEdit() {
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-3">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-4 w-4 text-primary" />
+                    <Clock className="h-4 w-4 text-electric-iris" />
                     <span>{previewData.experience} years experience</span>
                   </div>
                   {previewData.rating !== null && (
@@ -342,7 +386,7 @@ function MentorProfileEdit() {
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Globe className="h-4 w-4 text-primary" />
+                    <Globe className="h-4 w-4 text-electric-iris" />
                     <span>{values.timezone || "Timezone not set"}</span>
                   </div>
                 </div>
@@ -365,7 +409,7 @@ function MentorProfileEdit() {
                           key={cert}
                           className="text-xs text-muted-foreground flex items-center gap-2"
                         >
-                          <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                          <GraduationCap className="h-3.5 w-3.5 text-electric-iris" />
                           {cert}
                         </li>
                       ))}
@@ -386,7 +430,7 @@ function MentorProfileEdit() {
                       href={previewData.links.linkedin}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary/30 hover:text-foreground"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-1.5 text-xs text-muted-foreground transition hover:border-electric-iris/30 hover:text-foreground"
                     >
                       <LinkIcon className="h-3.5 w-3.5" />
                       LinkedIn
@@ -397,7 +441,7 @@ function MentorProfileEdit() {
                       href={previewData.links.website}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary/30 hover:text-foreground"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-1.5 text-xs text-muted-foreground transition hover:border-electric-iris/30 hover:text-foreground"
                     >
                       <Globe className="h-3.5 w-3.5" />
                       Website
@@ -409,36 +453,6 @@ function MentorProfileEdit() {
           </TabsContent>
 
           <TabsContent value="edit" className="space-y-6">
-            <div className="rounded-xl border border-border/60 bg-card p-5">
-              <p className="text-xs font-medium tracking-[0.12em] uppercase text-muted-foreground mb-3">
-                Make your profile easier to trust
-              </p>
-              <div className="space-y-2">
-                {missingFields.slice(0, 4).map((rec) => (
-                  <button
-                    key={rec.field}
-                    type="button"
-                    onClick={() => {
-                      const el = document.getElementById(`profile-${rec.field}`);
-                      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }}
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-lg border border-border/40 p-2.5 text-left transition hover:border-primary/30 hover:bg-accent/20",
-                    )}
-                  >
-                    <div className="flex items-center gap-2">
-                      {rec.done ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                      ) : (
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      )}
-                      <span className="text-xs text-foreground">{rec.label}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-1 space-y-4">
                 <SectionCard title="Profile photo">
@@ -448,7 +462,7 @@ function MentorProfileEdit() {
                         Profile photo
                       </Label>
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                        <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
                           {values.avatar_url ? (
                             <img
                               src={values.avatar_url}
@@ -459,7 +473,7 @@ function MentorProfileEdit() {
                             <User className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
-                        <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition">
+                        <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:border-electric-iris/30 hover:text-foreground transition">
                           <Upload className="h-3.5 w-3.5" />
                           {uploadingAvatar
                             ? "Uploading..."
@@ -483,7 +497,7 @@ function MentorProfileEdit() {
                         Cover photo
                       </Label>
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-24 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                        <div className="h-12 w-24 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
                           {values.cover_url ? (
                             <img
                               src={values.cover_url}
@@ -494,7 +508,7 @@ function MentorProfileEdit() {
                             <Upload className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
-                        <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition">
+                        <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:border-electric-iris/30 hover:text-foreground transition">
                           <Upload className="h-3.5 w-3.5" />
                           {uploadingCover
                             ? "Uploading..."
@@ -529,6 +543,7 @@ function MentorProfileEdit() {
                         value={values.full_name}
                         onChange={(e) => updateField("full_name", e.target.value)}
                         placeholder="Your full name"
+                        className="mentor-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -540,6 +555,7 @@ function MentorProfileEdit() {
                         value={values.state}
                         onChange={(e) => updateField("state", e.target.value)}
                         placeholder="e.g., California"
+                        className="mentor-input"
                       />
                     </div>
                   </div>
@@ -552,6 +568,7 @@ function MentorProfileEdit() {
                       value={values.headline}
                       onChange={(e) => updateField("headline", e.target.value)}
                       placeholder="e.g., Certified English conversation coach"
+                      className="mentor-input"
                     />
                   </div>
                   <div className="mt-4 space-y-2">
@@ -564,6 +581,7 @@ function MentorProfileEdit() {
                       value={values.bio}
                       onChange={(e) => updateField("bio", e.target.value)}
                       placeholder="Tell students about yourself..."
+                      className="mentor-input"
                     />
                   </div>
                 </SectionCard>
@@ -579,6 +597,7 @@ function MentorProfileEdit() {
                       value={values.about}
                       onChange={(e) => updateField("about", e.target.value)}
                       placeholder="Share your teaching philosophy and what drives you..."
+                      className="mentor-input"
                     />
                   </div>
                   <div className="mt-4 space-y-2">
@@ -590,6 +609,7 @@ function MentorProfileEdit() {
                       value={values.teaching_style}
                       onChange={(e) => updateField("teaching_style", e.target.value)}
                       placeholder="e.g., Conversation-focused, structured lessons"
+                      className="mentor-input"
                     />
                   </div>
                 </SectionCard>
@@ -605,7 +625,7 @@ function MentorProfileEdit() {
                       </Label>
                       <select
                         id="profile-native-language"
-                        className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+                        className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm mentor-input"
                         value={values.native_language}
                         onChange={(e) => updateField("native_language", e.target.value)}
                       >
@@ -622,6 +642,7 @@ function MentorProfileEdit() {
                         type="number"
                         value={values.years_experience}
                         onChange={(e) => updateField("years_experience", e.target.value)}
+                        className="mentor-input"
                       />
                     </div>
                   </div>
@@ -645,8 +666,8 @@ function MentorProfileEdit() {
                             className={cn(
                               "rounded-full border px-3 py-1.5 text-sm transition",
                               selected
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-border hover:border-primary/30",
+                                ? "border-electric-iris bg-electric-iris text-white"
+                                : "border-border hover:border-electric-iris/30",
                             )}
                           >
                             {language.emoji} {language.name}
@@ -666,6 +687,7 @@ function MentorProfileEdit() {
                         value={values.certifications}
                         onChange={(e) => updateField("certifications", e.target.value)}
                         placeholder="One certification per line"
+                        className="mentor-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -675,6 +697,7 @@ function MentorProfileEdit() {
                         value={values.education}
                         onChange={(e) => updateField("education", e.target.value)}
                         placeholder="Your educational background"
+                        className="mentor-input"
                       />
                     </div>
                   </div>
@@ -688,6 +711,7 @@ function MentorProfileEdit() {
                         value={values.linkedin_url}
                         onChange={(e) => updateField("linkedin_url", e.target.value)}
                         placeholder="https://linkedin.com/in/..."
+                        className="mentor-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -696,6 +720,7 @@ function MentorProfileEdit() {
                         value={values.website_url}
                         onChange={(e) => updateField("website_url", e.target.value)}
                         placeholder="https://yourwebsite.com"
+                        className="mentor-input"
                       />
                     </div>
                   </div>
@@ -706,7 +731,7 @@ function MentorProfileEdit() {
         </Tabs>
 
         {activeTab === "edit" && isDirty && (
-          <div className="sticky bottom-6 z-40 flex items-center justify-between rounded-xl border border-border/60 bg-card p-4 shadow-lg">
+          <div className="sticky bottom-6 z-40 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-4 shadow-card">
             <span className="text-xs text-muted-foreground">Unsaved changes</span>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={discardChanges}>
@@ -720,14 +745,14 @@ function MentorProfileEdit() {
         )}
 
         <PreviewDialog open={showPreview} onClose={() => setShowPreview(false)}>
-          <div className="relative h-32 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+          <div className="relative h-32 bg-gradient-to-r from-chalk-blue to-frost-blue">
             {values.cover_url && (
               <img src={values.cover_url} alt="" className="h-full w-full object-cover" />
             )}
           </div>
           <div className="px-6 pb-6">
             <div className="relative -mt-10 mb-4">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-muted shadow-sm">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-muted shadow-card">
                 {previewData.avatar ? (
                   <img src={previewData.avatar} alt="" className="h-full w-full object-cover" />
                 ) : (
@@ -751,7 +776,7 @@ function MentorProfileEdit() {
             )}
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-4 w-4 text-primary" />
+                <Clock className="h-4 w-4 text-electric-iris" />
                 <span>{previewData.experience} years experience</span>
               </div>
               {previewData.rating !== null && (
@@ -763,7 +788,7 @@ function MentorProfileEdit() {
                 </div>
               )}
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Globe className="h-4 w-4 text-primary" />
+                <Globe className="h-4 w-4 text-electric-iris" />
                 <span>{values.timezone || "Timezone not set"}</span>
               </div>
             </div>
@@ -779,7 +804,7 @@ function MentorProfileEdit() {
                 <ul className="mt-2 space-y-1">
                   {previewData.certifications.map((cert: string) => (
                     <li key={cert} className="text-xs text-muted-foreground flex items-center gap-2">
-                      <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                      <GraduationCap className="h-3.5 w-3.5 text-electric-iris" />
                       {cert}
                     </li>
                   ))}
@@ -794,7 +819,7 @@ function MentorProfileEdit() {
             )}
           </div>
         </PreviewDialog>
-      </div>
+      </MentorPageContainer>
     </MentorLayout>
   );
 }

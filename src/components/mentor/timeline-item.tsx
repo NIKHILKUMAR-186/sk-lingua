@@ -1,6 +1,5 @@
 import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { Clock3 } from "lucide-react";
 
 interface TimelineItemProps {
   time: string;
@@ -12,9 +11,9 @@ interface TimelineItemProps {
 }
 
 const statusConfig = {
-  available: { dot: "bg-emerald-500", label: "Available" },
-  booked: { dot: "bg-blue-500", label: "Booked" },
-  busy: { dot: "bg-amber-500", label: "Busy" },
+  available: { dot: "bg-jelly-green", label: "Available" },
+  booked: { dot: "bg-electric-iris", label: "Booked" },
+  busy: { dot: "bg-hi-yellow", label: "Busy" },
   break: { dot: "bg-muted-foreground", label: "Break" },
 };
 
@@ -29,7 +28,7 @@ export function TimelineItem({
   const config = statusConfig[status];
 
   return (
-    <div className={cn("flex gap-3", className)}>
+    <div className={cn("mentor-timeline-item", className)}>
       <div className="flex flex-col items-center">
         <span className="text-xs font-medium text-muted-foreground tabular-nums w-12 shrink-0">
           {time}
@@ -38,7 +37,7 @@ export function TimelineItem({
           <span className={cn("h-2 w-2 rounded-full", config.dot)} />
         </div>
       </div>
-      <div className="flex-1 pb-4">
+      <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">{title}</p>

@@ -319,9 +319,7 @@ const FIT_KEYWORDS: Array<{ keywords: string[]; signal: string }> = [
 ];
 
 export function mentorFitSignal(mentor: BookingMentorViewModel): string | null {
-  const haystack = [mentor.teachingStyle ?? "", mentor.headline ?? ""]
-    .join(" ")
-    .toLowerCase();
+  const haystack = [mentor.teachingStyle ?? "", mentor.headline ?? ""].join(" ").toLowerCase();
 
   if (!haystack.trim()) return null;
 

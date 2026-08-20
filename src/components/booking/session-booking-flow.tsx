@@ -94,7 +94,13 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
   const { availableMentors, mentorsLoading, dateAvailability } = useAvailableMentors(filterDate);
 
   const criteria = useMemo(
-    () => ({ intent: "today" as Intent, timePreference: filterTimePref, selectedDate: filterDate, language, selectedGoal: goal }),
+    () => ({
+      intent: "today" as Intent,
+      timePreference: filterTimePref,
+      selectedDate: filterDate,
+      language,
+      selectedGoal: goal,
+    }),
     [filterTimePref, filterDate, language, goal],
   );
 
@@ -121,7 +127,7 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
   const allLanguages = useMemo(() => {
     const langs = new Set<string>();
     availableMentors.forEach((m) => {
-      const langsArray = Array.isArray(m.languages) ? m.languages : [];
+      const langsArray = Array.isArray(m.languages_taught) ? m.languages_taught : [];
       langsArray.forEach((l) => langs.add(l));
     });
     return Array.from(langs).sort();
@@ -236,7 +242,9 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
           <CardContent className="p-4 md:p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="flex-1 space-y-2">
-                <div className="text-sm font-medium text-foreground">What would you like to work on?</div>
+                <div className="text-sm font-medium text-foreground">
+                  What would you like to work on?
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {GOALS.map((g) => (
                     <button
@@ -281,7 +289,14 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
                       Filters
                       {hasActiveFilters && (
                         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                          {[goal, language, filterDate !== todayStr, filterTimePref !== "any"].filter(Boolean).length}
+                          {
+                            [
+                              goal,
+                              language,
+                              filterDate !== todayStr,
+                              filterTimePref !== "any",
+                            ].filter(Boolean).length
+                          }
                         </span>
                       )}
                     </Button>
@@ -342,7 +357,11 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
                 {goal && (
                   <Badge variant="secondary" className="gap-1">
                     {GOALS.find((g) => g.id === goal)?.label}
-                    <button type="button" onClick={() => setGoal(null)} className="ml-1 hover:text-foreground">
+                    <button
+                      type="button"
+                      onClick={() => setGoal(null)}
+                      className="ml-1 hover:text-foreground"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -350,7 +369,11 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
                 {language && (
                   <Badge variant="secondary" className="gap-1">
                     {language}
-                    <button type="button" onClick={() => setLanguage(null)} className="ml-1 hover:text-foreground">
+                    <button
+                      type="button"
+                      onClick={() => setLanguage(null)}
+                      className="ml-1 hover:text-foreground"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -358,7 +381,11 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
                 {filterDate !== todayStr && (
                   <Badge variant="secondary" className="gap-1">
                     {dateLabel(filterDate)}
-                    <button type="button" onClick={() => setFilterDate(todayStr)} className="ml-1 hover:text-foreground">
+                    <button
+                      type="button"
+                      onClick={() => setFilterDate(todayStr)}
+                      className="ml-1 hover:text-foreground"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -366,7 +393,11 @@ export function SessionBookingFlow({ preselectedMentorId }: SessionBookingFlowPr
                 {filterTimePref !== "any" && (
                   <Badge variant="secondary" className="gap-1">
                     {TIME_PREFERENCE_LABEL[filterTimePref]}
-                    <button type="button" onClick={() => setFilterTimePref("any")} className="ml-1 hover:text-foreground">
+                    <button
+                      type="button"
+                      onClick={() => setFilterTimePref("any")}
+                      className="ml-1 hover:text-foreground"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -545,7 +576,12 @@ function MentorResultCard({
   const isSelected = selectedMentorId === mentor.id;
 
   return (
-    <Card className={cn("h-full transition-shadow duration-200", isSelected ? "ring-2 ring-primary shadow-md" : "hover:shadow-md")}>
+    <Card
+      className={cn(
+        "h-full transition-shadow duration-200",
+        isSelected ? "ring-2 ring-primary shadow-md" : "hover:shadow-md",
+      )}
+    >
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start gap-3">
           <Avatar className="h-11 w-11">
@@ -610,12 +646,7 @@ function MentorResultCard({
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            className="flex-1"
-            onClick={onSelectMentor}
-          >
+          <Button variant="default" size="sm" className="flex-1" onClick={onSelectMentor}>
             {isSelected ? "Selected" : `Book with ${mentor.name.split(" ")[0]}`}
           </Button>
           <Button variant="ghost" size="sm" onClick={onPreview}>

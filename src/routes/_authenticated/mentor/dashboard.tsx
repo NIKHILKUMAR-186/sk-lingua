@@ -5,8 +5,14 @@ import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
-import { TimelineItem } from "@/components/mentor/timeline-item";
-import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
+import { MentorSectionHeader } from "@/components/mentor-design/MentorSectionHeader";
+import { MentorEmptyState } from "@/components/mentor-design/MentorEmptyState";
+import { MentorActionCard } from "@/components/mentor-design/MentorActionCard";
+import { MentorStatCard } from "@/components/mentor-design/MentorStatCard";
+import { MentorQuickAction } from "@/components/mentor-design/MentorQuickAction";
+import { MentorPageContainer } from "@/components/mentor-design/MentorPageContainer";
+import { MentorStatusBadge } from "@/components/mentor-design/MentorStatusBadge";
+import { MentorAvatar } from "@/components/mentor-design/MentorAvatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
@@ -25,6 +31,11 @@ import {
   CheckCircle2,
   AlertTriangle,
   Lightbulb,
+  GraduationCap,
+  BarChart3,
+  CalendarDays,
+  History,
+  BookOpenText,
 } from "lucide-react";
 import { format, isToday, parseISO, differenceInMinutes, addMinutes } from "date-fns";
 import { getProfileCompletionPercent, type ProfileCompletionValues } from "@/lib/profile";
@@ -250,29 +261,38 @@ function MentorDashboard() {
     );
   }
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-5xl space-y-8">
-        <PageHeader
-          title={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}, ${firstName}`}
-          description={mentorActions.length > 0 ? "Here's what needs your attention." : "You're all caught up."}
-          action={
-            pending.length > 0 ? (
-              <Button asChild>
-                <Link to="/mentor/calendar">
-                  Review requests <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Link>
-              </Button>
-            ) : undefined
-          }
-        />
+      <MentorPageContainer>
+        {/* Header */}
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-display tracking-tight text-foreground">
+              {greeting}, {firstName}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {mentorActions.length > 0 ? "Here's what needs your attention." : "You're all caught up."}
+            </p>
+          </div>
+          {pending.length > 0 && (
+            <Button asChild>
+              <Link to="/mentor/calendar">
+                Review requests <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+        </div>
 
-        {/* Mentor Action Center */}
+        {/* Next Actions */}
         {!isLoading && mentorActions.length > 0 && (
           <section>
-            <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-3">
-              Your next actions
-            </h2>
+            <MentorSectionHeader
+              title="Next actions"
+              className="mb-3"
+            />
             <div className="space-y-2">
               {mentorActions.map((action, idx) => (
                 <motion.div
@@ -281,49 +301,28 @@ function MentorDashboard() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
                 >
-                  <Link
+                  <MentorActionCard
+                    priority={action.priority}
+                    title={action.title}
+                    description={action.description}
+                    cta={action.cta}
                     to={action.to}
-                    className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4 transition hover:border-primary/20 hover:bg-accent/10"
-                  >
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                      action.priority === "urgent"
-                        ? "bg-amber-50 text-amber-700"
-                        : action.priority === "attention"
-                          ? "bg-blue-50 text-blue-700"
-                          : "bg-muted text-muted-foreground"
-                    }`}>
-                      {action.icon}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground">{action.title}</p>
-                      <p className="text-xs text-muted-foreground">{action.description}</p>
-                    </div>
-                    <div className="shrink-0">
-                      <span className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium ${
-                        action.priority === "urgent"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200"
-                          : action.priority === "attention"
-                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                            : "bg-background text-foreground border border-border"
-                      }`}>
-                        {action.cta}
-                        <ArrowRight className="ml-1.5 h-3 w-3" />
-                      </span>
-                    </div>
-                  </Link>
+                    icon={action.icon}
+                  />
                 </motion.div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Next Session — primary focus */}
+        {/* Next Session */}
         <section>
-          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-            Next session
-          </h2>
+          <MentorSectionHeader
+            title="Next session"
+            className="mb-4"
+          />
           {isLoading ? (
-            <div className="rounded-xl border border-border/60 bg-card p-6">
+            <div className="mentor-card p-6 space-y-3">
               <Skeleton className="h-5 w-32 mb-3" />
               <Skeleton className="h-8 w-48 mb-2" />
               <Skeleton className="h-4 w-64" />
@@ -332,23 +331,20 @@ function MentorDashboard() {
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-xl border border-border/60 bg-card overflow-hidden"
+              className="mentor-card overflow-hidden"
             >
               <div className="p-6 sm:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl font-display tracking-tight tabular-nums">
+                      <span className="text-3xl font-display tracking-tight tabular-nums text-foreground">
                         {format(parseISO(nextSession.scheduled_time), "h:mm a")}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         {format(parseISO(nextSession.scheduled_time), "MMM d, yyyy")}
                       </span>
                       {differenceInMinutes(parseISO(nextSession.scheduled_time), new Date()) <= 60 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 border border-amber-200">
-                          <Flame className="h-3 w-3" />
-                          Starts soon
-                        </span>
+                        <MentorStatusBadge status="warning" label="Starts soon" />
                       )}
                     </div>
                     <div>
@@ -382,10 +378,10 @@ function MentorDashboard() {
               </div>
             </motion.div>
           ) : (
-            <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
-              <p className="text-sm font-medium text-foreground mb-1">Your schedule is clear</p>
+            <div className="mentor-card p-8 text-center">
+              <p className="text-sm font-medium text-foreground mb-1">Your calendar is open</p>
               <p className="text-xs text-muted-foreground mb-4">
-                No upcoming sessions scheduled.
+                Add availability so students can discover bookable times.
               </p>
               <Button variant="outline" asChild>
                 <Link to="/mentor/availability">Manage availability</Link>
@@ -399,11 +395,12 @@ function MentorDashboard() {
           <div className="lg:col-span-2 space-y-6">
             {/* Today's Teaching Flow */}
             <section>
-              <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-                Today&apos;s teaching flow
-              </h2>
+              <MentorSectionHeader
+                title="Today's teaching flow"
+                className="mb-4"
+              />
               {isLoading ? (
-                <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
+                <div className="mentor-card p-6 space-y-4">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="flex gap-3">
                       <Skeleton className="h-4 w-12 shrink-0" />
@@ -412,19 +409,21 @@ function MentorDashboard() {
                   ))}
                 </div>
               ) : todaySessions.length === 0 && availabilitySlots.length === 0 ? (
-                <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
+                <div className="mentor-card p-8 text-center">
                   <p className="text-sm text-muted-foreground">
                     No sessions or availability windows today.
                   </p>
                 </div>
               ) : (
-                <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+                <div className="mentor-card divide-y divide-border/60">
                   {todaySessions.map((session) => {
                     const start = parseISO(session.scheduled_time);
                     return (
-                      <div
+                      <motion.div
                         key={session.id}
-                        className="flex items-center gap-4 px-6 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mentor-timeline-item"
                         onClick={() =>
                           navigate({ to: "/mentor/session/$id", params: { id: session.id } } as any)
                         }
@@ -432,7 +431,7 @@ function MentorDashboard() {
                         <span className="text-sm font-medium text-muted-foreground tabular-nums w-16 shrink-0">
                           {format(start, "h:mm a")}
                         </span>
-                        <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                        <div className="h-2 w-2 rounded-full bg-electric-iris shrink-0 mt-1.5" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">
                             {studentMap.get(session.student_id)?.full_name || "Student"}
@@ -441,12 +440,12 @@ function MentorDashboard() {
                             {(session as any).gig?.title || "Session"} · {session.duration_mins} min
                           </p>
                         </div>
-                        <span className="text-xs text-muted-foreground capitalize">
+                        <span className="text-xs text-muted-foreground capitalize shrink-0">
                           {session.status === "accepted" || session.status === "confirmed"
                             ? "Confirmed"
                             : session.status}
                         </span>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -457,10 +456,11 @@ function MentorDashboard() {
           <div className="space-y-6">
             {/* Teaching Momentum */}
             <section>
-              <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-                This week
-              </h2>
-              <div className="rounded-xl border border-border/60 bg-card p-6">
+              <MentorSectionHeader
+                title="This week"
+                className="mb-4"
+              />
+              <div className="mentor-card p-6">
                 {completed.length === 0 && upcoming.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-2">
                     Momentum will appear after your first completed session.
@@ -469,17 +469,17 @@ function MentorDashboard() {
                   <>
                     <div className="grid grid-cols-3 gap-4 text-center">
                       <div>
-                        <p className="text-2xl font-display tracking-tight">
+                        <p className="text-2xl font-display tracking-tight text-foreground">
                           {upcoming.length + completed.length}
                         </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">Sessions</p>
                       </div>
                       <div>
-                        <p className="text-2xl font-display tracking-tight">{studentsTaught}</p>
+                        <p className="text-2xl font-display tracking-tight text-foreground">{studentsTaught}</p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">Students</p>
                       </div>
                       <div>
-                        <p className="text-2xl font-display tracking-tight">
+                        <p className="text-2xl font-display tracking-tight text-foreground">
                           {attendanceRate !== null ? `${attendanceRate}%` : "—"}
                         </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">Attendance</p>
@@ -498,70 +498,42 @@ function MentorDashboard() {
 
             {/* Quick Actions */}
             <section>
-              <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-                Quick actions
-              </h2>
-              <div className="space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-auto py-2.5 px-4"
-                  asChild
-                >
-                  <Link to="/mentor/availability">
-                    <Plus className="mr-2.5 h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Add availability</span>
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-auto py-2.5 px-4"
-                  asChild
-                >
-                  <Link to="/mentor/calendar">
-                    <Clock3 className="mr-2.5 h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Review requests</span>
-                    {pending.length > 0 && (
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {pending.length}
-                      </span>
-                    )}
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-auto py-2.5 px-4"
-                  asChild
-                >
-                  <Link to="/mentor/sessions">
-                    <Video className="mr-2.5 h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">View sessions</span>
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-auto py-2.5 px-4"
-                  asChild
-                >
-                  <Link to="/mentor/resources">
-                    <BookOpen className="mr-2.5 h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Teaching library</span>
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-auto py-2.5 px-4"
-                  asChild
-                >
-                  <Link to="/mentor/profile">
-                    <Settings2 className="mr-2.5 h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Edit profile</span>
-                  </Link>
-                </Button>
+              <MentorSectionHeader
+                title="Quick actions"
+                className="mb-3"
+              />
+              <div className="mentor-card divide-y divide-border/60">
+                <MentorQuickAction
+                  icon={<Plus className="h-4 w-4" />}
+                  label="Add availability"
+                  to="/mentor/availability"
+                />
+                <MentorQuickAction
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  label="Review requests"
+                  to="/mentor/calendar"
+                  badge={pending.length > 0 ? pending.length : undefined}
+                />
+                <MentorQuickAction
+                  icon={<History className="h-4 w-4" />}
+                  label="View sessions"
+                  to="/mentor/sessions"
+                />
+                <MentorQuickAction
+                  icon={<BookOpenText className="h-4 w-4" />}
+                  label="Teaching library"
+                  to="/mentor/resources"
+                />
+                <MentorQuickAction
+                  icon={<Settings2 className="h-4 w-4" />}
+                  label="Edit profile"
+                  to="/mentor/profile"
+                />
               </div>
             </section>
           </div>
         </div>
-      </div>
+      </MentorPageContainer>
     </MentorLayout>
   );
 }

@@ -29,10 +29,7 @@ interface MentorPublicProfileProps {
   profile: Profile | null;
 }
 
-export function MentorPublicProfile({
-  mentor,
-  profile,
-}: MentorPublicProfileProps) {
+export function MentorPublicProfile({ mentor, profile }: MentorPublicProfileProps) {
   const joinedDate = mentor.joined_date
     ? new Date(mentor.joined_date)
     : profile?.created_at

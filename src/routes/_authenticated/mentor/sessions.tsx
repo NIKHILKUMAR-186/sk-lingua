@@ -4,7 +4,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
-import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
+import { MentorSectionHeader } from "@/components/mentor-design/MentorSectionHeader";
+import { MentorEmptyState } from "@/components/mentor-design/MentorEmptyState";
+import { MentorStatusBadge } from "@/components/mentor-design/MentorStatusBadge";
+import { MentorDateChip } from "@/components/mentor-design/MentorDateChip";
+import { MentorAvatar } from "@/components/mentor-design/MentorAvatar";
+import { MentorPageContainer } from "@/components/mentor-design/MentorPageContainer";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Video, FileUp, Loader2, ChevronRight } from "lucide-react";
@@ -191,17 +196,22 @@ function MentorSessions() {
 
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-4xl space-y-8">
+      <MentorPageContainer>
         <PageHeader
           title="Sessions"
           description="Your upcoming, today, and past sessions."
+          action={
+            activeSessionId && (
+              <Button variant="outline" size="sm" onClick={() => setActiveSessionId(null)}>
+                Cancel sharing
+              </Button>
+            )
+          }
         />
 
         {activeSessionId && (
-          <div className="rounded-xl border border-border/60 bg-card p-5">
-            <p className="text-xs font-medium tracking-[0.12em] uppercase text-muted-foreground mb-3">
-              Share homework for this session
-            </p>
+          <div className="mentor-card p-5">
+            <p className="mentor-section-label mb-3">Share homework for this session</p>
             <ResourceUpload
               title={resourceTitle}
               url={resourceUrl}
@@ -232,28 +242,29 @@ function MentorSessions() {
 
         {/* Today */}
         <section>
-          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-            Today
-          </h2>
+          <MentorSectionHeader
+            title="Today"
+            className="mb-4"
+          />
           {todayList.length === 0 ? (
-            <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
+            <div className="mentor-card p-8 text-center">
               <p className="text-sm text-muted-foreground">No sessions scheduled today.</p>
             </div>
           ) : (
-            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+            <div className="mentor-card divide-y divide-border/60">
               {todayList.map((s) => {
                 const start = parseISO(s.scheduled_time);
                 const student = sessionStudentMap.get(s.student_id);
                 return (
                   <div
                     key={s.id}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                    className="mentor-timeline-item"
                     onClick={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
                   >
                     <span className="text-sm font-medium text-muted-foreground tabular-nums w-16 shrink-0">
                       {format(start, "h:mm a")}
                     </span>
-                    <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                    <div className="h-2 w-2 rounded-full bg-electric-iris shrink-0 mt-1.5" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">
                         {student?.full_name || "Student"}
@@ -298,15 +309,16 @@ function MentorSessions() {
 
         {/* Upcoming */}
         <section>
-          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-            Upcoming
-          </h2>
+          <MentorSectionHeader
+            title="Upcoming"
+            className="mb-4"
+          />
           {upcoming.length === 0 ? (
-            <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
+            <div className="mentor-card p-8 text-center">
               <p className="text-sm text-muted-foreground">No upcoming sessions.</p>
             </div>
           ) : (
-            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+            <div className="mentor-card divide-y divide-border/60">
               {upcoming.map((s) => {
                 const start = parseISO(s.scheduled_time);
                 const student = sessionStudentMap.get(s.student_id);
@@ -319,7 +331,7 @@ function MentorSessions() {
                 return (
                   <div
                     key={s.id}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                    className="mentor-session-row"
                     onClick={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
                   >
                     <div className="min-w-0 flex-1">
@@ -343,25 +355,26 @@ function MentorSessions() {
 
         {/* Past */}
         <section>
-          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-            Past
-          </h2>
+          <MentorSectionHeader
+            title="Past"
+            className="mb-4"
+          />
           {past.length === 0 ? (
-            <div className="rounded-xl border border-border/60 bg-card p-8 text-center">
+            <div className="mentor-card p-8 text-center">
               <p className="text-sm text-muted-foreground">No past sessions yet.</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Once a session is completed, it will appear here.
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+            <div className="mentor-card divide-y divide-border/60">
               {past.slice(0, 20).map((s) => {
                 const start = parseISO(s.scheduled_time);
                 const student = sessionStudentMap.get(s.student_id);
                 return (
                   <div
                     key={s.id}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-accent/10 transition-colors cursor-pointer"
+                    className="mentor-session-row opacity-70"
                     onClick={() => navigate({ to: "/mentor/session/$id", params: { id: s.id } })}
                   >
                     <div className="min-w-0 flex-1">
@@ -382,7 +395,7 @@ function MentorSessions() {
             </div>
           )}
         </section>
-      </div>
+      </MentorPageContainer>
     </MentorLayout>
   );
 }

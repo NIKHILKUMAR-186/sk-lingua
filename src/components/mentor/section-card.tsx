@@ -28,7 +28,7 @@ export function SectionCard({
   };
 
   return (
-    <div className={cn("rounded-xl border border-border/60 bg-card", className)}>
+    <div className={cn("mentor-card", className)}>
       {(title || description || action) && (
         <div
           className={cn(

@@ -229,7 +229,7 @@ function AuthPage() {
               </CardContent>
             </Card> */}
 
-            <Card className="border-electric/30 bg-electric/5 shadow-xl">
+            {/* <Card className="border-electric/30 bg-electric/5 shadow-xl">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
@@ -248,7 +248,7 @@ function AuthPage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           <Card className="shadow-2xl">

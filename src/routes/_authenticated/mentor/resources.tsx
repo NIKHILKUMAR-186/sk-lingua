@@ -4,7 +4,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
-import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
+import { MentorSectionHeader } from "@/components/mentor-design/MentorSectionHeader";
+import { MentorEmptyState } from "@/components/mentor-design/MentorEmptyState";
+import { MentorStatusBadge } from "@/components/mentor-design/MentorStatusBadge";
+import { MentorAvatar } from "@/components/mentor-design/MentorAvatar";
+import { MentorPageContainer } from "@/components/mentor-design/MentorPageContainer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useState } from "react";
@@ -182,7 +186,7 @@ function MentorResources() {
 
   return (
     <MentorLayout>
-      <div className="mx-auto max-w-5xl space-y-6">
+      <MentorPageContainer>
         <PageHeader
           title="Teaching Library"
           description="Everything you use while teaching."
@@ -195,10 +199,8 @@ function MentorResources() {
         />
 
         {showUpload && (
-          <div className="rounded-xl border border-border/60 bg-card p-5">
-            <p className="text-xs font-medium tracking-[0.12em] uppercase text-muted-foreground mb-4">
-              Create resource
-            </p>
+          <div className="mentor-card p-5">
+            <p className="mentor-section-label mb-4">Create resource</p>
             <ResourceUpload
               title={title}
               url={url}
@@ -226,9 +228,10 @@ function MentorResources() {
         )}
 
         <section>
-          <h2 className="text-xs font-medium tracking-[0.14em] uppercase text-muted-foreground mb-4">
-            Library
-          </h2>
+          <MentorSectionHeader
+            title="Library"
+            className="mb-4"
+          />
           {resources.length === 0 ? (
             <MentorEmptyState
               icon={<FileText className="h-6 w-6" />}
@@ -238,11 +241,11 @@ function MentorResources() {
               onAction={() => setShowUpload(true)}
             />
           ) : (
-            <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/60">
+            <div className="mentor-card divide-y divide-border/60">
               {resources.map((resource) => (
                 <div
                   key={resource.id}
-                  className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-accent/10 transition-colors"
+                  className="mentor-resource-card"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2.5">
@@ -297,7 +300,7 @@ function MentorResources() {
             </div>
           )}
         </section>
-      </div>
+      </MentorPageContainer>
     </MentorLayout>
   );
 }

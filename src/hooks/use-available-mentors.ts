@@ -75,7 +75,6 @@ function safeDate(value: unknown): Date | null {
   return result.valid ? result.value : null;
 }
 
-
 interface SlotWithMentor {
   slot: any;
   mentor: any;
@@ -130,12 +129,8 @@ function computeSlotsForMentorDate(params: SlotWithMentor[]): SlotOption[] {
       const noonMs = localToUtcInstant(ld.year, ld.month, ld.day, 12, 0, tz) ?? 0;
       if (weekdayLongLower(noonMs, tz) !== slotDay) continue;
 
-      const occStart = localToUtcInstant(
-        ld.year, ld.month, ld.day, startT.hour, startT.minute, tz,
-      );
-      const occEnd = localToUtcInstant(
-        ld.year, ld.month, ld.day, endT.hour, endT.minute, tz,
-      );
+      const occStart = localToUtcInstant(ld.year, ld.month, ld.day, startT.hour, startT.minute, tz);
+      const occEnd = localToUtcInstant(ld.year, ld.month, ld.day, endT.hour, endT.minute, tz);
       if (occStart == null || occEnd == null) continue;
       if (occEnd - occStart < durationMins * 60_000) continue;
 
@@ -222,6 +217,7 @@ export function useAvailableMentors(date?: string) {
   const dayKey = useMemo(() => getDateDayKey(selectedDate), [selectedDate]);
   const { data: rulesData } = useBookingRules();
   const durationMins = rulesData?.session_duration_minutes ?? 30;
+  const queryClient = useQueryClient();
 
   const { data: mentors = [], isLoading: mentorsLoading } = useQuery({
     queryKey: ["available-mentors-list"],
@@ -293,7 +289,7 @@ export function useAvailableMentors(date?: string) {
     staleTime: 1000 * 15,
   });
 
-    const availableMentors = useMemo(() => {
+  const availableMentors = useMemo(() => {
     if (!mentors.length || !allSlots.length) return [];
 
     const studentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -371,7 +367,7 @@ export function useAvailableMentors(date?: string) {
     return result;
   }, [mentors, allSlots, allSessions, allHolds, selectedDate, durationMins, rulesData]);
 
-    const dateAvailability = useMemo(() => {
+  const dateAvailability = useMemo(() => {
     if (!mentors.length || !allSlots.length) return [];
 
     // All of each mentor's slots grouped by mentor. Weekday matching for the
@@ -450,7 +446,6 @@ export function useAvailableMentors(date?: string) {
   // by another student), refresh the cached slots/sessions/holds so the student
   // booking page reflects the change instantly.
   useEffect(() => {
-    const queryClient = useQueryClient();
     const invalidate = () => {
       queryClient.invalidateQueries({ queryKey: ["availability-slots-all"] });
       queryClient.invalidateQueries({ queryKey: ["sessions-date-range"] });
@@ -465,15 +460,11 @@ export function useAvailableMentors(date?: string) {
       { event: "*", schema: "public", table: "availability_slots" },
       () => invalidate(),
     );
-    channel.on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "sessions" },
-      () => invalidate(),
+    channel.on("postgres_changes", { event: "*", schema: "public", table: "sessions" }, () =>
+      invalidate(),
     );
-    channel.on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "booking_holds" },
-      () => invalidate(),
+    channel.on("postgres_changes", { event: "*", schema: "public", table: "booking_holds" }, () =>
+      invalidate(),
     );
 
     channel.subscribe();
@@ -481,9 +472,9 @@ export function useAvailableMentors(date?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, queryClient]);
+  }, [queryClient]);
 
-    return {
+  return {
     availableMentors,
     mentorsLoading,
     dateAvailability,

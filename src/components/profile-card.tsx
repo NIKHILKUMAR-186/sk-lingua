@@ -35,15 +35,14 @@ export function ProfileCard({ auth, collapsed, settingsPath = "/settings" }: Pro
       <motion.div
         className={cn(
           "flex items-center gap-3 rounded-xl p-2 transition-all duration-200",
-          "hover:bg-accent",
+          "hover:bg-primary-soft",
           collapsed && "justify-center",
         )}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        {/* Avatar with online indicator */}
         <div className="relative shrink-0">
-          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-hero-gradient text-xs font-bold text-white ring-2 ring-white">
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-brand-gradient text-xs font-bold text-white shadow-card">
             {auth?.profile?.avatar_url ? (
               <img
                 src={auth.profile.avatar_url}
@@ -56,16 +55,14 @@ export function ProfileCard({ auth, collapsed, settingsPath = "/settings" }: Pro
               </span>
             )}
           </div>
-          {/* Online dot */}
           <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
             {!prefersReduced && (
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-jelly-green opacity-75" />
             )}
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 ring-1 ring-white" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-jelly-green ring-1 ring-white" />
           </span>
         </div>
 
-        {/* Info */}
         {!collapsed && (
           <motion.div
             className="min-w-0 flex-1"
@@ -78,15 +75,9 @@ export function ProfileCard({ auth, collapsed, settingsPath = "/settings" }: Pro
               {auth?.profile?.full_name ?? "User"}
             </div>
             <div className="truncate text-xs text-muted-foreground">{auth?.user?.email ?? ""}</div>
-            {/* {formatUserReferenceNo(auth?.profile?.reference_no) && (
-              // <div className="truncate text-[11px] font-medium tabular-nums text-muted-foreground/70">
-              //   {formatUserReferenceNo(auth?.profile?.reference_no)}
-              // </div>
-            )} */}
           </motion.div>
         )}
 
-        {/* Arrow */}
         {!collapsed && (
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0.5" />
         )}

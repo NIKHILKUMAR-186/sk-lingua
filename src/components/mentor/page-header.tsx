@@ -11,9 +11,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, action, breadcrumb, className }: PageHeaderProps) {
   return (
-    <div
-      className={cn("flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between", className)}
-    >
+    <div className={cn("mentor-page-header", className)}>
       <div className="min-w-0">
         {breadcrumb && <div className="mb-1.5">{breadcrumb}</div>}
         <h1 className="text-2xl font-display tracking-tight text-foreground">{title}</h1>

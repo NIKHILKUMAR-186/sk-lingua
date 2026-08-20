@@ -8,8 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
  * the validate_availability_slot() trigger.
  */
 export const VALID_DAY_KEYS = [
-  "monday", "tuesday", "wednesday", "thursday",
-  "friday", "saturday", "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
 ] as const;
 
 export type DayKey = (typeof VALID_DAY_KEYS)[number];
@@ -113,8 +118,7 @@ export function validateAvailabilitySlot(input: {
   is_available?: boolean;
 }): AvailabilityValidation {
   const errors: string[] = [];
-  if (!VALID_DAY_KEYS.includes(input.day_of_week as DayKey))
-    errors.push("Invalid day selected.");
+  if (!VALID_DAY_KEYS.includes(input.day_of_week as DayKey)) errors.push("Invalid day selected.");
 
   const start24 = convert12hTo24h(input.start_time || "");
   const end24 = convert12hTo24h(input.end_time || "");
@@ -125,7 +129,6 @@ export function validateAvailabilitySlot(input: {
   if (start24 >= end24) errors.push("End time must be later than start time.");
   return { valid: errors.length === 0, errors };
 }
-
 
 export async function fetchAvailabilitySlots(mentorId: string) {
   const { data, error } = await supabase
@@ -211,7 +214,7 @@ export async function updateAvailabilitySlot(
 
   const { data, error } = await supabase
     .from("availability_slots")
-    .update(normalized)
+    .update(normalized as any)
     .eq("id", id)
     .select("*")
     .single();
@@ -220,10 +223,7 @@ export async function updateAvailabilitySlot(
 }
 
 export async function deleteAvailabilitySlot(id: string) {
-  const { error } = await supabase
-    .from("availability_slots")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("availability_slots").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -252,8 +252,10 @@ export function useAvailability(mentorId?: string) {
     if (!valid) throw new Error(errors.join(" "));
 
     const free = await checkAvailabilityOverlap(
-      payload.mentor_id, payload.day_of_week,
-      payload.start_time, payload.end_time,
+      payload.mentor_id,
+      payload.day_of_week,
+      payload.start_time,
+      payload.end_time,
     );
     if (!free) throw new Error("These times overlap with an existing availability slot.");
 
@@ -283,8 +285,14 @@ export function useAvailability(mentorId?: string) {
     if (patch.start_time !== undefined || patch.end_time !== undefined) {
       const slot = (data as AvailabilitySlot[]).find((s) => s.id === id);
       if (slot) {
-        const start = patch.start_time !== undefined ? convert12hTo24h(patch.start_time) : convert12hTo24h(slot.start_time);
-        const end = patch.end_time !== undefined ? convert12hTo24h(patch.end_time) : convert12hTo24h(slot.end_time);
+        const start =
+          patch.start_time !== undefined
+            ? convert12hTo24h(patch.start_time)
+            : convert12hTo24h(slot.start_time);
+        const end =
+          patch.end_time !== undefined
+            ? convert12hTo24h(patch.end_time)
+            : convert12hTo24h(slot.end_time);
         if (start >= end) throw new Error("End time must be later than start time.");
         const day = patch.day_of_week ?? slot.day_of_week;
         const free = await checkAvailabilityOverlap(slot.mentor_id, day, start, end, id);
@@ -318,4 +326,3 @@ export function useAvailability(mentorId?: string) {
 
   return { slots: data, isLoading, addSlot, updateSlot, deleteSlot, duplicateToDay };
 }
-

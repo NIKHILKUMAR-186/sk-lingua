@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/mentor/page-header";
 import { RequestCard } from "@/components/mentor/request-card";
-import { MentorEmptyState } from "@/components/mentor/mentor-empty-state";
+import { MentorEmptyStateLegacy as MentorEmptyState } from "@/components/mentor/mentor-empty-state";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
